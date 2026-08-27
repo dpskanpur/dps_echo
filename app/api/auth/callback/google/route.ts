@@ -97,7 +97,10 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(result.error || "")}`, request.url));
     }
 
-    const response = NextResponse.redirect(new URL(redirectTarget, request.url));
+    const redirectUrlObj = new URL(redirectTarget, request.url);
+    redirectUrlObj.searchParams.set("login_success", "true");
+
+    const response = NextResponse.redirect(redirectUrlObj);
     response.cookies.set(SESSION_COOKIE_NAME, await encodeSessionCookie(result.user), {
       ...sessionCookieOptions,
       secure: process.env.NODE_ENV === "production",

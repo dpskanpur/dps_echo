@@ -101,6 +101,8 @@ function LoginForm() {
                 <p className="text-[11px] text-rose-700 mt-0.5">
                   {errorParam === "idle_timeout"
                     ? "You were signed out after 30 minutes of inactivity. Sign in with Google to continue."
+                    : errorParam === "tab_closed"
+                    ? "Your session ended because the browser tab was closed. Sign in with Google to continue."
                     : errorParam === "session_expired_unauthorized"
                     ? "Your unprivileged session expired. Ask an administrator to grant access, then sign in again."
                     : errorParam === "domain_not_allowed"

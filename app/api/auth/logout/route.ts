@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const reason = searchParams.get("reason");
   const loginUrl = new URL("/login", request.url);
-  if (reason === "idle_timeout" || reason === "session_expired_unauthorized") {
+  if (reason === "idle_timeout" || reason === "session_expired_unauthorized" || reason === "tab_closed") {
     loginUrl.searchParams.set("error", reason);
   }
   return NextResponse.redirect(loginUrl);

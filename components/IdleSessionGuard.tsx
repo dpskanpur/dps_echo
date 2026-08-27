@@ -26,8 +26,8 @@ export function IdleSessionGuard() {
   const lastPingRef = useRef(0);
   const [warningMs, setWarningMs] = useState<number | null>(null);
 
-  const logoutIdle = useCallback(() => {
-    window.location.href = "/api/auth/logout?reason=idle_timeout";
+  const logoutIdle = useCallback((reason = "idle_timeout") => {
+    window.location.href = `/api/auth/logout?reason=${reason}`;
   }, []);
 
   const pingActivity = useCallback(async () => {
@@ -37,7 +37,7 @@ export function IdleSessionGuard() {
     try {
       const res = await fetch("/api/auth/activity", { method: "POST", credentials: "same-origin" });
       if (res.status === 401) {
-        logoutIdle();
+        logoutIdle("idle_timeout");
       }
     } catch {
       // Network errors should not force logout; idle timer still applies locally.
@@ -51,7 +51,21 @@ export function IdleSessionGuard() {
   }, [pingActivity]);
 
   useEffect(() => {
-    if (isPublicPath(pathname)) return;
+    if (isPublicPath(pathname)) {
+      if (pathname === "/login") {
+        sessionStorage.removeItem("dps_session_tab_token");
+      }
+      return;
+    }
+
+    // Tab Closure Guard: Validate tab-scoped session token in sessionStorage
+    const isLoginRedirect = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("login_success");
+    if (isLoginRedirect) {
+      sessionStorage.setItem("dps_session_tab_token", Date.now().toString());
+    } else if (!sessionStorage.getItem("dps_session_tab_token")) {
+      logoutIdle("tab_closed");
+      return;
+    }
 
     lastActivityRef.current = Date.now();
     void pingActivity();
@@ -62,7 +76,7 @@ export function IdleSessionGuard() {
     const onVisibility = () => {
       if (document.visibilityState !== "visible") return;
       if (Date.now() - lastActivityRef.current >= IDLE_TIMEOUT_MS) {
-        logoutIdle();
+        logoutIdle("idle_timeout");
         return;
       }
       markActivity();
@@ -72,7 +86,7 @@ export function IdleSessionGuard() {
     const tick = window.setInterval(() => {
       const idleFor = Date.now() - lastActivityRef.current;
       if (idleFor >= IDLE_TIMEOUT_MS) {
-        logoutIdle();
+        logoutIdle("idle_timeout");
         return;
       }
       const remaining = IDLE_TIMEOUT_MS - idleFor;
