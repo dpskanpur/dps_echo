@@ -32,12 +32,24 @@ export function middleware(request: NextRequest) {
     pathname.includes(".");
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  const payload = decodeSessionCookie(sessionCookie?.value);
-  const idleExpired = !!sessionCookie?.value && isSessionIdleExpired(payload);
-  const isAuthenticated = !!payload && !idleExpired;
+  const payload = sessionCookie?.value ? decodeSessionCookie(sessionCookie.value) : null;
+  const isIdleExpired = payload ? isSessionIdleExpired(payload) : false;
+  const isAuthenticated = !!payload && !isIdleExpired;
 
-  if (sessionCookie?.value && idleExpired && pathname !== "/login") {
-    return expireSession(request);
+  // Only trigger idle_timeout redirect if user was logged in and payload exceeded 30 mins idle
+  if (payload && isIdleExpired && pathname !== "/login") {
+    return expireSession(request, "idle_timeout");
+  }
+
+  // If cookie is invalid/unparseable (e.g. old session format or untampered), clear it silently
+  if (sessionCookie?.value && !payload && !isPublic) {
+    const loginUrl = new URL("/login", request.url);
+    if (pathname !== "/") {
+      loginUrl.searchParams.set("redirect", pathname);
+    }
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.set(SESSION_COOKIE_NAME, "", { path: "/", maxAge: 0 });
+    return response;
   }
 
   if (isAuthenticated && pathname === "/login") {
