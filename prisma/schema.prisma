@@ -114,7 +114,9 @@ model Section {
 
 model Student {
   id              String        @id @default(cuid())
-  scholarNo       String        @unique // Unique Permanent Scholar / Admission Number (e.g. "DPS-AZD-2024-0412")
+  registrationNo  String?       @unique // Unique Registration ID (e.g. "REG-AZD-2026-0042")
+  registrationDate DateTime?
+  scholarNo       String        @unique // Unique Permanent Scholar / Admission Number (e.g. "DPS-AZD-2026-0412")
   admissionNo     String        // Display Admission No
   admissionDate   DateTime
   academicYearIn  String        // e.g. "2024-2025"

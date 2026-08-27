@@ -14,6 +14,9 @@ import {
   Search,
   Filter,
   Lock,
+  ArrowRight,
+  ClipboardList,
+  Sparkles,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +59,7 @@ export default async function StudentsPage({
   if (status && status !== "ALL") {
     whereClause.status = status;
   } else {
-    // Default to active unless specified
+    // Default to active and registered unless specified
     whereClause.status = { not: "ALUMNI" };
   }
 
@@ -66,6 +69,7 @@ export default async function StudentsPage({
       { lastName: { contains: q } },
       { scholarNo: { contains: q } },
       { admissionNo: { contains: q } },
+      { registrationNo: { contains: q } },
     ];
   }
 
@@ -98,7 +102,7 @@ export default async function StudentsPage({
                 <h1 className="text-xl font-black text-slate-900">Student Directory</h1>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Centralized registry of enrolled students across DPS Kanpur campuses.
+                Centralized registry of registered applicants and enrolled students across DPS Kanpur.
               </p>
             </div>
 
@@ -106,18 +110,18 @@ export default async function StudentsPage({
               {permissions.modules.students.canUpdate ? (
                 <>
                   <Link
-                    href="/students/import"
-                    className="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-lg text-xs font-bold transition shadow-xs"
+                    href="/students/new?mode=registration"
+                    className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-2xs"
                   >
-                    <FileText className="w-3.5 h-3.5 text-emerald-800" />
-                    Bulk Import (CSV)
+                    <ClipboardList className="w-3.5 h-3.5 text-amber-700" />
+                    Stage 1: Register Applicant
                   </Link>
                   <Link
-                    href="/students/new"
-                    className="inline-flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition shadow-sm"
+                    href="/students/new?mode=admission"
+                    className="inline-flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
-                    New Admission
+                    Stage 2: Full Admission
                   </Link>
                 </>
               ) : (
@@ -139,7 +143,7 @@ export default async function StudentsPage({
                 type="text"
                 name="q"
                 defaultValue={q || ""}
-                placeholder="Search by student name or scholar no..."
+                placeholder="Search by student name, registration ID or scholar no..."
                 className="w-full bg-slate-50 text-xs border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               />
             </form>
@@ -165,14 +169,14 @@ export default async function StudentsPage({
 
                 <select
                   name="status"
-                  defaultValue={status || "ACTIVE"}
+                  defaultValue={status || "ALL"}
                   aria-label="Filter by status"
                   className="bg-slate-50 border border-slate-200 text-xs rounded-lg px-2.5 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 >
-                  <option value="ALL">All Statuses</option>
+                  <option value="ALL">All Enrolment States</option>
+                  <option value="REGISTERED">Registered Applicants</option>
                   <option value="ACTIVE">Active Enrolled</option>
                   <option value="TC_ISSUED">TC Issued</option>
-                  <option value="INQUIRY">Inquiry</option>
                 </select>
 
                 <button
@@ -191,11 +195,11 @@ export default async function StudentsPage({
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    <th className="py-3.5 px-4">Scholar / Adm No</th>
+                    <th className="py-3.5 px-4">Registration / Scholar ID</th>
                     <th className="py-3.5 px-4">Student Name</th>
                     <th className="py-3.5 px-4">Campus & Class</th>
                     <th className="py-3.5 px-4">Parent / Contact</th>
-                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Enrolment Status</th>
                     <th className="py-3.5 px-4">Fee Dues</th>
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
@@ -212,21 +216,46 @@ export default async function StudentsPage({
                       const primaryGuardian = s.guardians[0];
                       const pendingInvoices = s.invoices.length;
                       const hasDues = pendingInvoices > 0;
+                      const isRegisteredOnly = s.status === "REGISTERED";
 
                       return (
                         <tr key={s.id} className="hover:bg-slate-50/80 transition">
                           <td className="py-3.5 px-4">
-                            <span className="font-mono font-bold text-slate-900 block">
-                              {s.scholarNo}
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              Adm: {formatDate(s.admissionDate)}
-                            </span>
+                            {isRegisteredOnly ? (
+                              <div>
+                                <span className="font-mono font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-xs inline-block">
+                                  {s.registrationNo || s.scholarNo}
+                                </span>
+                                <span className="text-[10px] text-slate-400 block mt-0.5">
+                                  Reg: {s.registrationDate ? formatDate(s.registrationDate) : "Recent"}
+                                </span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="font-mono font-bold text-slate-900 block">
+                                  {s.scholarNo}
+                                </span>
+                                {s.registrationNo && (
+                                  <span className="font-mono text-[10px] text-emerald-700 block font-semibold">
+                                    Reg ID: {s.registrationNo}
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-slate-400 block">
+                                  Adm: {formatDate(s.admissionDate)}
+                                </span>
+                              </div>
+                            )}
                           </td>
 
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
+                              <div
+                                className={`w-8 h-8 rounded-full border font-bold text-xs flex items-center justify-center shrink-0 ${
+                                  isRegisteredOnly
+                                    ? "bg-amber-50 border-amber-200 text-amber-800"
+                                    : "bg-emerald-50 border-emerald-200 text-emerald-800"
+                                }`}
+                              >
                                 {s.firstName[0]}
                                 {s.lastName[0]}
                               </div>
@@ -265,19 +294,25 @@ export default async function StudentsPage({
                           <td className="py-3.5 px-4">
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-                                s.status === "ACTIVE"
+                                isRegisteredOnly
+                                  ? "bg-amber-100 text-amber-900 border border-amber-200"
+                                  : s.status === "ACTIVE"
                                   ? "bg-emerald-100 text-emerald-800"
                                   : s.status === "TC_ISSUED"
                                   ? "bg-purple-100 text-purple-800"
                                   : "bg-slate-100 text-slate-600"
                               }`}
                             >
-                              {s.status}
+                              {isRegisteredOnly ? "REGISTERED (PENDING ADMISSION)" : s.status}
                             </span>
                           </td>
 
                           <td className="py-3.5 px-4">
-                            {hasDues ? (
+                            {isRegisteredOnly ? (
+                              <span className="text-[11px] text-amber-700 font-medium italic">
+                                Pending Admission
+                              </span>
+                            ) : hasDues ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
                                 {pendingInvoices} Pending
                               </span>
@@ -290,29 +325,42 @@ export default async function StudentsPage({
 
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
-                              <Link
-                                href={`/students/${s.id}`}
-                                title="View 360 Dossier"
-                                className="p-1.5 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 rounded-md text-slate-600 transition"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Link>
-                              {s.status === "ACTIVE" && (
+                              {isRegisteredOnly ? (
+                                <Link
+                                  href={`/students/new?promoteStudentId=${s.id}`}
+                                  title="Promote to Full Admission"
+                                  className="inline-flex items-center gap-1 bg-emerald-800 hover:bg-emerald-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition shadow-xs"
+                                >
+                                  <span>Promote to Admission</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </Link>
+                              ) : (
                                 <>
                                   <Link
-                                    href={`/fees/collect?studentId=${s.id}`}
-                                    title="Collect Fees"
-                                    className="p-1.5 bg-slate-100 hover:bg-teal-100 hover:text-teal-800 rounded-md text-slate-600 transition"
+                                    href={`/students/${s.id}`}
+                                    title="View Dossier"
+                                    className="p-1.5 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 rounded-md text-slate-600 transition"
                                   >
-                                    <CreditCard className="w-4 h-4" />
+                                    <Eye className="w-4 h-4" />
                                   </Link>
-                                  <Link
-                                    href={`/tc?studentId=${s.id}`}
-                                    title="Issue TC"
-                                    className="p-1.5 bg-slate-100 hover:bg-purple-100 hover:text-purple-800 rounded-md text-slate-600 transition"
-                                  >
-                                    <FileText className="w-4 h-4" />
-                                  </Link>
+                                  {s.status === "ACTIVE" && (
+                                    <>
+                                      <Link
+                                        href={`/fees/collect?studentId=${s.id}`}
+                                        title="Collect Fees"
+                                        className="p-1.5 bg-slate-100 hover:bg-teal-100 hover:text-teal-800 rounded-md text-slate-600 transition"
+                                      >
+                                        <CreditCard className="w-4 h-4" />
+                                      </Link>
+                                      <Link
+                                        href={`/tc?studentId=${s.id}`}
+                                        title="Issue TC"
+                                        className="p-1.5 bg-slate-100 hover:bg-purple-100 hover:text-purple-800 rounded-md text-slate-600 transition"
+                                      >
+                                        <FileText className="w-4 h-4" />
+                                      </Link>
+                                    </>
+                                  )}
                                 </>
                               )}
                             </div>
@@ -323,12 +371,6 @@ export default async function StudentsPage({
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Pagination Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-              <span>Showing {students.length} students</span>
-              <span>DPS Kanpur Central SIS Database</span>
             </div>
           </div>
         </main>

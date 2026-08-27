@@ -119,13 +119,20 @@ export default async function StudentDetailPage({
                       className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                         student.status === "ACTIVE"
                           ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                          : student.status === "REGISTERED"
+                          ? "bg-amber-100 text-amber-900 border border-amber-300 font-extrabold"
                           : student.status === "TC_ISSUED"
                           ? "bg-purple-100 text-purple-800 border border-purple-200"
                           : "bg-slate-100 text-slate-700"
                       }`}
                     >
-                      {student.status}
+                      {student.status === "REGISTERED" ? "REGISTERED (PENDING ADMISSION)" : student.status}
                     </span>
+                    {student.registrationNo && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-xs font-mono font-bold border border-amber-200">
+                        REG ID: {student.registrationNo}
+                      </span>
+                    )}
                     {student.house && (
                       <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-semibold">
                         House: {student.house}
@@ -136,7 +143,7 @@ export default async function StudentDetailPage({
                   <div className="flex flex-wrap items-center gap-y-1 gap-x-4 mt-2 text-xs text-slate-500">
                     <span className="flex items-center gap-1">
                       <span className="font-mono font-bold text-slate-800">
-                        {student.scholarNo}
+                        {student.status === "REGISTERED" ? `REG: ${student.registrationNo || student.scholarNo}` : `ADM ID: ${student.scholarNo}`}
                       </span>
                     </span>
                     <span className="flex items-center gap-1">
@@ -148,7 +155,7 @@ export default async function StudentDetailPage({
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      Admitted: {formatDate(student.admissionDate)}
+                      {student.status === "REGISTERED" ? `Registered: ${student.registrationDate ? formatDate(student.registrationDate) : "Recent"}` : `Admitted: ${formatDate(student.admissionDate)}`}
                     </span>
                   </div>
                 </div>
@@ -156,6 +163,15 @@ export default async function StudentDetailPage({
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {student.status === "REGISTERED" && (
+                  <Link
+                    href={`/students/new?promoteStudentId=${student.id}`}
+                    className="inline-flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md"
+                  >
+                    <span>Promote to Full Admission</span>
+                    <CheckCircle2 className="w-4 h-4" />
+                  </Link>
+                )}
                 {student.status === "ACTIVE" && (
                   <>
                     <Link

@@ -9,6 +9,167 @@ import { generateTCNumber, generateReceiptNumber } from "@/lib/utils";
 // Student Management Actions
 // -------------------------------------------------------------
 
+// -------------------------------------------------------------
+// Stage 1: Register New Applicant (Registration Form)
+// -------------------------------------------------------------
+
+export async function registerStudent(formData: FormData): Promise<void> {
+  const campusId = formData.get("campusId") as string;
+  const classId = formData.get("classId") as string;
+  const firstName = formData.get("firstName") as string;
+  const middleName = (formData.get("middleName") as string) || null;
+  const lastName = formData.get("lastName") as string;
+  const dob = new Date(formData.get("dob") as string);
+  const gender = (formData.get("gender") as string) || "MALE";
+  const currentAddress = (formData.get("currentAddress") as string) || "";
+  const emergencyContact = (formData.get("emergencyContact") as string) || "";
+
+  // Guardian details
+  const fatherName = formData.get("fatherName") as string;
+  const fatherPhone = formData.get("fatherPhone") as string;
+  const fatherEmail = (formData.get("fatherEmail") as string) || "";
+  const motherName = (formData.get("motherName") as string) || "";
+  const motherPhone = (formData.get("motherPhone") as string) || "";
+
+  const campus = await prisma.campus.findUnique({ where: { id: campusId } });
+  const year = new Date().getFullYear();
+
+  // Count total registrations for generating unique REG ID
+  const regCount = await prisma.student.count({
+    where: { campusId, registrationNo: { not: null } },
+  });
+  const regSeq = regCount + 1;
+
+  const registrationNo = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  // Temporary scholarNo for registration record until full admission promotion
+  const scholarNo = `REG-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  const admissionNo = "REGISTRATION_PENDING";
+
+  const student = await prisma.student.create({
+    data: {
+      registrationNo,
+      registrationDate: new Date(),
+      scholarNo,
+      admissionNo,
+      admissionDate: new Date(),
+      academicYearIn: `${year}-${year + 1}`,
+      firstName,
+      middleName,
+      lastName,
+      dob,
+      gender,
+      currentAddress,
+      emergencyContact,
+      campusId,
+      classId,
+      status: "REGISTERED",
+      guardians: {
+        create: [
+          ...(fatherName
+            ? [
+                {
+                  relation: "FATHER",
+                  name: fatherName,
+                  phone: fatherPhone || emergencyContact,
+                  email: fatherEmail,
+                  isPrimary: true,
+                },
+              ]
+            : []),
+          ...(motherName
+            ? [
+                {
+                  relation: "MOTHER",
+                  name: motherName,
+                  phone: motherPhone,
+                  isPrimary: !fatherName,
+                },
+              ]
+            : []),
+        ],
+      },
+    },
+  });
+
+  revalidatePath("/students");
+  revalidatePath("/");
+  redirect(`/students/${student.id}?notice=registered`);
+}
+
+// -------------------------------------------------------------
+// Stage 2: Promote Registration to Full Admission
+// -------------------------------------------------------------
+
+export async function promoteStudentToAdmission(formData: FormData): Promise<void> {
+  const studentId = formData.get("studentId") as string;
+  const sectionId = (formData.get("sectionId") as string) || null;
+  const rollNo = formData.get("rollNo") ? parseInt(formData.get("rollNo") as string, 10) : null;
+  const bloodGroup = (formData.get("bloodGroup") as string) || "B+";
+  const category = (formData.get("category") as string) || "General";
+  const house = (formData.get("house") as string) || "Ganga";
+  const aadhaarNo = (formData.get("aadhaarNo") as string) || null;
+  const currentAddress = (formData.get("currentAddress") as string) || "";
+  const permanentAddress = (formData.get("permanentAddress") as string) || "";
+  const city = (formData.get("city") as string) || "Kanpur";
+  const emergencyContact = (formData.get("emergencyContact") as string) || "";
+  const previousSchool = (formData.get("previousSchool") as string) || null;
+  const previousClass = (formData.get("previousClass") as string) || null;
+  const previousTcNo = (formData.get("previousTcNo") as string) || null;
+
+  const existingStudent = await prisma.student.findUnique({
+    where: { id: studentId },
+    include: { campus: true },
+  });
+
+  if (!existingStudent) {
+    throw new Error("Student registration record not found.");
+  }
+
+  const campus = existingStudent.campus;
+  const year = new Date().getFullYear();
+
+  // Count active admissions to generate unique Scholar / Admission ID
+  const admCount = await prisma.student.count({
+    where: { campusId: existingStudent.campusId, status: "ACTIVE" },
+  });
+  const admSeq = admCount + 1;
+
+  const scholarNo = `DPS-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
+  const admissionNo = `${campus?.code || "KNP"}/${year}/${admSeq}`;
+
+  await prisma.student.update({
+    where: { id: studentId },
+    data: {
+      scholarNo,
+      admissionNo,
+      admissionDate: new Date(),
+      sectionId,
+      rollNo,
+      bloodGroup,
+      category,
+      house,
+      aadhaarNo,
+      currentAddress,
+      permanentAddress,
+      city,
+      emergencyContact,
+      previousSchool,
+      previousClass,
+      previousTcNo,
+      status: "ACTIVE",
+    },
+  });
+
+  revalidatePath(`/students/${studentId}`);
+  revalidatePath("/students");
+  revalidatePath("/");
+  redirect(`/students/${studentId}?notice=promoted`);
+}
+
+// -------------------------------------------------------------
+// Direct 1-Step Admission (Creates both Reg & Admission ID)
+// -------------------------------------------------------------
+
 export async function createStudent(formData: FormData): Promise<void> {
   const campusId = formData.get("campusId") as string;
   const classId = formData.get("classId") as string;
@@ -33,14 +194,24 @@ export async function createStudent(formData: FormData): Promise<void> {
   const motherPhone = (formData.get("motherPhone") as string) || "";
 
   const campus = await prisma.campus.findUnique({ where: { id: campusId } });
-  const count = await prisma.student.count({ where: { campusId } });
   const year = new Date().getFullYear();
-  const seq = count + 1;
-  const scholarNo = `DPS-${campus?.code || "KNP"}-${year}-${String(seq).padStart(4, "0")}`;
-  const admissionNo = `${campus?.code || "KNP"}/${year}/${seq}`;
+
+  // Generate Unique Registration ID & Unique Admission ID
+  const regCount = await prisma.student.count({ where: { campusId } });
+  const regSeq = regCount + 1;
+  const registrationNo = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+
+  const admCount = await prisma.student.count({
+    where: { campusId, status: "ACTIVE" },
+  });
+  const admSeq = admCount + 1;
+  const scholarNo = `DPS-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
+  const admissionNo = `${campus?.code || "KNP"}/${year}/${admSeq}`;
 
   const student = await prisma.student.create({
     data: {
+      registrationNo,
+      registrationDate: new Date(),
       scholarNo,
       admissionNo,
       admissionDate: new Date(),
@@ -89,7 +260,7 @@ export async function createStudent(formData: FormData): Promise<void> {
 
   revalidatePath("/students");
   revalidatePath("/");
-  redirect(`/students/${student.id}`);
+  redirect(`/students/${student.id}?notice=created`);
 }
 
 // -------------------------------------------------------------
