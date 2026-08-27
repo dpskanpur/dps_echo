@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { CampusSwitcher } from "./CampusSwitcher";
+import { IdleTimerBadge } from "./IdleTimerBadge";
 import { Search, UserCheck, LogOut, Shield } from "lucide-react";
 import Link from "next/link";
 import { UserPermissions } from "@/lib/permissions";
@@ -52,7 +53,10 @@ export function Navbar({
 
       {/* Right User & Quick Search */}
       <div className="flex items-center gap-3">
-        <div className="relative hidden lg:block w-64">
+        {/* Live Idle Session Counter */}
+        <IdleTimerBadge showFullLabel={true} />
+
+        <div className="relative hidden lg:block w-56">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input
             type="text"
