@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";
+import { CampusSelector } from "@/components/CampusSelector";
 
 export const dynamic = "force-dynamic";
 
@@ -145,9 +146,11 @@ export default async function NewAdmissionPage({
                     <label className="block text-xs font-bold text-slate-700 mb-1">
                       Campus *
                     </label>
-                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900">
-                      {selectedCampus.name} ({selectedCampus.code})
-                    </div>
+                    <CampusSelector
+                      campuses={campuses}
+                      selectedCampusId={selectedCampus.id}
+                      mode={activeMode}
+                    />
                   </div>
 
                   <div>
@@ -1019,9 +1022,11 @@ export default async function NewAdmissionPage({
                     <label className="block text-xs font-bold text-slate-700 mb-1">
                       Campus *
                     </label>
-                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-900">
-                      {selectedCampus.name} ({selectedCampus.code})
-                    </div>
+                    <CampusSelector
+                      campuses={campuses}
+                      selectedCampusId={selectedCampus.id}
+                      mode={activeMode}
+                    />
                   </div>
 
                   <div>

@@ -92,8 +92,8 @@ export function ValidatedInput({
       } else {
         setError("");
       }
-    } else if (fieldType === "text-only" && isRequired && rawVal.trim().length < 2) {
-      setError("Must contain at least 2 letters");
+    } else if (fieldType === "text-only" && isRequired && rawVal.trim().length < 1) {
+      setError("This field is required");
     } else {
       setError("");
     }
@@ -118,7 +118,7 @@ export function ValidatedInput({
     type = "email";
     pattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
   } else if (fieldType === "text-only") {
-    pattern = "[A-Za-z\\s.-]{2,60}";
+    pattern = "[A-Za-z\\s.-]{1,100}";
   }
 
   return (
