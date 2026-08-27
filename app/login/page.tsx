@@ -10,35 +10,8 @@ function LoginForm() {
   const redirectUrl = searchParams.get("redirect") || "/";
   const errorParam = searchParams.get("error");
   const attemptedEmail = searchParams.get("attempted");
-  const [loadingDev, setLoadingDev] = useState(false);
 
   const googleAuthHref = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
-
-  const handleDevLogin = async () => {
-    setLoadingDev(true);
-    try {
-      const res = await fetch("/api/auth/dev-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "admin@dpskanpur.com",
-          name: "System Administrator",
-          role: "SUPER_ADMIN",
-          redirectUrl,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        window.location.href = data.redirectUrl || "/";
-      } else {
-        alert(data.error || "Login failed");
-      }
-    } catch (err: any) {
-      alert("Dev login failed: " + err.message);
-    } finally {
-      setLoadingDev(false);
-    }
-  };
 
   return (
     <div className="min-h-screen w-full bg-slate-950 flex items-stretch antialiased selection:bg-[#34A853] selection:text-white">
@@ -132,15 +105,15 @@ function LoginForm() {
                     : errorParam === "domain_not_allowed"
                     ? `Account "${attemptedEmail || ""}" is unauthorized. Only @dpskanpur.com accounts are permitted.`
                     : errorParam === "google_oauth_missing"
-                    ? "Google OAuth keys are not configured in .env yet. Click 'Quick Admin Sign-In (Local Preview)' below to test locally."
+                    ? "Google OAuth keys (GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET) are not configured in .env."
                     : "Could not authenticate your Google account. Please try again."}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Google Sign-In Primary Action & Quick Dev Login */}
-          <div className="space-y-3">
+          {/* Google Sign-In Primary Action */}
+          <div className="space-y-4">
             <a
               href={googleAuthHref}
               className="w-full bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 font-bold py-3.5 px-4 rounded-2xl text-xs sm:text-sm transition-all duration-200 border border-slate-300 hover:border-[#0F9D58] shadow-sm hover:shadow-md flex items-center justify-center gap-3 group cursor-pointer"
@@ -167,16 +140,6 @@ function LoginForm() {
               <span>Sign in with Google</span>
               <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0F9D58] transition-colors ml-auto" />
             </a>
-
-            <button
-              type="button"
-              onClick={handleDevLogin}
-              disabled={loadingDev}
-              className="w-full bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold py-3 px-4 rounded-2xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>{loadingDev ? "Signing In..." : "Quick Admin Sign-In (Local Preview)"}</span>
-            </button>
 
             {/* Allowed Domain Notice */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2 flex items-center justify-between text-[11px] text-slate-600">
