@@ -22,7 +22,7 @@ function expireSession(request: NextRequest, reason = "idle_timeout") {
   return response;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isPublic =
@@ -32,7 +32,7 @@ export function middleware(request: NextRequest) {
     pathname.includes(".");
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  const payload = sessionCookie?.value ? decodeSessionCookie(sessionCookie.value) : null;
+  const payload = sessionCookie?.value ? await decodeSessionCookie(sessionCookie.value) : null;
   const isIdleExpired = payload ? isSessionIdleExpired(payload) : false;
   const isAuthenticated = !!payload && !isIdleExpired;
 

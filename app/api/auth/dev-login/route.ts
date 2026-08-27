@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     }
 
     const response = NextResponse.json({ success: true, redirectUrl });
-    response.cookies.set(SESSION_COOKIE_NAME, encodeSessionCookie(result.user), {
+    response.cookies.set(SESSION_COOKIE_NAME, await encodeSessionCookie(result.user), {
       ...sessionCookieOptions,
       secure: process.env.NODE_ENV === "production",
     });

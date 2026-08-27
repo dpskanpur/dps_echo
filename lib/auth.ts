@@ -132,7 +132,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   }
 
   try {
-    const payload = decodeSessionCookie(sessionCookie.value);
+    const payload = await decodeSessionCookie(sessionCookie.value);
     if (!payload || isSessionIdleExpired(payload)) {
       return null;
     }
@@ -160,7 +160,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
 export async function setSessionCookie(user: SessionUser) {
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, encodeSessionCookie(user), {
+  cookieStore.set(SESSION_COOKIE_NAME, await encodeSessionCookie(user), {
     ...sessionCookieOptions,
     secure: process.env.NODE_ENV === "production",
   });

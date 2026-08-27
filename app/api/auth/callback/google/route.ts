@@ -98,7 +98,7 @@ export async function GET(request: Request) {
     }
 
     const response = NextResponse.redirect(new URL(redirectTarget, request.url));
-    response.cookies.set(SESSION_COOKIE_NAME, encodeSessionCookie(result.user), {
+    response.cookies.set(SESSION_COOKIE_NAME, await encodeSessionCookie(result.user), {
       ...sessionCookieOptions,
       secure: process.env.NODE_ENV === "production",
     });
