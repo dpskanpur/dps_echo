@@ -502,16 +502,122 @@ export default async function NewAdmissionPage({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Reason for Leaving Previous School
-                    </label>
-                    <input
-                      type="text"
-                      name="reasonLeavingPrevious"
-                      placeholder="REASON FOR TRANSFER"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
+                </div>
+
+                {/* Marks Obtained in Last Examination (Table from Paper Form) */}
+                <div className="pt-4 space-y-3">
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
+                    Marks Obtained in Last Examination
+                  </label>
+                  <div className="overflow-x-auto rounded-xl border border-slate-200">
+                    <table className="w-full text-xs text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-slate-200 font-bold text-slate-700">
+                          <th className="py-2.5 px-3 w-12 text-center">S.No.</th>
+                          <th className="py-2.5 px-3">Subject</th>
+                          <th className="py-2.5 px-3 w-32">Maximum Marks</th>
+                          <th className="py-2.5 px-3 w-40">Marks/Grade Obtained</th>
+                          <th className="py-2.5 px-3 w-40">% Marks/Final Grade</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {[
+                          { sno: 1, subject: "English" },
+                          { sno: 2, subject: "Mathematics" },
+                          { sno: 3, subject: "Science / EVS" },
+                          { sno: 4, subject: "Social Studies / Hindi" },
+                        ].map((row) => (
+                          <tr key={row.sno} className="hover:bg-slate-50">
+                            <td className="py-2 px-3 text-center font-bold text-slate-500">{row.sno}</td>
+                            <td className="py-2 px-3">
+                              <input
+                                type="text"
+                                defaultValue={row.subject}
+                                className="w-full bg-transparent font-semibold text-slate-800 focus:outline-none focus:bg-white p-1 rounded"
+                              />
+                            </td>
+                            <td className="py-2 px-3">
+                              <input
+                                type="text"
+                                placeholder="100"
+                                className="w-full bg-slate-50 border border-slate-200 rounded p-1 font-semibold text-slate-800 text-center"
+                              />
+                            </td>
+                            <td className="py-2 px-3">
+                              <input
+                                type="text"
+                                placeholder="Marks/Grade"
+                                className="w-full bg-slate-50 border border-slate-200 rounded p-1 font-semibold text-slate-800 text-center"
+                              />
+                            </td>
+                            <td className="py-2 px-3">
+                              <input
+                                type="text"
+                                placeholder="e.g. 88% / A1"
+                                className="w-full bg-slate-50 border border-slate-200 rounded p-1 font-semibold text-slate-800 text-center"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Siblings' Details Grid (From Paper Form) */}
+                <div className="pt-4 space-y-3">
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
+                    Siblings' Details (Schooling details of all Brothers and/or Sisters)
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((sibNum) => (
+                      <div key={sibNum} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
+                        <span className="block text-[11px] font-extrabold text-emerald-900 uppercase">
+                          Sibling {sibNum}
+                        </span>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Full Name</label>
+                          <input
+                            type="text"
+                            placeholder="SIBLING FULL NAME"
+                            className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs font-semibold text-slate-900 uppercase"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Age</label>
+                            <input
+                              type="text"
+                              placeholder="AGE"
+                              className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs font-semibold text-slate-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Gender</label>
+                            <select className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs font-semibold text-slate-900">
+                              <option value="M">Male</option>
+                              <option value="F">Female</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">School</label>
+                          <input
+                            type="text"
+                            placeholder="SCHOOL NAME"
+                            className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs font-semibold text-slate-900 uppercase"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Class/Section</label>
+                          <input
+                            type="text"
+                            placeholder="CLASS & SECTION"
+                            className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs font-semibold text-slate-900 uppercase"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
