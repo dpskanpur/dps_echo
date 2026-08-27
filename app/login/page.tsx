@@ -132,7 +132,7 @@ function LoginForm() {
                     : errorParam === "domain_not_allowed"
                     ? `Account "${attemptedEmail || ""}" is unauthorized. Only @dpskanpur.com accounts are permitted.`
                     : errorParam === "google_oauth_missing"
-                    ? "Google OAuth keys are not configured in .env."
+                    ? "Google OAuth keys are not configured in .env yet. Click 'Quick Admin Sign-In (Local Preview)' below to test locally."
                     : "Could not authenticate your Google account. Please try again."}
                 </p>
               </div>

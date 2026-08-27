@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { loginOrCreateUser, isAllowedDomain, ALLOWED_DOMAIN } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_DEV_LOGIN) {
+  const host = request.headers.get("host") || "";
+  const isLocalHost = host.includes("localhost") || host.includes("127.0.0.1");
+
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEV_LOGIN !== "true" && !isLocalHost) {
     return NextResponse.json(
       { success: false, error: "Dev login bypass is disabled in production environment." },
       { status: 403 }
