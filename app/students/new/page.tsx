@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
+import { ValidatedInput } from "@/components/ValidatedInput";
 
 export const dynamic = "force-dynamic";
 
@@ -187,51 +188,34 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>First Name <span className="text-rose-500 font-bold">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-normal">Letters only</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      required
-                      pattern="[A-Za-z\s.]{2,50}"
-                      title="First Name must contain letters only (2 to 50 characters)"
-                      placeholder="FIRST NAME"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="First Name"
+                    name="firstName"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    hint="Letters only"
+                    placeholder="FIRST NAME"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Middle Name
-                    </label>
-                    <input
-                      type="text"
-                      name="middleName"
-                      pattern="[A-Za-z\s.]{0,50}"
-                      title="Middle Name must contain letters only"
-                      placeholder="MIDDLE NAME"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Middle Name"
+                    name="middleName"
+                    fieldType="text-only"
+                    uppercase
+                    hint="Letters only"
+                    placeholder="MIDDLE NAME"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Last Name <span className="text-rose-500 font-bold">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-normal">Letters only</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      required
-                      pattern="[A-Za-z\s.]{2,50}"
-                      title="Last Name must contain letters only (2 to 50 characters)"
-                      placeholder="LAST NAME"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Last Name"
+                    name="lastName"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    hint="Letters only"
+                    placeholder="LAST NAME"
+                  />
 
                   <DobInputWithWords />
 
@@ -250,45 +234,32 @@ export default async function NewAdmissionPage({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Nationality <span className="text-rose-500 font-bold">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="nationality"
-                      defaultValue="Indian"
-                      required
-                      pattern="[A-Za-z\s]{2,30}"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Nationality"
+                    name="nationality"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    defaultValue="Indian"
+                    placeholder="NATIONALITY"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Mother Tongue
-                    </label>
-                    <input
-                      type="text"
-                      name="motherTongue"
-                      defaultValue="Hindi"
-                      pattern="[A-Za-z\s]{2,30}"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Mother Tongue"
+                    name="motherTongue"
+                    fieldType="text-only"
+                    uppercase
+                    defaultValue="Hindi"
+                    placeholder="MOTHER TONGUE"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Religion
-                    </label>
-                    <input
-                      type="text"
-                      name="religion"
-                      placeholder="e.g. HINDUISM"
-                      pattern="[A-Za-z\s]{2,30}"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Religion"
+                    name="religion"
+                    fieldType="text-only"
+                    uppercase
+                    placeholder="e.g. HINDUISM"
+                  />
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -307,59 +278,36 @@ export default async function NewAdmissionPage({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Student Aadhaar No.</span>
-                      <span className="text-[10px] text-slate-400 font-normal">12 digits</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="aadhaarNo"
-                      pattern="\d{12}"
-                      maxLength={12}
-                      title="Aadhaar number must be exactly 12 digits"
-                      placeholder="12-DIGIT AADHAAR"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Student Aadhaar No."
+                    name="aadhaarNo"
+                    fieldType="aadhaar"
+                    hint="12 digits"
+                    placeholder="12-DIGIT AADHAAR"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Mobile No. <span className="text-rose-500 font-bold">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-normal">10 digits (6-9)</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="studentMobile"
-                      required
-                      pattern="[6-9]\d{9}"
-                      maxLength={10}
-                      title="Mobile number must be a 10-digit Indian number starting with 6, 7, 8, or 9"
-                      placeholder="98390XXXXX"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Mobile No."
+                    name="studentMobile"
+                    fieldType="phone"
+                    isRequired
+                    hint="10 digits (6-9)"
+                    placeholder="98390XXXXX"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Email ID</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Valid email</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="studentEmail"
-                      placeholder="parent/student@email.com"
-                      title="Must be a valid email address (e.g. name@domain.com)"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Email ID"
+                    name="studentEmail"
+                    fieldType="email"
+                    hint="name@domain.com"
+                    placeholder="student/parent@email.com"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Permanent / Residential Address & PIN Code <span className="text-rose-500 font-bold">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-normal">6-digit PIN</span>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Permanent / Residential Address & PIN Code <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <textarea
                       name="currentAddress"
@@ -367,39 +315,39 @@ export default async function NewAdmissionPage({
                       required
                       minLength={5}
                       placeholder="FULL RESIDENTIAL ADDRESS..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                     />
-                    <input
-                      type="text"
-                      name="currentPincode"
-                      pattern="\d{6}"
-                      maxLength={6}
-                      title="Pincode must be 6 digits"
-                      placeholder="PIN CODE (e.g. 208002)"
-                      className="w-full mt-2 bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
+                    <div className="mt-2">
+                      <ValidatedInput
+                        label="Residential PIN Code"
+                        name="currentPincode"
+                        fieldType="pincode"
+                        isRequired
+                        hint="6 digits"
+                        placeholder="PIN CODE (e.g. 208002)"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Correspondence Address & PIN Code</span>
-                      <span className="text-[10px] text-slate-400 font-normal">6-digit PIN</span>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Correspondence Address & PIN Code
                     </label>
                     <textarea
                       name="permanentAddress"
                       rows={2}
                       placeholder="CORRESPONDENCE ADDRESS IF DIFFERENT..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                     />
-                    <input
-                      type="text"
-                      name="permanentPincode"
-                      pattern="\d{6}"
-                      maxLength={6}
-                      title="Pincode must be 6 digits"
-                      placeholder="PIN CODE (e.g. 208002)"
-                      className="w-full mt-2 bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
+                    <div className="mt-2">
+                      <ValidatedInput
+                        label="Correspondence PIN Code"
+                        name="permanentPincode"
+                        fieldType="pincode"
+                        hint="6 digits"
+                        placeholder="PIN CODE (e.g. 208002)"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -641,52 +589,32 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Full Name <span className="text-rose-500 font-bold">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-normal">Letters only</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="fatherName"
-                      required
-                      pattern="[A-Za-z\s.]{2,60}"
-                      title="Father's name must contain letters only (min 2 characters)"
-                      placeholder="FATHER FULL NAME"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Full Name"
+                    name="fatherName"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    hint="Letters only"
+                    placeholder="FATHER FULL NAME"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Email ID</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Valid email</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="fatherEmail"
-                      placeholder="father@email.com"
-                      title="Must be a valid email address"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Email ID"
+                    name="fatherEmail"
+                    fieldType="email"
+                    hint="father@domain.com"
+                    placeholder="father@email.com"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Mobile No. <span className="text-rose-500 font-bold">*</span></span>
-                      <span className="text-[10px] text-slate-400 font-normal">10 digits (6-9)</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="fatherPhone"
-                      required
-                      pattern="[6-9]\d{9}"
-                      maxLength={10}
-                      title="Father's mobile must be a 10-digit number starting with 6, 7, 8, or 9"
-                      placeholder="98390XXXXX"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Mobile No."
+                    name="fatherPhone"
+                    fieldType="phone"
+                    isRequired
+                    hint="10 digits (6-9)"
+                    placeholder="98390XXXXX"
+                  />
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -736,35 +664,21 @@ export default async function NewAdmissionPage({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Father Aadhaar No.</span>
-                      <span className="text-[10px] text-slate-400 font-normal">12 digits</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="fatherAadhaar"
-                      pattern="\d{12}"
-                      maxLength={12}
-                      title="Aadhaar number must be exactly 12 digits"
-                      placeholder="12-DIGIT AADHAAR"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Father Aadhaar No."
+                    name="fatherAadhaar"
+                    fieldType="aadhaar"
+                    hint="12 digits"
+                    placeholder="12-DIGIT AADHAAR"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Monthly Income (₹)
-                    </label>
-                    <input
-                      type="text"
-                      name="fatherMonthlyIncome"
-                      pattern="\d*"
-                      title="Monthly income must contain numbers only"
-                      placeholder="e.g. 75000"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Monthly Income (₹)"
+                    name="fatherMonthlyIncome"
+                    fieldType="number-only"
+                    hint="Digits only"
+                    placeholder="e.g. 75000"
+                  />
                 </div>
               </div>
 
@@ -778,48 +692,30 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="motherName"
-                      pattern="[A-Za-z\s.]{0,60}"
-                      title="Mother's name must contain letters only"
-                      placeholder="MOTHER FULL NAME"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Full Name"
+                    name="motherName"
+                    fieldType="text-only"
+                    uppercase
+                    hint="Letters only"
+                    placeholder="MOTHER FULL NAME"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Email ID
-                    </label>
-                    <input
-                      type="email"
-                      name="motherEmail"
-                      placeholder="mother@email.com"
-                      title="Must be a valid email address"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Email ID"
+                    name="motherEmail"
+                    fieldType="email"
+                    hint="mother@domain.com"
+                    placeholder="mother@email.com"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Mobile No.</span>
-                      <span className="text-[10px] text-slate-400 font-normal">10 digits (6-9)</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="motherPhone"
-                      pattern="[6-9]\d{9}"
-                      maxLength={10}
-                      title="Mother's mobile must be a 10-digit number starting with 6, 7, 8, or 9"
-                      placeholder="98390XXXXX"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Mobile No."
+                    name="motherPhone"
+                    fieldType="phone"
+                    hint="10 digits (6-9)"
+                    placeholder="98390XXXXX"
+                  />
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -845,21 +741,13 @@ export default async function NewAdmissionPage({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Mother Aadhaar No.</span>
-                      <span className="text-[10px] text-slate-400 font-normal">12 digits</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="motherAadhaar"
-                      pattern="\d{12}"
-                      maxLength={12}
-                      title="Aadhaar number must be exactly 12 digits"
-                      placeholder="12-DIGIT AADHAAR"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Mother Aadhaar No."
+                    name="motherAadhaar"
+                    fieldType="aadhaar"
+                    hint="12 digits"
+                    placeholder="12-DIGIT AADHAAR"
+                  />
                 </div>
               </div>
 
@@ -873,41 +761,31 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Guardian Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="guardianName"
-                      placeholder="LOCAL GUARDIAN NAME"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Guardian Full Name"
+                    name="guardianName"
+                    fieldType="text-only"
+                    uppercase
+                    hint="Letters only"
+                    placeholder="LOCAL GUARDIAN NAME"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Relation with Student
-                    </label>
-                    <input
-                      type="text"
-                      name="guardianRelation"
-                      placeholder="e.g. UNCLE / GRANDFATHER"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Relation with Student"
+                    name="guardianRelation"
+                    fieldType="text-only"
+                    uppercase
+                    hint="Letters only"
+                    placeholder="e.g. UNCLE / GRANDFATHER"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Mobile No.
-                    </label>
-                    <input
-                      type="tel"
-                      name="guardianPhone"
-                      placeholder="+91 98390 XXXXX"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Mobile No."
+                    name="guardianPhone"
+                    fieldType="phone"
+                    hint="10 digits (6-9)"
+                    placeholder="98390XXXXX"
+                  />
                 </div>
               </div>
 
@@ -1192,35 +1070,29 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      required
-                      placeholder="e.g. Aarav"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="First Name"
+                    name="firstName"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    hint="Letters only"
+                    placeholder="e.g. AARAV"
+                  />
+
+                  <ValidatedInput
+                    label="Last Name"
+                    name="lastName"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    hint="Letters only"
+                    placeholder="e.g. SHARMA"
+                  />
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      required
-                      placeholder="e.g. Sharma"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Date of Birth *
+                      Date of Birth <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
                       type="date"
@@ -1232,7 +1104,7 @@ export default async function NewAdmissionPage({
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Gender *
+                      Gender <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <select
                       name="gender"
@@ -1260,17 +1132,13 @@ export default async function NewAdmissionPage({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Aadhaar Number
-                    </label>
-                    <input
-                      type="text"
-                      name="aadhaarNo"
-                      placeholder="12-digit Aadhaar"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Aadhaar Number"
+                    name="aadhaarNo"
+                    fieldType="aadhaar"
+                    hint="12 digits"
+                    placeholder="12-DIGIT AADHAAR"
+                  />
                 </div>
               </div>
 
@@ -1284,44 +1152,33 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Father's Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="fatherName"
-                      required
-                      placeholder="e.g. Rajesh Sharma"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Father's Name"
+                    name="fatherName"
+                    fieldType="text-only"
+                    isRequired
+                    uppercase
+                    hint="Letters only"
+                    placeholder="e.g. RAJESH SHARMA"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Father's Mobile *
-                    </label>
-                    <input
-                      type="tel"
-                      name="fatherPhone"
-                      required
-                      placeholder="e.g. +91 98390 12345"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Father's Mobile"
+                    name="fatherPhone"
+                    fieldType="phone"
+                    isRequired
+                    hint="10 digits (6-9)"
+                    placeholder="98390XXXXX"
+                  />
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Emergency Contact *
-                    </label>
-                    <input
-                      type="tel"
-                      name="emergencyContact"
-                      required
-                      placeholder="e.g. +91 98390 12345"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <ValidatedInput
+                    label="Emergency Contact"
+                    name="emergencyContact"
+                    fieldType="phone"
+                    isRequired
+                    hint="10 digits (6-9)"
+                    placeholder="98390XXXXX"
+                  />
                 </div>
               </div>
 
