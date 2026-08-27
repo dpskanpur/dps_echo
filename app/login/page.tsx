@@ -76,7 +76,7 @@ function LoginForm() {
             <img
               src="/echo-logo.png"
               alt="ECHO — DPS Kanpur Portal Logo"
-              className="h-16 sm:h-20 w-auto object-contain"
+              className="h-20 sm:h-24 w-auto object-contain transition-all"
             />
           </div>
 
