@@ -70,7 +70,16 @@ function LoginForm() {
         <div className="hidden lg:block" />
 
         {/* Login Card */}
-        <div className="max-w-sm w-full mx-auto my-auto py-8 space-y-7">
+        <div className="max-w-sm w-full mx-auto my-auto py-8 space-y-6">
+          {/* ECHO Portal Brand Logo (Emblem + Text Side-by-Side) */}
+          <div className="pb-2 flex justify-start">
+            <img
+              src="/echo-logo.png"
+              alt="ECHO — DPS Kanpur Portal Logo"
+              className="h-16 sm:h-20 w-auto object-contain"
+            />
+          </div>
+
           {/* Header */}
           <div className="space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
