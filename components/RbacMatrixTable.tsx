@@ -29,6 +29,8 @@ import {
   addUserWithPermissions,
   toggleUserStatus,
   deleteUser,
+  approveUserAccess,
+  denyAndDeleteUserRequest,
 } from "@/lib/rbac-actions";
 
 interface UserWithPermissions {
@@ -197,6 +199,38 @@ export function RbacMatrixTable({
     });
   };
 
+  // Approve pending user access request handler
+  const handleApproveUser = (userId: string, email: string, preset: any) => {
+    startTransition(async () => {
+      try {
+        await approveUserAccess(userId, preset);
+        showToast(`Approved access for ${email}!`);
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, status: "ACTIVE" } : u))
+        );
+        window.location.reload();
+      } catch (err: any) {
+        showToast(err.message || "Failed to approve user", "error");
+      }
+    });
+  };
+
+  // Deny and delete pending user access request handler
+  const handleDenyUser = (userId: string, email: string) => {
+    if (!confirm(`Are you sure you want to DENY and DELETE the access request for ${email}?`)) return;
+    startTransition(async () => {
+      try {
+        await denyAndDeleteUserRequest(userId);
+        showToast(`Access request for ${email} denied and deleted.`);
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+      } catch (err: any) {
+        showToast(err.message || "Failed to deny request", "error");
+      }
+    });
+  };
+
+  const pendingUsers = users.filter((u) => u.status === "PENDING");
+
   // Filter users by search
   const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -221,6 +255,76 @@ export function RbacMatrixTable({
             <AlertCircle className="w-5 h-5 shrink-0" />
           )}
           <span>{feedbackMessage.text}</span>
+        </div>
+      )}
+
+      {/* PENDING APPROVALS QUEUE CARD */}
+      {pendingUsers.length > 0 && (
+        <div className="bg-amber-50/90 border border-amber-200/90 rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 font-bold shrink-0">
+                <ShieldAlert className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-amber-950 tracking-tight">
+                  Pending Access Approvals ({pendingUsers.length})
+                </h2>
+                <p className="text-xs text-amber-800">
+                  Staff members authenticated via Google (@dpskanpur.com) awaiting role approval and module permissions.
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-mono font-bold bg-amber-200/80 text-amber-950 px-3 py-1 rounded-full w-fit">
+              Approval Required
+            </span>
+          </div>
+
+          <div className="divide-y divide-amber-200/60 bg-white rounded-2xl border border-amber-200 overflow-hidden shadow-2xs">
+            {pendingUsers.map((pUser) => (
+              <div key={pUser.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-amber-50/40 transition">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 border border-amber-200 flex items-center justify-center font-bold text-xs shrink-0">
+                    {(pUser.name || pUser.email).slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900 text-xs sm:text-sm">{pUser.name || pUser.email.split("@")[0]}</div>
+                    <div className="text-xs text-slate-500 font-mono">{pUser.email}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleApproveUser(pUser.id, pUser.email, e.target.value as any);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="text-xs bg-[#0F9D58] hover:bg-[#0d8a4d] text-white font-bold rounded-xl px-3.5 py-2 border border-emerald-700 cursor-pointer shadow-xs focus:outline-none"
+                  >
+                    <option value="" disabled>
+                      Approve & Assign Role...
+                    </option>
+                    <option value="FEES_SPECIALIST" className="bg-white text-slate-800">💳 Approve as Fee Desk Specialist</option>
+                    <option value="ADMISSIONS_SPECIALIST" className="bg-white text-slate-800">🎓 Approve as Admissions Specialist</option>
+                    <option value="VIEW_ALL" className="bg-white text-slate-800">👁️ Approve as Staff Viewer</option>
+                    <option value="FULL_ADMIN" className="bg-white text-slate-800">⭐ Approve as Full Administrator</option>
+                  </select>
+
+                  <button
+                    onClick={() => handleDenyUser(pUser.id, pUser.email)}
+                    title="Deny access request and delete user"
+                    className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 border border-rose-200 font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Deny & Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

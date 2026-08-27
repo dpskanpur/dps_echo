@@ -187,8 +187,12 @@ export async function loginOrCreateUser(
 
   const cleanEmail = email.toLowerCase();
   const isAdmin = cleanEmail === "admin@dpskanpur.com" || cleanEmail.startsWith("admin@");
-  const assignedRole = isAdmin ? "SUPER_ADMIN" : (role || deriveRoleFromEmail(cleanEmail));
-  const assignedStatus = isAdmin ? "ACTIVE" : "ACTIVE";
+
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
+
+  const assignedRole = isAdmin ? "SUPER_ADMIN" : (existingUser?.role || role || deriveRoleFromEmail(cleanEmail));
+  const assignedStatus = isAdmin ? "ACTIVE" : (existingUser?.status || "PENDING");
 
   // Create or update in database
   const dbUser = await prisma.user.upsert({

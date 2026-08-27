@@ -196,3 +196,34 @@ export async function deleteUser(userId: string) {
   revalidatePath("/admin/rbac");
   return { success: true };
 }
+
+/**
+ * Approve a pending user request and assign preset permissions
+ */
+export async function approveUserAccess(
+  userId: string,
+  preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL"
+) {
+  await assertRbacAdmin();
+  await applyRolePreset(userId, preset);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { status: "ACTIVE" },
+  });
+  revalidatePath("/admin/rbac");
+  revalidatePath("/");
+  return { success: true };
+}
+
+/**
+ * Deny and delete a pending user access request
+ */
+export async function denyAndDeleteUserRequest(userId: string) {
+  await assertRbacAdmin();
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+  revalidatePath("/admin/rbac");
+  revalidatePath("/");
+  return { success: true };
+}
