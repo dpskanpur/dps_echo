@@ -20,16 +20,80 @@ export async function registerStudent(formData: FormData): Promise<void> {
   const middleName = (formData.get("middleName") as string) || null;
   const lastName = formData.get("lastName") as string;
   const dob = new Date(formData.get("dob") as string);
+  const dobInWords = (formData.get("dobInWords") as string) || null;
   const gender = (formData.get("gender") as string) || "MALE";
+  const nationality = (formData.get("nationality") as string) || "Indian";
+  const motherTongue = (formData.get("motherTongue") as string) || "Hindi";
+  const religion = (formData.get("religion") as string) || "Hinduism";
+  const category = (formData.get("category") as string) || "General";
+  const aadhaarNo = (formData.get("aadhaarNo") as string) || null;
+  const studentMobile = (formData.get("studentMobile") as string) || null;
+  const studentEmail = (formData.get("studentEmail") as string) || null;
   const currentAddress = (formData.get("currentAddress") as string) || "";
-  const emergencyContact = (formData.get("emergencyContact") as string) || "";
+  const currentPincode = (formData.get("currentPincode") as string) || "";
+  const permanentAddress = (formData.get("permanentAddress") as string) || "";
+  const permanentPincode = (formData.get("permanentPincode") as string) || "";
+  const emergencyContact = (formData.get("emergencyContact") as string) || studentMobile || "";
 
-  // Guardian details
-  const fatherName = formData.get("fatherName") as string;
-  const fatherPhone = formData.get("fatherPhone") as string;
+  // Additional Form Questions & Prior Schooling
+  const howHeardAboutUs = (formData.get("howHeardAboutUs") as string) || null;
+  const reasonJoining = (formData.get("reasonJoining") as string) || null;
+  const previousSchool = (formData.get("previousSchool") as string) || null;
+  const penNo = (formData.get("penNo") as string) || null;
+  const previousBoard = (formData.get("previousBoard") as string) || null;
+  const previousClass = (formData.get("previousClass") as string) || null;
+  const mediumInstruction = (formData.get("mediumInstruction") as string) || null;
+  const reasonLeavingPrevious = (formData.get("reasonLeavingPrevious") as string) || null;
+  const previousMarksJson = (formData.get("previousMarksJson") as string) || null;
+  const siblingsJson = (formData.get("siblingsJson") as string) || null;
+
+  // Father's Details
+  const fatherName = (formData.get("fatherName") as string) || "";
   const fatherEmail = (formData.get("fatherEmail") as string) || "";
+  const fatherOccupation = (formData.get("fatherOccupation") as string) || "";
+  const fatherOrganization = (formData.get("fatherOrganization") as string) || "";
+  const fatherDesignation = (formData.get("fatherDesignation") as string) || "";
+  const fatherQualification = (formData.get("fatherQualification") as string) || "";
+  const fatherAadhaar = (formData.get("fatherAadhaar") as string) || "";
+  const fatherAddress = (formData.get("fatherAddress") as string) || "";
+  const fatherPincode = (formData.get("fatherPincode") as string) || "";
+  const fatherPhone = (formData.get("fatherPhone") as string) || "";
+  const fatherOfficeAddress = (formData.get("fatherOfficeAddress") as string) || "";
+  const fatherOfficePincode = (formData.get("fatherOfficePincode") as string) || "";
+  const fatherOfficeContact = (formData.get("fatherOfficeContact") as string) || "";
+  const fatherMonthlyIncome = (formData.get("fatherMonthlyIncome") as string) || "";
+
+  // Mother's Details
   const motherName = (formData.get("motherName") as string) || "";
+  const motherEmail = (formData.get("motherEmail") as string) || "";
+  const motherOccupation = (formData.get("motherOccupation") as string) || "";
+  const motherOrganization = (formData.get("motherOrganization") as string) || "";
+  const motherDesignation = (formData.get("motherDesignation") as string) || "";
+  const motherQualification = (formData.get("motherQualification") as string) || "";
+  const motherAadhaar = (formData.get("motherAadhaar") as string) || "";
+  const motherAddress = (formData.get("motherAddress") as string) || "";
+  const motherPincode = (formData.get("motherPincode") as string) || "";
   const motherPhone = (formData.get("motherPhone") as string) || "";
+  const motherOfficeAddress = (formData.get("motherOfficeAddress") as string) || "";
+  const motherOfficePincode = (formData.get("motherOfficePincode") as string) || "";
+  const motherOfficeContact = (formData.get("motherOfficeContact") as string) || "";
+  const motherMonthlyIncome = (formData.get("motherMonthlyIncome") as string) || "";
+
+  // Local Guardian's Details (if applicable)
+  const guardianName = (formData.get("guardianName") as string) || "";
+  const guardianEmail = (formData.get("guardianEmail") as string) || "";
+  const guardianOccupation = (formData.get("guardianOccupation") as string) || "";
+  const guardianOrganization = (formData.get("guardianOrganization") as string) || "";
+  const guardianDesignation = (formData.get("guardianDesignation") as string) || "";
+  const guardianQualification = (formData.get("guardianQualification") as string) || "";
+  const guardianAadhaar = (formData.get("guardianAadhaar") as string) || "";
+  const guardianAddress = (formData.get("guardianAddress") as string) || "";
+  const guardianPincode = (formData.get("guardianPincode") as string) || "";
+  const guardianPhone = (formData.get("guardianPhone") as string) || "";
+  const guardianRelation = (formData.get("guardianRelation") as string) || "";
+  const guardianOfficeAddress = (formData.get("guardianOfficeAddress") as string) || "";
+  const guardianOfficePincode = (formData.get("guardianOfficePincode") as string) || "";
+  const guardianOfficeContact = (formData.get("guardianOfficeContact") as string) || "";
 
   const campus = await prisma.campus.findUnique({ where: { id: campusId } });
   const year = new Date().getFullYear();
@@ -57,9 +121,30 @@ export async function registerStudent(formData: FormData): Promise<void> {
       middleName,
       lastName,
       dob,
+      dobInWords,
       gender,
+      nationality,
+      motherTongue,
+      religion,
+      category,
+      aadhaarNo,
+      studentMobile,
+      studentEmail,
       currentAddress,
-      emergencyContact,
+      currentPincode,
+      permanentAddress,
+      permanentPincode,
+      emergencyContact: emergencyContact || fatherPhone || motherPhone,
+      howHeardAboutUs,
+      reasonJoining,
+      previousSchool,
+      penNo,
+      previousBoard,
+      previousClass,
+      mediumInstruction,
+      reasonLeavingPrevious,
+      previousMarksJson,
+      siblingsJson,
       campusId,
       classId,
       status: "REGISTERED",
@@ -72,6 +157,17 @@ export async function registerStudent(formData: FormData): Promise<void> {
                   name: fatherName,
                   phone: fatherPhone || emergencyContact,
                   email: fatherEmail,
+                  occupation: fatherOccupation,
+                  organization: fatherOrganization,
+                  designation: fatherDesignation,
+                  qualification: fatherQualification,
+                  aadhaarNo: fatherAadhaar,
+                  address: fatherAddress,
+                  pincode: fatherPincode,
+                  officeAddress: fatherOfficeAddress,
+                  officePincode: fatherOfficePincode,
+                  officeContact: fatherOfficeContact,
+                  monthlyIncome: fatherMonthlyIncome,
                   isPrimary: true,
                 },
               ]
@@ -82,7 +178,40 @@ export async function registerStudent(formData: FormData): Promise<void> {
                   relation: "MOTHER",
                   name: motherName,
                   phone: motherPhone,
+                  email: motherEmail,
+                  occupation: motherOccupation,
+                  organization: motherOrganization,
+                  designation: motherDesignation,
+                  qualification: motherQualification,
+                  aadhaarNo: motherAadhaar,
+                  address: motherAddress,
+                  pincode: motherPincode,
+                  officeAddress: motherOfficeAddress,
+                  officePincode: motherOfficePincode,
+                  officeContact: motherOfficeContact,
+                  monthlyIncome: motherMonthlyIncome,
                   isPrimary: !fatherName,
+                },
+              ]
+            : []),
+          ...(guardianName
+            ? [
+                {
+                  relation: guardianRelation || "LOCAL_GUARDIAN",
+                  name: guardianName,
+                  phone: guardianPhone,
+                  email: guardianEmail,
+                  occupation: guardianOccupation,
+                  organization: guardianOrganization,
+                  designation: guardianDesignation,
+                  qualification: guardianQualification,
+                  aadhaarNo: guardianAadhaar,
+                  address: guardianAddress,
+                  pincode: guardianPincode,
+                  officeAddress: guardianOfficeAddress,
+                  officePincode: guardianOfficePincode,
+                  officeContact: guardianOfficeContact,
+                  isPrimary: !fatherName && !motherName,
                 },
               ]
             : []),

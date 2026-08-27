@@ -119,19 +119,23 @@ model Student {
   scholarNo       String        @unique // Unique Permanent Scholar / Admission Number (e.g. "DPS-AZD-2026-0412")
   admissionNo     String        // Display Admission No
   admissionDate   DateTime
-  academicYearIn  String        // e.g. "2024-2025"
+  academicYearIn  String        // e.g. "2026-2027"
   
   // Demographics
   firstName       String
   middleName      String?
   lastName        String
   dob             DateTime
+  dobInWords      String?
   gender          String        // MALE, FEMALE, OTHER
   bloodGroup      String?       // "A+", "B+", "O+", "AB+", etc.
   nationality     String        @default("Indian")
-  category        String?       @default("General") // General, OBC, SC, ST, EWS
+  religion        String?       @default("Hinduism")
+  category        String?       @default("General") // General, SC, ST, OBC, EWS
   motherTongue    String?       @default("Hindi")
   aadhaarNo       String?
+  studentMobile   String?
+  studentEmail    String?
   photoUrl        String?
   
   // Academic Placement
@@ -140,21 +144,33 @@ model Student {
   sectionId       String?
   rollNo          Int?
   house           String?       // "Ganga", "Yamuna", "Jhelum", "Chenab", "Ravi", "Sutlej"
-  status          String        @default("ACTIVE") // ACTIVE, TC_ISSUED, ALUMNI, INQUIRY
+  status          String        @default("REGISTERED") // REGISTERED, ACTIVE, TC_ISSUED, ALUMNI
   
   // Contact & Address
   currentAddress  String?
+  currentPincode  String?
   permanentAddress String?
+  permanentPincode String?
   city            String?       @default("Kanpur")
   emergencyContact String?
+  
+  // Official Form Fields
+  howHeardAboutUs String?       // Website, Reference, Newspaper, Billboard, Social Media
+  reasonJoining   String?
+  
+  // Prior School History
+  previousSchool  String?
+  penNo           String?       // Permanent Education Number
+  previousBoard   String?       // CBSE, ICSE, UP Board, IB, Other
+  previousClass   String?
+  mediumInstruction String?     // English, Hindi, Other
+  reasonLeavingPrevious String?
+  previousMarksJson String?     // JSON string for Marks Obtained table
+  siblingsJson    String?       // JSON string for Siblings details
   
   // Medical & Health
   allergies       String?
   medicalNotes    String?
-  
-  // Prior School History
-  previousSchool  String?
-  previousClass   String?
   previousTcNo    String?
   
   // Metadata & Timestamps
@@ -182,8 +198,15 @@ model Guardian {
   occupation   String?
   organization String?
   designation  String?
+  qualification String?  // Educational Qualification
+  monthlyIncome String?
   annualIncome String?
   aadhaarNo    String?
+  address      String?
+  pincode      String?
+  officeAddress String?
+  officePincode String?
+  officeContact String?
   isPrimary    Boolean  @default(false)
   createdAt    DateTime @default(now())
 
