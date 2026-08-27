@@ -16,37 +16,66 @@ function signPayload(data: string): string {
   return crypto.createHmac("sha256", SECRET_KEY).update(data).digest("hex");
 }
 
+function base64UrlEncode(str: string): string {
+  return Buffer.from(str, "utf-8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function base64UrlDecode(str: string): string {
+  let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4) {
+    base64 += "=";
+  }
+  return Buffer.from(base64, "base64").toString("utf-8");
+}
+
 export function encodeSessionCookie(user: SessionUser, lastActivityAt = Date.now()): string {
   const payload: SessionPayload = { ...user, lastActivityAt };
   const json = JSON.stringify(payload);
-  const base64 = Buffer.from(json, "utf-8").toString("base64");
-  const signature = signPayload(base64);
-  return `${base64}.${signature}`;
+  const base64Url = base64UrlEncode(json);
+  const signature = signPayload(base64Url);
+  return `${base64Url}.${signature}`;
 }
 
 export function decodeSessionCookie(value: string | undefined | null): SessionPayload | null {
   if (!value || typeof value !== "string") return null;
   try {
     const lastDot = value.lastIndexOf(".");
-    if (lastDot === -1) return null;
-    const base64Payload = value.substring(0, lastDot);
+    if (lastDot === -1) {
+      console.warn("decodeSessionCookie: missing dot signature separator");
+      return null;
+    }
+    const base64UrlPayload = value.substring(0, lastDot);
     const signature = value.substring(lastDot + 1);
 
-    if (!base64Payload || !signature) return null;
+    if (!base64UrlPayload || !signature) {
+      console.warn("decodeSessionCookie: empty payload or signature");
+      return null;
+    }
 
     // Verify HMAC signature
-    const expectedSig = signPayload(base64Payload);
-    if (signature.length !== expectedSig.length) return null;
+    const expectedSig = signPayload(base64UrlPayload);
+    if (signature.length !== expectedSig.length) {
+      console.warn("decodeSessionCookie: signature length mismatch");
+      return null;
+    }
 
     const sigBuffer = Buffer.from(signature);
     const expectedBuffer = Buffer.from(expectedSig);
     if (!crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+      console.warn("decodeSessionCookie: HMAC signature mismatch");
       return null;
     }
 
-    const raw = Buffer.from(base64Payload, "base64").toString("utf-8");
+    const raw = base64UrlDecode(base64UrlPayload);
     const parsed = JSON.parse(raw) as Partial<SessionPayload>;
-    if (!parsed?.id || !parsed?.email) return null;
+    if (!parsed?.id || !parsed?.email) {
+      console.warn("decodeSessionCookie: payload missing id or email");
+      return null;
+    }
 
     return {
       id: parsed.id,
@@ -58,7 +87,8 @@ export function decodeSessionCookie(value: string | undefined | null): SessionPa
       campusId: parsed.campusId,
       lastActivityAt: typeof parsed.lastActivityAt === "number" ? parsed.lastActivityAt : 0,
     };
-  } catch {
+  } catch (err: any) {
+    console.error("decodeSessionCookie exception:", err.message);
     return null;
   }
 }
