@@ -21,6 +21,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import Link from "next/link";
+import { DobInputWithWords } from "@/components/DobInputWithWords";
 
 export const dynamic = "force-dynamic";
 
@@ -224,29 +225,7 @@ export default async function NewAdmissionPage({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Date of Birth (DD/MM/YYYY) *
-                    </label>
-                    <input
-                      type="date"
-                      name="dob"
-                      required
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Date of Birth (in Words)
-                    </label>
-                    <input
-                      type="text"
-                      name="dobInWords"
-                      placeholder="e.g. FIFTEENTH AUGUST TWO THOUSAND SIXTEEN"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
+                  <DobInputWithWords />
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
