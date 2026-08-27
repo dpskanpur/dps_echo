@@ -121,6 +121,13 @@ export function ValidatedInput({
     pattern = "[A-Za-z\\s.-]{1,100}";
   }
 
+  const handleInvalid = (e: React.InvalidEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (isRequired && !value.trim()) {
+      setError(`${label.replace(/\*/g, "").trim()} is required`);
+    }
+  };
+
   return (
     <div>
       <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
@@ -136,6 +143,7 @@ export function ValidatedInput({
         name={name}
         value={value}
         onChange={handleInput}
+        onInvalid={handleInvalid}
         required={isRequired}
         pattern={pattern}
         maxLength={maxLength}
