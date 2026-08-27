@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { loginOrCreateUser, isAllowedDomain, ALLOWED_DOMAIN } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
 
 export async function POST(request: Request) {
   const host = request.headers.get("host") || "";
@@ -34,11 +35,16 @@ export async function POST(request: Request) {
       campusId
     );
 
-    if (!result.success) {
+    if (!result.success || !result.user) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, redirectUrl });
+    const response = NextResponse.json({ success: true, redirectUrl });
+    response.cookies.set(SESSION_COOKIE_NAME, encodeSessionCookie(result.user), {
+      ...sessionCookieOptions,
+      secure: process.env.NODE_ENV === "production",
+    });
+    return response;
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

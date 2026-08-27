@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -92,11 +93,15 @@ export async function GET(request: Request) {
 
     // 4. Log in or create User with auto-derived role
     const result = await loginOrCreateUser(email, name, avatarUrl);
-    if (!result.success) {
+    if (!result.success || !result.user) {
       return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(result.error || "")}`, request.url));
     }
 
     const response = NextResponse.redirect(new URL(redirectTarget, request.url));
+    response.cookies.set(SESSION_COOKIE_NAME, encodeSessionCookie(result.user), {
+      ...sessionCookieOptions,
+      secure: process.env.NODE_ENV === "production",
+    });
     response.cookies.delete("dps_echo_oauth_csrf");
     return response;
   } catch (err: any) {
