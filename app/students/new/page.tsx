@@ -129,31 +129,6 @@ export default async function NewAdmissionPage({
             <form action={registerStudent} className="space-y-6">
               <input type="hidden" name="campusId" value={selectedCampus.id} />
 
-              {/* Official Paper Header Crest Box */}
-              <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 text-center space-y-3 shadow-md relative overflow-hidden">
-                <div className="flex items-center justify-center gap-3">
-                  <img
-                    src="/dps-logo-white.png"
-                    alt="DPS Logo"
-                    className="h-14 w-auto object-contain invert brightness-0"
-                  />
-                  <div className="text-left">
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">
-                      DELHI PUBLIC SCHOOL
-                    </h2>
-                    <h3 className="text-sm font-bold text-emerald-800 uppercase tracking-wide">
-                      {selectedCampus.name.toUpperCase()}, KANPUR
-                    </h3>
-                  </div>
-                </div>
-                <div className="inline-block bg-slate-900 text-white font-extrabold text-xs uppercase px-4 py-1.5 rounded-full tracking-wider">
-                  REGISTRATION FORM (Academic Session 2026-2027)
-                </div>
-                <p className="text-[11px] text-slate-500 font-medium italic">
-                  To be filled in CAPITAL LETTERS ONLY • Unique Registration ID will be assigned upon submission
-                </p>
-              </div>
-
               {/* SECTION 1: TARGET CLASS & ACADEMIC PLACEMENT */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
@@ -795,51 +770,21 @@ export default async function NewAdmissionPage({
                 </div>
               </div>
 
-              {/* SECTION 7: DECLARATION & SUBMIT */}
-              <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md space-y-4">
-                <div className="flex items-center gap-2 pb-3 border-b border-slate-800">
-                  <FileCheck className="w-4 h-4 text-emerald-400" />
-                  <h3 className="text-sm font-bold uppercase tracking-wide">
-                    7. Parent / Guardian Declaration
-                  </h3>
-                </div>
-
-                <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
-                  <p>
-                    1. I hereby declare that all information furnished in this Registration Form is true, correct, and complete to the best of my knowledge and belief.
-                  </p>
-                  <p>
-                    2. I understand that submission of this application form does not guarantee admission to the school, which remains subject to availability of seats and performance in the pre-admission interaction/test.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                  <input
-                    type="checkbox"
-                    id="declaration"
-                    required
-                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-700 bg-slate-800"
-                  />
-                  <label htmlFor="declaration" className="text-xs font-bold text-white cursor-pointer">
-                    I agree to the above declaration & confirm all details are filled in capital letters.
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                  <Link
-                    href="/students"
-                    className="px-5 py-2.5 text-xs font-semibold text-slate-400 hover:text-white"
-                  >
-                    Cancel
-                  </Link>
-                  <button
-                    type="submit"
-                    className="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black py-3.5 px-8 rounded-xl text-xs transition shadow-lg flex items-center gap-2 cursor-pointer"
-                  >
-                    <ClipboardList className="w-4 h-4" />
-                    <span>Submit Registration & Issue Unique REG ID</span>
-                  </button>
-                </div>
+              {/* Submit Registration Button */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                <Link
+                  href="/students"
+                  className="px-5 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                >
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  className="bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-8 rounded-xl text-xs transition shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  <span>Submit Registration & Issue Unique REG ID</span>
+                </button>
               </div>
             </form>
           )}
