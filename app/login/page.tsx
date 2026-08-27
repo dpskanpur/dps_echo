@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { ShieldCheck, Lock, AlertCircle, ArrowRight, Quote, Monitor, Shield, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Lock, AlertCircle, ArrowRight, Quote, Shield, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 function LoginForm() {
@@ -56,10 +56,10 @@ function LoginForm() {
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Executive Enterprise Redesigned Panel */}
-      <div className="w-full lg:w-2/5 xl:w-1/3 bg-slate-50/50 flex flex-col justify-between p-8 sm:p-12 relative overflow-y-auto">
-        {/* Top Header Row */}
-        <div className="flex items-center justify-between gap-4">
+      {/* RIGHT COLUMN: Fully Responsive Executive Panel */}
+      <div className="w-full lg:w-2/5 xl:w-1/3 bg-slate-50/50 flex flex-col justify-between p-6 sm:p-10 lg:p-12 relative overflow-y-auto min-h-screen lg:min-h-0">
+        {/* Top Header Row (Desktop/Tablet) */}
+        <div className="flex items-center justify-between gap-4 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#005A36] text-white flex items-center justify-center font-black text-sm shadow-md">
               E
@@ -77,7 +77,7 @@ function LoginForm() {
         </div>
 
         {/* Center Card Container */}
-        <div className="max-w-md w-full mx-auto my-auto py-8 space-y-7">
+        <div className="max-w-md w-full mx-auto my-auto py-6 sm:py-8 space-y-6 sm:space-y-7">
           {/* Section Title */}
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-semibold">
@@ -124,7 +124,7 @@ function LoginForm() {
             {/* Primary Action Button */}
             <a
               href={googleAuthHref}
-              className="w-full bg-[#005A36] hover:bg-[#00472a] active:bg-[#003821] text-white font-bold py-4 px-5 rounded-2xl text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-between group cursor-pointer"
+              className="w-full bg-[#005A36] hover:bg-[#00472a] active:bg-[#003821] text-white font-bold py-3.5 sm:py-4 px-4 sm:px-5 rounded-2xl text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-between group cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 {/* White Container for Google G Logo */}
@@ -177,15 +177,6 @@ function LoginForm() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Desktop & Laptop Only Notice Banner */}
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-3.5 flex items-center gap-3 text-xs text-amber-900">
-            <Monitor className="w-4 h-4 text-amber-600 shrink-0" />
-            <p className="text-[11px] text-amber-800 font-medium leading-snug">
-              <strong className="block text-amber-950 font-bold">Desktop & Laptop Workstation Required</strong>
-              This portal is restricted to desktop and tablet web browsers (≥ 768px).
-            </p>
           </div>
         </div>
 
