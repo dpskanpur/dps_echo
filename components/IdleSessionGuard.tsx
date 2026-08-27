@@ -22,9 +22,14 @@ function formatCountdown(ms: number) {
 
 export function IdleSessionGuard() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const lastActivityRef = useRef(Date.now());
   const lastPingRef = useRef(0);
   const [warningMs, setWarningMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const logoutIdle = useCallback((reason = "idle_timeout") => {
     window.location.href = `/api/auth/logout?reason=${reason}`;
@@ -51,8 +56,8 @@ export function IdleSessionGuard() {
   }, [pingActivity]);
 
   useEffect(() => {
-    if (isPublicPath(pathname)) {
-      if (pathname === "/login") {
+    if (!mounted || isPublicPath(pathname)) {
+      if (pathname === "/login" && typeof window !== "undefined") {
         sessionStorage.removeItem("dps_session_tab_token");
       }
       return;
@@ -102,9 +107,9 @@ export function IdleSessionGuard() {
       document.removeEventListener("visibilitychange", onVisibility);
       window.clearInterval(tick);
     };
-  }, [pathname, markActivity, pingActivity, logoutIdle]);
+  }, [mounted, pathname, markActivity, pingActivity, logoutIdle]);
 
-  if (isPublicPath(pathname) || warningMs === null) return null;
+  if (!mounted || isPublicPath(pathname) || warningMs === null) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 max-w-sm rounded-2xl border border-amber-200 bg-white p-4 shadow-xl">

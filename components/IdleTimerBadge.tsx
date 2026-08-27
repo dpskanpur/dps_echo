@@ -22,9 +22,14 @@ function formatTime(ms: number) {
 
 export function IdleTimerBadge({ showFullLabel = false }: { showFullLabel?: boolean }) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const lastActivityRef = useRef<number>(Date.now());
   const lastPingRef = useRef<number>(0);
   const [remainingMs, setRemainingMs] = useState<number>(IDLE_TIMEOUT_MS);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const pingActivity = useCallback(async () => {
     const now = Date.now();
@@ -45,7 +50,7 @@ export function IdleTimerBadge({ showFullLabel = false }: { showFullLabel?: bool
   }, [pingActivity]);
 
   useEffect(() => {
-    if (isPublicPath(pathname)) return;
+    if (!mounted || isPublicPath(pathname)) return;
 
     lastActivityRef.current = Date.now();
 
@@ -62,9 +67,9 @@ export function IdleTimerBadge({ showFullLabel = false }: { showFullLabel?: bool
       ACTIVITY_EVENTS.forEach((event) => window.removeEventListener(event, onActivity));
       window.clearInterval(tick);
     };
-  }, [pathname, markActivity]);
+  }, [mounted, pathname, markActivity]);
 
-  if (isPublicPath(pathname)) return null;
+  if (!mounted || isPublicPath(pathname)) return null;
 
   const remainingMinutes = remainingMs / (60 * 1000);
   let colorClasses = "bg-slate-100 text-slate-700 border-slate-200/80 hover:bg-slate-200/70";
