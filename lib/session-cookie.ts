@@ -1,23 +1,50 @@
+import crypto from "crypto";
 import {
   SESSION_COOKIE_NAME,
-  SESSION_MAX_AGE_SECONDS,
   IDLE_TIMEOUT_MS,
   SessionUser,
 } from "@/lib/permissions";
 
 export type SessionPayload = SessionUser & { lastActivityAt: number };
 
+const SECRET_KEY =
+  process.env.SESSION_SECRET ||
+  process.env.NEXTAUTH_SECRET ||
+  "dps_echo_production_hmac_secret_key_2026_safe";
+
+function signPayload(base64Payload: string): string {
+  return crypto.createHmac("sha256", SECRET_KEY).update(base64Payload).digest("hex");
+}
+
 export function encodeSessionCookie(user: SessionUser, lastActivityAt = Date.now()): string {
   const payload: SessionPayload = { ...user, lastActivityAt };
-  return Buffer.from(JSON.stringify(payload), "utf-8").toString("base64");
+  const base64Payload = Buffer.from(JSON.stringify(payload), "utf-8").toString("base64url");
+  const signature = signPayload(base64Payload);
+  return `${base64Payload}.${signature}`;
 }
 
 export function decodeSessionCookie(value: string | undefined | null): SessionPayload | null {
-  if (!value) return null;
+  if (!value || typeof value !== "string") return null;
   try {
-    const raw = Buffer.from(value, "base64").toString("utf-8");
+    const parts = value.split(".");
+    if (parts.length !== 2) return null;
+    const [base64Payload, signature] = parts;
+
+    // Verify HMAC signature with timingSafeEqual
+    const expectedSig = signPayload(base64Payload);
+    const sigBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSig);
+    if (
+      sigBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(sigBuffer, expectedBuffer)
+    ) {
+      return null;
+    }
+
+    const raw = Buffer.from(base64Payload, "base64url").toString("utf-8");
     const parsed = JSON.parse(raw) as Partial<SessionPayload>;
     if (!parsed?.id || !parsed?.email) return null;
+
     return {
       id: parsed.id,
       email: parsed.email,
@@ -51,11 +78,12 @@ export function toSessionUser(payload: SessionPayload): SessionUser {
   };
 }
 
+// Session cookie options: omitting `maxAge` creates an in-memory browser session cookie.
+// Browsers clear session cookies automatically when tabs/windows are closed.
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
   path: "/",
-  maxAge: SESSION_MAX_AGE_SECONDS,
 };
 
 export { SESSION_COOKIE_NAME };

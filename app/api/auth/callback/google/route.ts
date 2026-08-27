@@ -1,13 +1,34 @@
 import { NextResponse } from "next/server";
-import { loginOrCreateUser, isAllowedDomain, ALLOWED_DOMAIN } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const state = searchParams.get("state") || "/";
+  const rawState = searchParams.get("state") || "/";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=no_code", request.url));
+  }
+
+  // Parse state parameter (format: "csrfToken:redirectPath")
+  let csrfTokenFromState = "";
+  let redirectTarget = "/";
+  if (rawState.includes(":")) {
+    const colonIdx = rawState.indexOf(":");
+    csrfTokenFromState = rawState.substring(0, colonIdx);
+    redirectTarget = rawState.substring(colonIdx + 1) || "/";
+  } else {
+    redirectTarget = rawState;
+  }
+
+  // Verify CSRF state token against HTTP-only cookie
+  const cookieStore = await cookies();
+  const storedCsrfToken = cookieStore.get("dps_echo_oauth_csrf")?.value;
+
+  if (csrfTokenFromState && storedCsrfToken && csrfTokenFromState !== storedCsrfToken) {
+    console.error("OAuth CSRF Mismatch attack detected!");
+    return NextResponse.redirect(new URL("/login?error=csrf_mismatch", request.url));
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -72,7 +93,9 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(result.error || "")}`, request.url));
     }
 
-    return NextResponse.redirect(new URL(state, request.url));
+    const response = NextResponse.redirect(new URL(redirectTarget, request.url));
+    response.cookies.delete("dps_echo_oauth_csrf");
+    return response;
   } catch (err: any) {
     console.error("OAuth callback error:", err);
     return NextResponse.redirect(new URL("/login?error=auth_failed", request.url));

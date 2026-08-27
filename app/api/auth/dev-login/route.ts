@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { loginOrCreateUser, isAllowedDomain, ALLOWED_DOMAIN } from "@/lib/auth";
 
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_DEV_LOGIN) {
+    return NextResponse.json(
+      { success: false, error: "Dev login bypass is disabled in production environment." },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { email, name, role, campusId, redirectUrl = "/" } = body;
