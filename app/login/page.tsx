@@ -9,6 +9,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/";
   const errorParam = searchParams.get("error");
+  const errorDetail = searchParams.get("detail");
   const attemptedEmail = searchParams.get("attempted");
 
   const googleAuthHref = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
@@ -106,6 +107,8 @@ function LoginForm() {
                     ? `Account "${attemptedEmail || ""}" is unauthorized. Only @dpskanpur.com accounts are permitted.`
                     : errorParam === "google_oauth_missing"
                     ? "Google OAuth keys (GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET) are not configured in .env."
+                    : errorDetail
+                    ? `Google Auth Error: ${errorDetail}`
                     : "Could not authenticate your Google account. Please try again."}
                 </p>
               </div>

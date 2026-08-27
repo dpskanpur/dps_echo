@@ -64,7 +64,10 @@ export async function GET(request: Request) {
     const tokens = await tokenRes.json();
     if (!tokenRes.ok || !tokens.access_token) {
       console.error("Token exchange failed:", tokens);
-      return NextResponse.redirect(new URL("/login?error=token_exchange_failed", request.url));
+      const detail = tokens.error_description || tokens.error || "token_exchange_failed";
+      return NextResponse.redirect(
+        new URL(`/login?error=token_exchange_failed&detail=${encodeURIComponent(detail)}`, request.url)
+      );
     }
 
     // 2. Fetch User Profile from Google
