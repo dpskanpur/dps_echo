@@ -5,6 +5,11 @@ import { IdleSessionGuard } from "@/components/IdleSessionGuard";
 export const metadata: Metadata = {
   title: "DPS Echo — School Management System (DPS Kanpur)",
   description: "Enterprise Student Lifecycle & Fee Management Platform for DPS Kanpur Campuses",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
