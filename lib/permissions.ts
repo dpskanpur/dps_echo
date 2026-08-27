@@ -1,7 +1,7 @@
 export const ALLOWED_DOMAIN = "dpskanpur.com";
 export const SESSION_COOKIE_NAME = "dps_echo_session";
-export const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-export const SESSION_MAX_AGE_SECONDS = 30 * 60;
+export const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+export const SESSION_MAX_AGE_SECONDS = 10 * 60;
 export const IDLE_WARNING_MS = 2 * 60 * 1000;
 
 export const APP_MODULES = [

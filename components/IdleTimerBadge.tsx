@@ -86,7 +86,7 @@ export function IdleTimerBadge({ showFullLabel = false }: { showFullLabel?: bool
   return (
     <div
       onClick={markActivity}
-      title="30-Minute Idle Session Counter — click or move mouse/press key to reset timer"
+      title="10-Minute Idle Session Counter — click or move mouse/press key to reset timer"
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-mono font-medium transition cursor-pointer select-none ${colorClasses}`}
     >
       <Clock className={`w-3.5 h-3.5 ${iconColor}`} />
