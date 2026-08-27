@@ -125,6 +125,7 @@ export function DobInputWithWords({
 }) {
   const [dob, setDob] = useState(initialDob);
   const [words, setWords] = useState(initialDobInWords);
+  const todayStr = new Date().toISOString().split("T")[0];
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -140,16 +141,18 @@ export function DobInputWithWords({
   return (
     <>
       <div>
-        <label className="block text-xs font-bold text-slate-700 mb-1">
-          Date of Birth (DD/MM/YYYY) *
+        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+          <span>Date of Birth (DD/MM/YYYY) <span className="text-rose-500 font-bold">*</span></span>
+          <span className="text-[10px] text-slate-400 font-normal">Cannot be future date</span>
         </label>
         <input
           type="date"
           name="dob"
           value={dob}
+          max={todayStr}
           onChange={handleDobChange}
           required
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900 cursor-pointer"
         />
       </div>
 
