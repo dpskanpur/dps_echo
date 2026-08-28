@@ -16,6 +16,7 @@ import Link from "next/link";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";
 import { RegistrationFormWrapper } from "@/components/RegistrationFormWrapper";
+import { CampusSelector } from "@/components/CampusSelector";
 
 export const dynamic = "force-dynamic";
 
@@ -112,19 +113,12 @@ export default async function PublicRegistrationPage({
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Select DPS Campus <span className="text-rose-500 font-bold">*</span>
                 </label>
-                <select
-                  value={selectedCampus.id}
-                  onChange={(e) => {
-                    window.location.href = `/public-registration?campus=${e.target.value}`;
-                  }}
-                  className="w-full bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer"
-                >
-                  {campuses.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.code}) — Fee: ₹{c.registrationFee.toLocaleString("en-IN")}
-                    </option>
-                  ))}
-                </select>
+                <CampusSelector
+                  campuses={campuses}
+                  selectedCampusId={selectedCampus.id}
+                  baseUrl="/public-registration"
+                  showFee
+                />
               </div>
 
               <div>

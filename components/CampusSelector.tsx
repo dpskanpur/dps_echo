@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 export function CampusSelector({
   campuses,
   selectedCampusId,
-  mode,
+  mode = "registration",
+  baseUrl,
+  showFee = false,
 }: {
-  campuses: { id: string; name: string; code: string }[];
+  campuses: { id: string; name: string; code: string; registrationFee?: number }[];
   selectedCampusId: string;
-  mode: string;
+  mode?: string;
+  baseUrl?: string;
+  showFee?: boolean;
 }) {
   const router = useRouter();
 
@@ -19,13 +23,18 @@ export function CampusSelector({
         value={selectedCampusId}
         onChange={(e) => {
           const campusId = e.target.value;
-          router.push(`/students/new?campus=${campusId}&mode=${mode}`);
+          if (baseUrl) {
+            router.push(`${baseUrl}?campus=${campusId}`);
+          } else {
+            router.push(`/students/new?campus=${campusId}&mode=${mode}`);
+          }
         }}
         className="w-full bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer"
       >
         {campuses.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name} ({c.code})
+            {showFee && c.registrationFee ? ` — Fee: ₹${c.registrationFee.toLocaleString("en-IN")}` : ""}
           </option>
         ))}
       </select>
