@@ -10,8 +10,11 @@ const PUBLIC_PATHS = [
   "/login",
   "/pay",
   "/verify-tc",
+  "/public-registration",
   "/api/auth",
+  "/api/v1",
   "/favicon.ico",
+  "/dps_crest.png",
 ];
 
 function expireSession(request: NextRequest, reason = "idle_timeout") {
