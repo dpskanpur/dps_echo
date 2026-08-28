@@ -312,8 +312,8 @@ export function Sidebar({
             >
               <ExternalLink className="w-4 h-4 shrink-0" />
               <span>Online Registration</span>
-              <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
-                &lt;Public&gt;
+              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
+                Public
               </span>
             </Link>
 
@@ -324,8 +324,8 @@ export function Sidebar({
             >
               <ExternalLink className="w-4 h-4 shrink-0" />
               <span>Quick Pay Fees</span>
-              <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
-                &lt;Public&gt;
+              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
+                Public
               </span>
             </Link>
 
@@ -336,8 +336,8 @@ export function Sidebar({
             >
               <QrCode className="w-4 h-4 shrink-0" />
               <span>Verify TC (QR)</span>
-              <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
-                &lt;Public&gt;
+              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
+                Public
               </span>
             </Link>
           </div>
