@@ -271,6 +271,19 @@ export function Sidebar({
             </div>
             <div className="space-y-1">
               <Link
+                href="/campuses"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
+                  pathname.startsWith("/campuses")
+                    ? "bg-[#0F9D58] text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                )}
+              >
+                <Building2 className="w-4 h-4 shrink-0 text-[#34A853]" />
+                <span>Campuses & Registration Fee</span>
+              </Link>
+
+              <Link
                 href="/admin/rbac"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
@@ -292,6 +305,15 @@ export function Sidebar({
             Public Portals
           </div>
           <div className="space-y-1">
+            <Link
+              href="/public-registration"
+              target="_blank"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-amber-300 hover:text-amber-200 hover:bg-slate-800/60"
+            >
+              <ExternalLink className="w-4 h-4 shrink-0" />
+              <span>Public Online Registration</span>
+            </Link>
+
             <Link
               href="/pay"
               target="_blank"

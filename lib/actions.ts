@@ -148,6 +148,11 @@ export async function registerStudent(formData: FormData): Promise<void> {
       campusId,
       classId,
       status: "REGISTERED",
+      registrationSource: "STAFF_PORTAL",
+      registrationPaymentMode: "CASH",
+      registrationFeePaid: campus?.registrationFee || 1000,
+      registrationPaymentStatus: "PAID",
+      registrationPaymentTxnId: `CASH-${registrationNo}`,
       guardians: {
         create: [
           ...(fatherName
@@ -223,6 +228,164 @@ export async function registerStudent(formData: FormData): Promise<void> {
   revalidatePath("/students");
   revalidatePath("/");
   redirect(`/students/${student.id}?notice=registered`);
+}
+
+// Public Portal Online Registration Action (Payment Mode: ONLINE ONLY)
+export async function registerStudentPublic(formData: FormData): Promise<void> {
+  const campusId = formData.get("campusId") as string;
+  const classId = formData.get("classId") as string;
+  const firstName = (formData.get("firstName") as string).trim();
+  const middleName = (formData.get("middleName") as string)?.trim() || "";
+  const lastName = (formData.get("lastName") as string).trim();
+  const dobStr = formData.get("dob") as string;
+  const dob = new Date(dobStr);
+  const dobInWords = (formData.get("dobInWords") as string) || "";
+  const gender = formData.get("gender") as string;
+  const nationality = (formData.get("nationality") as string) || "Indian";
+  const motherTongue = (formData.get("motherTongue") as string) || "Hindi";
+  const religion = (formData.get("religion") as string) || "Hinduism";
+  const category = (formData.get("category") as string) || "General";
+  const aadhaarNo = (formData.get("aadhaarNo") as string) || "";
+  const studentMobile = (formData.get("studentMobile") as string) || "";
+  const studentEmail = (formData.get("studentEmail") as string) || "";
+
+  const currentAddress = (formData.get("currentAddress") as string) || "";
+  const currentPincode = (formData.get("currentPincode") as string) || "";
+  const permanentAddress = (formData.get("permanentAddress") as string) || "";
+  const permanentPincode = (formData.get("permanentPincode") as string) || "";
+  const emergencyContact = (formData.get("emergencyContact") as string) || "";
+
+  const howHeardAboutUs = (formData.get("howHeardAboutUs") as string) || "";
+  const reasonJoining = (formData.get("reasonJoining") as string) || "";
+
+  const previousSchool = (formData.get("previousSchool") as string) || "";
+  const penNo = (formData.get("penNo") as string) || "";
+  const previousBoard = (formData.get("previousBoard") as string) || "";
+  const previousClass = (formData.get("previousClass") as string) || "";
+  const mediumInstruction = (formData.get("mediumInstruction") as string) || "";
+  const reasonLeavingPrevious = (formData.get("reasonLeavingPrevious") as string) || "";
+  const previousMarksJson = (formData.get("previousMarksJson") as string) || "";
+  const siblingsJson = (formData.get("siblingsJson") as string) || "";
+
+  // Guardian details
+  const fatherName = (formData.get("fatherName") as string) || "";
+  const fatherPhone = (formData.get("fatherPhone") as string) || "";
+  const fatherEmail = (formData.get("fatherEmail") as string) || "";
+  const fatherOccupation = (formData.get("fatherOccupation") as string) || "";
+  const fatherOrganization = (formData.get("fatherOrganization") as string) || "";
+
+  const motherName = (formData.get("motherName") as string) || "";
+  const motherPhone = (formData.get("motherPhone") as string) || "";
+  const motherEmail = (formData.get("motherEmail") as string) || "";
+
+  const onlinePaymentGateway = (formData.get("paymentGateway") as string) || "RAZORPAY";
+
+  const campus = await prisma.campus.findUnique({ where: { id: campusId } });
+  const year = new Date().getFullYear();
+
+  const regCount = await prisma.student.count({
+    where: { campusId, registrationNo: { not: null } },
+  });
+  const regSeq = regCount + 1;
+
+  const registrationNo = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  const scholarNo = `REG-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  const txnId = `TXN-${onlinePaymentGateway}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const student = await prisma.student.create({
+    data: {
+      registrationNo,
+      registrationDate: new Date(),
+      scholarNo,
+      admissionNo: "REGISTRATION_PENDING",
+      admissionDate: new Date(),
+      academicYearIn: `${year}-${year + 1}`,
+      firstName,
+      middleName,
+      lastName,
+      dob,
+      dobInWords,
+      gender,
+      nationality,
+      motherTongue,
+      religion,
+      category,
+      aadhaarNo,
+      studentMobile,
+      studentEmail,
+      currentAddress,
+      currentPincode,
+      permanentAddress,
+      permanentPincode,
+      emergencyContact: emergencyContact || fatherPhone || motherPhone,
+      howHeardAboutUs,
+      reasonJoining,
+      previousSchool,
+      penNo,
+      previousBoard,
+      previousClass,
+      mediumInstruction,
+      reasonLeavingPrevious,
+      previousMarksJson,
+      siblingsJson,
+      campusId,
+      classId,
+      status: "REGISTERED",
+      registrationSource: "PUBLIC_ONLINE",
+      registrationPaymentMode: "ONLINE",
+      registrationFeePaid: campus?.registrationFee || 1000,
+      registrationPaymentStatus: "PAID",
+      registrationPaymentTxnId: txnId,
+      guardians: {
+        create: [
+          ...(fatherName
+            ? [
+                {
+                  relation: "FATHER",
+                  name: fatherName,
+                  phone: fatherPhone || emergencyContact,
+                  email: fatherEmail,
+                  occupation: fatherOccupation,
+                  organization: fatherOrganization,
+                  isPrimary: true,
+                },
+              ]
+            : []),
+          ...(motherName
+            ? [
+                {
+                  relation: "MOTHER",
+                  name: motherName,
+                  phone: motherPhone,
+                  email: motherEmail,
+                  isPrimary: !fatherName,
+                },
+              ]
+            : []),
+        ],
+      },
+    },
+  });
+
+  revalidatePath("/students");
+  revalidatePath("/");
+  redirect(`/public-registration/success?registrationNo=${student.registrationNo}&id=${student.id}`);
+}
+
+// Update Fixed Campus Registration Fee Action for Admin Portal
+export async function updateCampusRegistrationFee(formData: FormData): Promise<void> {
+  const campusId = formData.get("campusId") as string;
+  const registrationFee = parseFloat(formData.get("registrationFee") as string) || 1000;
+
+  await prisma.campus.update({
+    where: { id: campusId },
+    data: { registrationFee },
+  });
+
+  revalidatePath("/campuses");
+  revalidatePath("/students/new");
+  revalidatePath("/public-registration");
+  redirect("/campuses?notice=fee_updated");
 }
 
 // -------------------------------------------------------------

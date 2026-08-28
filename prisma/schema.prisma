@@ -28,6 +28,7 @@ model Campus {
   email       String
   website     String?
   logoUrl     String?
+  registrationFee Float @default(1000) // Fixed registration fee per campus (editable by Admin)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -157,6 +158,13 @@ model Student {
   // Official Form Fields
   howHeardAboutUs String?       // Website, Reference, Newspaper, Billboard, Social Media
   reasonJoining   String?
+
+  // Registration Payment & Channel Tracking
+  registrationSource      String   @default("STAFF_PORTAL") // "STAFF_PORTAL" | "PUBLIC_ONLINE"
+  registrationPaymentMode String   @default("CASH") // "CASH" | "ONLINE" | "UPI" | "CARD"
+  registrationFeePaid     Float    @default(1000)
+  registrationPaymentStatus String @default("PAID") // "PAID" | "PENDING"
+  registrationPaymentTxnId String?
   
   // Prior School History
   previousSchool  String?
