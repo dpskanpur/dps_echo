@@ -24,6 +24,7 @@ import Link from "next/link";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";
 import { CampusSelector } from "@/components/CampusSelector";
+import { RegistrationFormWrapper } from "@/components/RegistrationFormWrapper";
 
 export const dynamic = "force-dynamic";
 
@@ -129,7 +130,7 @@ export default async function NewAdmissionPage({
 
           {/* MODE 1: OFFICIAL DPS REGISTRATION FORM */}
           {activeMode === "registration" && (
-            <form action={registerStudent} className="space-y-6">
+            <RegistrationFormWrapper action={registerStudent}>
               <input type="hidden" name="campusId" value={selectedCampus.id} />
 
               {/* SECTION 1: TARGET CLASS & ACADEMIC PLACEMENT */}
@@ -808,7 +809,7 @@ export default async function NewAdmissionPage({
                   <span>Submit Registration & Issue Unique REG ID</span>
                 </button>
               </div>
-            </form>
+            </RegistrationFormWrapper>
           )}
 
           {/* MODE 2: PROMOTING REGISTRATION TO FULL ADMISSION */}
@@ -1005,7 +1006,7 @@ export default async function NewAdmissionPage({
 
           {/* MODE 3: DIRECT FULL ADMISSION (1-STEP) */}
           {activeMode === "admission" && !studentToPromote && (
-            <form action={createStudent} className="space-y-6">
+            <RegistrationFormWrapper action={createStudent}>
               <input type="hidden" name="campusId" value={selectedCampus.id} />
 
               {/* Step 1: Campus & Academic Placement */}
@@ -1203,7 +1204,7 @@ export default async function NewAdmissionPage({
                   <span>Enrol Student & Generate Admission ID</span>
                 </button>
               </div>
-            </form>
+            </RegistrationFormWrapper>
           )}
         </main>
       </div>
