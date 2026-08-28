@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Clock, LogOut } from "lucide-react";
 import { IDLE_TIMEOUT_MS, IDLE_WARNING_MS } from "@/lib/permissions";
 
-const PUBLIC_PATHS = ["/login", "/pay", "/verify-tc"];
+const PUBLIC_PATHS = ["/login", "/pay", "/verify-tc", "/public-registration", "/api/v1"];
 const ACTIVITY_EVENTS = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"] as const;
 const PING_THROTTLE_MS = 60 * 1000;
 

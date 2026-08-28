@@ -308,11 +308,11 @@ export function Sidebar({
             <Link
               href="/public-registration"
               target="_blank"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-amber-300 hover:text-amber-200 hover:bg-slate-800/60"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-emerald-400/90 hover:text-emerald-300 hover:bg-slate-800/60"
             >
               <ExternalLink className="w-4 h-4 shrink-0" />
               <span>Online Registration</span>
-              <span className="ml-auto text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">
+              <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
                 &lt;Public&gt;
               </span>
             </Link>
@@ -324,8 +324,8 @@ export function Sidebar({
             >
               <ExternalLink className="w-4 h-4 shrink-0" />
               <span>Quick Pay Fees</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1 rounded">
-                Public
+              <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
+                &lt;Public&gt;
               </span>
             </Link>
 
@@ -336,8 +336,8 @@ export function Sidebar({
             >
               <QrCode className="w-4 h-4 shrink-0" />
               <span>Verify TC (QR)</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1 rounded">
-                Public
+              <span className="ml-auto text-[10px] font-mono font-bold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
+                &lt;Public&gt;
               </span>
             </Link>
           </div>
