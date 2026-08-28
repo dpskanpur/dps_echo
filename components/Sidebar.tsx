@@ -311,7 +311,10 @@ export function Sidebar({
               className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-amber-300 hover:text-amber-200 hover:bg-slate-800/60"
             >
               <ExternalLink className="w-4 h-4 shrink-0" />
-              <span>Public Online Registration</span>
+              <span>Online Registration</span>
+              <span className="ml-auto text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">
+                &lt;Public&gt;
+              </span>
             </Link>
 
             <Link

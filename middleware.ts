@@ -34,6 +34,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/static") ||
     pathname.includes(".");
 
+  // Immediately allow all public routes without session evaluation or idle expiration redirects
+  if (isPublic) {
+    return NextResponse.next();
+  }
+
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
   const payload = sessionCookie?.value ? await decodeSessionCookie(sessionCookie.value) : null;
   const isIdleExpired = payload ? isSessionIdleExpired(payload) : false;
@@ -45,7 +50,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If cookie is invalid/unparseable (e.g. old session format or untampered), clear it silently
-  if (sessionCookie?.value && !payload && !isPublic) {
+  if (sessionCookie?.value && !payload) {
     const loginUrl = new URL("/login", request.url);
     if (pathname !== "/") {
       loginUrl.searchParams.set("redirect", pathname);
@@ -59,7 +64,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (!isAuthenticated && !isPublic) {
+  if (!isAuthenticated) {
     const loginUrl = new URL("/login", request.url);
     if (pathname !== "/") {
       loginUrl.searchParams.set("redirect", pathname);
