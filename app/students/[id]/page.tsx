@@ -217,7 +217,7 @@ export default async function StudentDetailPage({
 
           {/* EDIT STUDENT RECORD PANEL */}
           {isEditing && (
-            <form action={updateStudent} className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-400 shadow-xl space-y-6">
+            <form action={updateStudent} className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-400 shadow-xl space-y-6 my-6">
               <input type="hidden" name="studentId" value={student.id} />
 
               <div className="flex items-center justify-between pb-4 border-b border-slate-200">
