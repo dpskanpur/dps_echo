@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
 import { issueTransferCertificate } from "@/lib/actions";
+import { PrintButton } from "@/components/PrintButton";
 import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -97,12 +98,7 @@ export default async function TransferCertificatePage({
                 <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                   <CheckCircle className="w-4 h-4" /> TC Issued & Ready for Official Printing
                 </div>
-                <button
-                  onClick={() => {}}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-xs"
-                >
-                  <Printer className="w-4 h-4" /> Print TC
-                </button>
+                <PrintButton label="Print TC" />
               </div>
 
               {/* Official CBSE Transfer Certificate Document */}
