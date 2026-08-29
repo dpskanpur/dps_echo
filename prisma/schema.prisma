@@ -29,6 +29,9 @@ model Campus {
   website     String?
   logoUrl     String?
   registrationFee Float @default(1000) // Fixed registration fee per campus (editable by Admin)
+  scholarIdPrefix       String   @default("DPS") // e.g. "DPS" -> DPS-AZD-2026-0001
+  registrationIdPrefix String   @default("REG") // e.g. "REG" -> REG-AZD-2026-0001
+  activeAcademicYear   String   @default("2026-2027") // e.g. "2026-2027"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

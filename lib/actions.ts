@@ -104,9 +104,12 @@ export async function registerStudent(formData: FormData): Promise<void> {
   });
   const regSeq = regCount + 1;
 
-  const registrationNo = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  const regPrefix = campus?.registrationIdPrefix || "REG";
+  const regFee = campus?.registrationFee ?? 1000;
+
+  const registrationNo = `${regPrefix}-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
   // Temporary scholarNo for registration record until full admission promotion
-  const scholarNo = `REG-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  const scholarNo = `${regPrefix}-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
   const admissionNo = "REGISTRATION_PENDING";
 
   const student = await prisma.student.create({
@@ -426,7 +429,8 @@ export async function promoteStudentToAdmission(formData: FormData): Promise<voi
   });
   const admSeq = admCount + 1;
 
-  const scholarNo = `DPS-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
+  const scholarPrefix = campus?.scholarIdPrefix || "DPS";
+  const scholarNo = `${scholarPrefix}-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
   const admissionNo = `${campus?.code || "KNP"}/${year}/${admSeq}`;
 
   await prisma.student.update({
@@ -860,6 +864,43 @@ export async function updateStudent(formData: FormData): Promise<void> {
 // -------------------------------------------------------------
 // System-Wide Settings & Dynamic Directory Columns Actions
 // -------------------------------------------------------------
+
+export async function updateCampusSettings(formData: FormData): Promise<void> {
+  const campusId = formData.get("campusId") as string;
+  if (!campusId) return;
+
+  const registrationFee = parseFloat(formData.get("registrationFee") as string) || 1000;
+  const scholarIdPrefix = (formData.get("scholarIdPrefix") as string) || "DPS";
+  const registrationIdPrefix = (formData.get("registrationIdPrefix") as string) || "REG";
+  const activeAcademicYear = (formData.get("activeAcademicYear") as string) || "2026-2027";
+  const phone = (formData.get("phone") as string) || "";
+  const email = (formData.get("email") as string) || "";
+  const address = (formData.get("address") as string) || "";
+  const affiliation = (formData.get("affiliation") as string) || "";
+  const tagline = (formData.get("tagline") as string) || "";
+  const website = (formData.get("website") as string) || "";
+
+  await prisma.campus.update({
+    where: { id: campusId },
+    data: {
+      registrationFee,
+      scholarIdPrefix,
+      registrationIdPrefix,
+      activeAcademicYear,
+      phone,
+      email,
+      address,
+      affiliation,
+      tagline,
+      website,
+    },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/campuses");
+  revalidatePath("/students/new");
+  redirect(`/admin/rbac?tab=system&campusId=${campusId}&notice=campus_updated`);
+}
 
 export async function updateSystemSettings(formData: FormData): Promise<void> {
   const currentAcademicYear = (formData.get("currentAcademicYear") as string) || "2026-2027";
