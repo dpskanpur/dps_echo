@@ -271,29 +271,42 @@ export function Sidebar({
             </div>
             <div className="space-y-1">
               <Link
-                href="/campuses"
+                href="/admin/rbac?tab=system"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/campuses")
+                  pathname.startsWith("/admin/rbac") && (!pathname.includes("tab=") || pathname.includes("tab=system"))
                     ? "bg-[#0F9D58] text-white shadow-sm"
                     : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
                 )}
               >
                 <Building2 className="w-4 h-4 shrink-0 text-[#34A853]" />
-                <span>Campuses & Registration Fee</span>
+                <span>School Settings & Fees</span>
               </Link>
 
               <Link
-                href="/admin/rbac"
+                href="/admin/rbac?tab=rbac"
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/admin/rbac")
+                  pathname.includes("tab=rbac")
                     ? "bg-[#0F9D58] text-white shadow-sm"
                     : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
                 )}
               >
                 <KeyRound className="w-4 h-4 shrink-0 text-[#34A853]" />
-                <span>RBAC Permissions</span>
+                <span>Staff Access Matrix (RBAC)</span>
+              </Link>
+
+              <Link
+                href="/admin/rbac?tab=columns"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
+                  pathname.includes("tab=columns")
+                    ? "bg-[#0F9D58] text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                )}
+              >
+                <Layers className="w-4 h-4 shrink-0 text-[#34A853]" />
+                <span>Dynamic Directory Columns</span>
               </Link>
             </div>
           </div>
