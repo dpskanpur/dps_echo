@@ -175,7 +175,9 @@ model Student {
   reasonLeavingPrevious String?
   previousMarksJson String?     // JSON string for Marks Obtained table
   siblingsJson    String?       // JSON string for Siblings details
-  
+  // Custom Dynamic Column Values (Admin defined)
+  customValuesJson String?      // JSON string object e.g. {"transportRoute": "Bus 12", "penNo": "20194"}
+
   // Medical & Health
   allergies       String?
   medicalNotes    String?
@@ -388,4 +390,30 @@ model FeePayment {
 
   invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------------------------------
+// System-Wide Settings & Dynamic Directory Columns
+// -------------------------------------------------------------
+
+model SystemSettings {
+  id                      String   @id @default("global")
+  currentAcademicYear     String   @default("2026-2027")
+  scholarIdPrefix         String   @default("DPS")
+  registrationIdPrefix   String   @default("REG")
+  registrationFeeDefault  Float    @default(1000)
+  updatedAt               DateTime @updatedAt
+}
+
+model DirectoryColumn {
+  id                    String   @id @default(cuid())
+  key                   String   @unique // e.g. "transportRoute", "penNo", "house"
+  label                 String   // e.g. "Transport Route", "PEN No", "House Name"
+  type                  String   @default("text") // text, select, number, date
+  optionsJson           String?  // JSON array string e.g. ["Route A", "Route B"]
+  isVisibleInDirectory  Boolean  @default(true)
+  isVisibleInForm       Boolean  @default(true)
+  sequence              Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }

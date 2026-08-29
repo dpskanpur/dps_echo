@@ -856,3 +856,86 @@ export async function updateStudent(formData: FormData): Promise<void> {
   revalidatePath("/students");
   redirect(`/students/${studentId}?notice=updated`);
 }
+
+// -------------------------------------------------------------
+// System-Wide Settings & Dynamic Directory Columns Actions
+// -------------------------------------------------------------
+
+export async function updateSystemSettings(formData: FormData): Promise<void> {
+  const currentAcademicYear = (formData.get("currentAcademicYear") as string) || "2026-2027";
+  const scholarIdPrefix = (formData.get("scholarIdPrefix") as string) || "DPS";
+  const registrationIdPrefix = (formData.get("registrationIdPrefix") as string) || "REG";
+  const registrationFeeDefault = parseFloat(formData.get("registrationFeeDefault") as string) || 1000;
+
+  await prisma.systemSettings.upsert({
+    where: { id: "global" },
+    update: {
+      currentAcademicYear,
+      scholarIdPrefix,
+      registrationIdPrefix,
+      registrationFeeDefault,
+    },
+    create: {
+      id: "global",
+      currentAcademicYear,
+      scholarIdPrefix,
+      registrationIdPrefix,
+      registrationFeeDefault,
+    },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/students");
+  revalidatePath("/students/new");
+  redirect("/admin/rbac?notice=settings_updated");
+}
+
+export async function createDirectoryColumn(formData: FormData): Promise<void> {
+  const label = (formData.get("label") as string).trim();
+  const keyRaw = (formData.get("key") as string)?.trim() || label.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const key = keyRaw || `col_${Date.now()}`;
+  const type = (formData.get("type") as string) || "text";
+  const optionsJson = (formData.get("optionsJson") as string) || null;
+
+  const count = await prisma.directoryColumn.count();
+
+  await prisma.directoryColumn.create({
+    data: {
+      key,
+      label,
+      type,
+      optionsJson,
+      isVisibleInDirectory: true,
+      isVisibleInForm: true,
+      sequence: count + 1,
+    },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/students");
+  redirect("/admin/rbac?notice=column_added");
+}
+
+export async function deleteDirectoryColumn(formData: FormData): Promise<void> {
+  const columnId = formData.get("columnId") as string;
+
+  await prisma.directoryColumn.delete({ where: { id: columnId } });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/students");
+  redirect("/admin/rbac?notice=column_deleted");
+}
+
+export async function toggleDirectoryColumnVisibility(formData: FormData): Promise<void> {
+  const columnId = formData.get("columnId") as string;
+  const isVisible = formData.get("isVisible") === "true";
+
+  await prisma.directoryColumn.update({
+    where: { id: columnId },
+    data: { isVisibleInDirectory: !isVisible },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/students");
+  redirect("/admin/rbac?notice=column_toggled");
+}

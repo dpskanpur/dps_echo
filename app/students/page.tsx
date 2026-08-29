@@ -89,6 +89,11 @@ export default async function StudentsPage({
     orderBy: [{ class: { sequence: "asc" } }, { firstName: "asc" }],
   });
 
+  const customColumns = await prisma.directoryColumn.findMany({
+    where: { isVisibleInDirectory: true },
+    orderBy: { sequence: "asc" },
+  });
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar userEmail={user?.email} userRole={user?.role} permissions={permissions} />
@@ -192,6 +197,11 @@ export default async function StudentsPage({
                     <th className="py-3.5 px-4">Student Name</th>
                     <th className="py-3.5 px-4">Campus & Class</th>
                     <th className="py-3.5 px-4">Parent / Contact</th>
+                    {customColumns.map((col) => (
+                      <th key={col.id} className="py-3.5 px-4">
+                        {col.label}
+                      </th>
+                    ))}
                     <th className="py-3.5 px-4">Enrolment Status</th>
                     <th className="py-3.5 px-4">Fee Dues</th>
                     <th className="py-3.5 px-4 text-right">Actions</th>
@@ -200,7 +210,7 @@ export default async function StudentsPage({
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {students.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-400">
+                      <td colSpan={7 + customColumns.length} className="py-8 text-center text-slate-400">
                         No students found matching the selected criteria.
                       </td>
                     </tr>
@@ -283,6 +293,27 @@ export default async function StudentsPage({
                               {primaryGuardian?.phone || s.emergencyContact || "-"}
                             </span>
                           </td>
+
+                          {/* Dynamic Custom Columns */}
+                          {customColumns.map((col) => {
+                            let val = "";
+                            if (s.customValuesJson) {
+                              try {
+                                const parsed = JSON.parse(s.customValuesJson);
+                                val = parsed[col.key] || "";
+                              } catch {
+                                val = "";
+                              }
+                            }
+                            if (!val && col.key in s) {
+                              val = String((s as any)[col.key] || "");
+                            }
+                            return (
+                              <td key={col.id} className="py-3.5 px-4 text-xs font-medium text-slate-700">
+                                {val || "-"}
+                              </td>
+                            );
+                          })}
 
                           <td className="py-3.5 px-4">
                             <span
