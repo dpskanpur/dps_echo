@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { deleteStudent } from "@/lib/actions";
+import { DeleteStudentButton } from "@/components/DeleteStudentButton";
 import {
   Users,
   UserPlus,
@@ -337,21 +338,11 @@ export default async function StudentsPage({
 
                               {/* 3. Delete Student Record */}
                               {permissions.isAdmin && (
-                                <form action={deleteStudent} className="inline">
-                                  <input type="hidden" name="studentId" value={s.id} />
-                                  <button
-                                    type="submit"
-                                    title="Delete Student Record"
-                                    onClick={(e) => {
-                                      if (!confirm(`Are you sure you want to delete student record for ${s.firstName} ${s.lastName}?`)) {
-                                        e.preventDefault();
-                                      }
-                                    }}
-                                    className="p-1.5 bg-slate-100 hover:bg-rose-100 hover:text-rose-700 rounded-lg text-slate-500 transition cursor-pointer"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </form>
+                                <DeleteStudentButton
+                                  studentId={s.id}
+                                  studentName={`${s.firstName} ${s.lastName}`}
+                                  action={deleteStudent}
+                                />
                               )}
                             </div>
                           </td>
