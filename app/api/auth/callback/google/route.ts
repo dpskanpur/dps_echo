@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import dns from "dns";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
+
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch {
+  // Ignore if dns.setDefaultResultOrder is unavailable in edge runtime
+}
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
   for (let attempt = 1; attempt <= retries; attempt++) {
