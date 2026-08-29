@@ -117,7 +117,7 @@ function LoginForm() {
           <div className="space-y-4">
             {/* DEV BYPASS BUTTON */}
             <Link
-              href="/"
+              href="/?login_success=true"
               className="w-full bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-4 rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 group cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-300" />

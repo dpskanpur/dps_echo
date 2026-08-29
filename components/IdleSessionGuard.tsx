@@ -63,13 +63,9 @@ export function IdleSessionGuard() {
       return;
     }
 
-    // Tab Closure Guard: Validate tab-scoped session token in sessionStorage
-    const isLoginRedirect = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("login_success");
-    if (isLoginRedirect) {
+    // Tab Closure Guard: Auto-initialize tab-scoped session token if missing
+    if (!sessionStorage.getItem("dps_session_tab_token")) {
       sessionStorage.setItem("dps_session_tab_token", Date.now().toString());
-    } else if (!sessionStorage.getItem("dps_session_tab_token")) {
-      logoutIdle("tab_closed");
-      return;
     }
 
     lastActivityRef.current = Date.now();
