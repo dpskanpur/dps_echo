@@ -5,18 +5,19 @@ import { Navbar } from "@/components/Navbar";
 import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { deleteStudent } from "@/lib/actions";
 import {
   Users,
   UserPlus,
   Eye,
-  CreditCard,
-  FileText,
   Search,
   Filter,
   Lock,
   ArrowRight,
   ClipboardList,
   Sparkles,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -316,43 +317,41 @@ export default async function StudentsPage({
 
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
-                              {isRegisteredOnly ? (
-                                <Link
-                                  href={`/students/new?promoteStudentId=${s.id}`}
-                                  title="Promote to Full Admission"
-                                  className="inline-flex items-center gap-1 bg-emerald-800 hover:bg-emerald-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition shadow-xs"
-                                >
-                                  <span>Promote to Admission</span>
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </Link>
-                              ) : (
-                                <>
-                                  <Link
-                                    href={`/students/${s.id}`}
-                                    title="View Dossier"
-                                    className="p-1.5 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 rounded-md text-slate-600 transition"
+                              {/* 1. View Student Record */}
+                              <Link
+                                href={`/students/${s.id}`}
+                                title="View Student Record"
+                                className="inline-flex items-center gap-1 p-1.5 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 rounded-lg text-slate-600 transition"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Link>
+
+                              {/* 2. Edit Student Record */}
+                              <Link
+                                href={`/students/${s.id}?edit=true`}
+                                title="Edit Student Details"
+                                className="inline-flex items-center gap-1 p-1.5 bg-slate-100 hover:bg-amber-100 hover:text-amber-800 rounded-lg text-slate-600 transition"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Link>
+
+                              {/* 3. Delete Student Record */}
+                              {permissions.isAdmin && (
+                                <form action={deleteStudent} className="inline">
+                                  <input type="hidden" name="studentId" value={s.id} />
+                                  <button
+                                    type="submit"
+                                    title="Delete Student Record"
+                                    onClick={(e) => {
+                                      if (!confirm(`Are you sure you want to delete student record for ${s.firstName} ${s.lastName}?`)) {
+                                        e.preventDefault();
+                                      }
+                                    }}
+                                    className="p-1.5 bg-slate-100 hover:bg-rose-100 hover:text-rose-700 rounded-lg text-slate-500 transition cursor-pointer"
                                   >
-                                    <Eye className="w-4 h-4" />
-                                  </Link>
-                                  {s.status === "ACTIVE" && (
-                                    <>
-                                      <Link
-                                        href={`/fees/collect?studentId=${s.id}`}
-                                        title="Collect Fees"
-                                        className="p-1.5 bg-slate-100 hover:bg-teal-100 hover:text-teal-800 rounded-md text-slate-600 transition"
-                                      >
-                                        <CreditCard className="w-4 h-4" />
-                                      </Link>
-                                      <Link
-                                        href={`/tc?studentId=${s.id}`}
-                                        title="Issue TC"
-                                        className="p-1.5 bg-slate-100 hover:bg-purple-100 hover:text-purple-800 rounded-md text-slate-600 transition"
-                                      >
-                                        <FileText className="w-4 h-4" />
-                                      </Link>
-                                    </>
-                                  )}
-                                </>
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </form>
                               )}
                             </div>
                           </td>

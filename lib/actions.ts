@@ -708,3 +708,21 @@ export async function collectFeePayment(formData: FormData): Promise<void> {
     redirect(`/fees/cashier`);
   }
 }
+
+// Delete Student Record
+export async function deleteStudent(formData: FormData): Promise<void> {
+  const studentId = formData.get("studentId") as string;
+
+  await prisma.feePayment.deleteMany({ where: { studentId } });
+  await prisma.feeInvoiceItem.deleteMany({ where: { invoice: { studentId } } });
+  await prisma.feeInvoice.deleteMany({ where: { studentId } });
+  await prisma.studentDiscount.deleteMany({ where: { studentId } });
+  await prisma.transferCertificate.deleteMany({ where: { studentId } });
+  await prisma.studentDocument.deleteMany({ where: { studentId } });
+  await prisma.guardian.deleteMany({ where: { studentId } });
+  await prisma.student.delete({ where: { id: studentId } });
+
+  revalidatePath("/students");
+  revalidatePath("/");
+  redirect("/students?notice=student_deleted");
+}
