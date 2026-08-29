@@ -89,10 +89,12 @@ export default async function StudentsPage({
     orderBy: [{ class: { sequence: "asc" } }, { firstName: "asc" }],
   });
 
-  const customColumns = await prisma.directoryColumn.findMany({
-    where: { isVisibleInDirectory: true },
-    orderBy: { sequence: "asc" },
-  });
+  const customColumns = prisma.directoryColumn
+    ? await prisma.directoryColumn.findMany({
+        where: { isVisibleInDirectory: true },
+        orderBy: { sequence: "asc" },
+      })
+    : [];
 
   return (
     <div className="flex min-h-screen bg-slate-50">

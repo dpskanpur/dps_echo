@@ -56,19 +56,18 @@ export default async function AdminSettingsPage({
     orderBy: { createdAt: "desc" },
   });
 
-  const systemSettings = (await prisma.systemSettings.findUnique({
-    where: { id: "global" },
-  })) || {
-    id: "global",
-    currentAcademicYear: "2026-2027",
-    scholarIdPrefix: "DPS",
-    registrationIdPrefix: "REG",
-    registrationFeeDefault: 1000,
-  };
+  const systemSettings =
+    (prisma.systemSettings ? await prisma.systemSettings.findUnique({ where: { id: "global" } }) : null) || {
+      id: "global",
+      currentAcademicYear: "2026-2027",
+      scholarIdPrefix: "DPS",
+      registrationIdPrefix: "REG",
+      registrationFeeDefault: 1000,
+    };
 
-  const directoryColumns = await prisma.directoryColumn.findMany({
-    orderBy: { sequence: "asc" },
-  });
+  const directoryColumns = prisma.directoryColumn
+    ? await prisma.directoryColumn.findMany({ orderBy: { sequence: "asc" } })
+    : [];
 
   return (
     <div className="flex min-h-screen bg-slate-50">
