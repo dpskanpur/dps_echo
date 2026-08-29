@@ -726,3 +726,133 @@ export async function deleteStudent(formData: FormData): Promise<void> {
   revalidatePath("/");
   redirect("/students?notice=student_deleted");
 }
+
+// Update Existing Student Record
+export async function updateStudent(formData: FormData): Promise<void> {
+  const studentId = formData.get("studentId") as string;
+  const firstName = (formData.get("firstName") as string).trim();
+  const middleName = (formData.get("middleName") as string)?.trim() || null;
+  const lastName = (formData.get("lastName") as string).trim();
+  const dobStr = formData.get("dob") as string;
+  const dob = dobStr ? new Date(dobStr) : undefined;
+  const gender = formData.get("gender") as string;
+  const bloodGroup = (formData.get("bloodGroup") as string) || null;
+  const category = (formData.get("category") as string) || null;
+  const nationality = (formData.get("nationality") as string) || "Indian";
+  const motherTongue = (formData.get("motherTongue") as string) || null;
+  const religion = (formData.get("religion") as string) || null;
+  const aadhaarNo = (formData.get("aadhaarNo") as string) || null;
+  const studentMobile = (formData.get("studentMobile") as string) || null;
+  const studentEmail = (formData.get("studentEmail") as string) || null;
+
+  const currentAddress = (formData.get("currentAddress") as string) || null;
+  const currentPincode = (formData.get("currentPincode") as string) || null;
+  const permanentAddress = (formData.get("permanentAddress") as string) || null;
+  const permanentPincode = (formData.get("permanentPincode") as string) || null;
+
+  const classId = formData.get("classId") as string;
+  const sectionId = (formData.get("sectionId") as string) || null;
+  const house = (formData.get("house") as string) || null;
+  const rollNo = formData.get("rollNo") ? parseInt(formData.get("rollNo") as string, 10) : null;
+
+  // Guardian details
+  const fatherName = (formData.get("fatherName") as string) || "";
+  const fatherPhone = (formData.get("fatherPhone") as string) || "";
+  const fatherEmail = (formData.get("fatherEmail") as string) || "";
+  const fatherOccupation = (formData.get("fatherOccupation") as string) || "";
+
+  const motherName = (formData.get("motherName") as string) || "";
+  const motherPhone = (formData.get("motherPhone") as string) || "";
+  const motherEmail = (formData.get("motherEmail") as string) || "";
+  const motherOccupation = (formData.get("motherOccupation") as string) || "";
+
+  await prisma.student.update({
+    where: { id: studentId },
+    data: {
+      firstName,
+      middleName,
+      lastName,
+      ...(dob ? { dob } : {}),
+      gender,
+      bloodGroup,
+      category,
+      nationality,
+      motherTongue,
+      religion,
+      aadhaarNo,
+      studentMobile,
+      studentEmail,
+      currentAddress,
+      currentPincode,
+      permanentAddress,
+      permanentPincode,
+      classId,
+      sectionId,
+      house,
+      rollNo,
+    },
+  });
+
+  // Update or create guardians
+  if (fatherName) {
+    const existingFather = await prisma.guardian.findFirst({
+      where: { studentId, relation: "FATHER" },
+    });
+    if (existingFather) {
+      await prisma.guardian.update({
+        where: { id: existingFather.id },
+        data: {
+          name: fatherName,
+          phone: fatherPhone,
+          email: fatherEmail || null,
+          occupation: fatherOccupation || null,
+        },
+      });
+    } else {
+      await prisma.guardian.create({
+        data: {
+          studentId,
+          name: fatherName,
+          relation: "FATHER",
+          phone: fatherPhone,
+          email: fatherEmail || null,
+          occupation: fatherOccupation || null,
+          isPrimary: true,
+        },
+      });
+    }
+  }
+
+  if (motherName) {
+    const existingMother = await prisma.guardian.findFirst({
+      where: { studentId, relation: "MOTHER" },
+    });
+    if (existingMother) {
+      await prisma.guardian.update({
+        where: { id: existingMother.id },
+        data: {
+          name: motherName,
+          phone: motherPhone,
+          email: motherEmail || null,
+          occupation: motherOccupation || null,
+        },
+      });
+    } else {
+      await prisma.guardian.create({
+        data: {
+          studentId,
+          name: motherName,
+          relation: "MOTHER",
+          phone: motherPhone,
+          email: motherEmail || null,
+          occupation: motherOccupation || null,
+          isPrimary: false,
+        },
+      });
+    }
+  }
+
+  revalidatePath(`/students/${studentId}`);
+  revalidatePath("/students");
+  redirect(`/students/${studentId}?notice=updated`);
+}
