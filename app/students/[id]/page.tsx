@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { promoteStudentToAdmission } from "@/lib/actions";
 import {
   User,
   CreditCard,
@@ -23,6 +24,7 @@ import {
   Clock,
   Printer,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +52,7 @@ export default async function StudentDetailPage({
     where: { id },
     include: {
       campus: true,
-      class: true,
+      class: { include: { sections: true } },
       section: true,
       guardians: true,
       documents: true,
@@ -201,6 +203,72 @@ export default async function StudentDetailPage({
                 )}
               </div>
             </div>
+
+          {/* REGISTERED APPLICANT: 1-CLICK ADMISSION PROMOTION CARD */}
+          {student.status === "REGISTERED" && (
+            <div className="bg-gradient-to-r from-emerald-900 via-emerald-850 to-teal-900 text-white rounded-3xl p-6 shadow-xl border border-emerald-800 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Applicant Registered — Ready for Admission Confirmation
+                  </div>
+                  <h2 className="text-xl font-black text-white">
+                    Confirm Admission & Issue Permanent Scholar ID
+                  </h2>
+                  <p className="text-xs text-emerald-100/90 max-w-xl">
+                    Applicant <strong className="text-amber-300">{student.firstName} {student.lastName}</strong> is registered under REG ID <strong className="font-mono text-amber-300">{student.registrationNo}</strong>. Allocate section & house below to confirm active admission.
+                  </p>
+                </div>
+              </div>
+
+              <form action={promoteStudentToAdmission} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <input type="hidden" name="studentId" value={student.id} />
+
+                <div>
+                  <label className="block text-xs font-bold text-emerald-100 mb-1">
+                    Assign Section *
+                  </label>
+                  <select
+                    name="sectionId"
+                    className="w-full bg-slate-900 border border-emerald-700/60 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                  >
+                    {student.class.sections?.map((sec) => (
+                      <option key={sec.id} value={sec.id}>
+                        Section {sec.name} {sec.roomNo ? `(Room ${sec.roomNo})` : ""}
+                      </option>
+                    )) || <option value="">No Section</option>}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-emerald-100 mb-1">
+                    Assign House *
+                  </label>
+                  <select
+                    name="house"
+                    defaultValue="Ganga"
+                    className="w-full bg-slate-900 border border-emerald-700/60 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                  >
+                    <option value="Ganga">Ganga (Red)</option>
+                    <option value="Yamuna">Yamuna (Blue)</option>
+                    <option value="Jhelum">Jhelum (Green)</option>
+                    <option value="Chenab">Chenab (Yellow)</option>
+                    <option value="Ravi">Ravi (Orange)</option>
+                    <option value="Sutlej">Sutlej (Purple)</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-slate-950 font-black py-2.5 px-6 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer w-full"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-950" />
+                  <span>Confirm & Issue Scholar ID</span>
+                </button>
+              </form>
+            </div>
+          )}
 
             {/* Quick Balance Ticker */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-slate-100">
