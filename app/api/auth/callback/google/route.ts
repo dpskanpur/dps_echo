@@ -3,6 +3,19 @@ import { cookies } from "next/headers";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
 
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fetch(url, options);
+    } catch (err: any) {
+      if (attempt === retries) throw err;
+      console.warn(`Fetch to ${url} failed (attempt ${attempt}/${retries}): ${err.message}. Retrying in ${attempt * 250}ms...`);
+      await new Promise((res) => setTimeout(res, attempt * 250));
+    }
+  }
+  throw new Error(`Fetch to ${url} failed after ${retries} attempts`);
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
@@ -49,8 +62,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 1. Exchange authorization code for tokens
-    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    // 1. Exchange authorization code for tokens (with DNS/network retry)
+    const tokenRes = await fetchWithRetry("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -71,8 +84,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // 2. Fetch User Profile from Google
-    const profileRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    // 2. Fetch User Profile from Google (with retry)
+    const profileRes = await fetchWithRetry("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 
