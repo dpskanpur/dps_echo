@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import https from "https";
 import dns from "dns";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
@@ -7,20 +8,67 @@ import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "
 try {
   dns.setDefaultResultOrder("ipv4first");
 } catch {
-  // Ignore if dns.setDefaultResultOrder is unavailable in edge runtime
+  // Ignore if unavailable
 }
 
-async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await fetch(url, options);
-    } catch (err: any) {
-      if (attempt === retries) throw err;
-      console.warn(`Fetch to ${url} failed (attempt ${attempt}/${retries}): ${err.message}. Retrying in ${attempt * 250}ms...`);
-      await new Promise((res) => setTimeout(res, attempt * 250));
-    }
+async function robustGoogleFetch(
+  urlStr: string,
+  options: { method?: string; headers?: Record<string, string>; body?: string } = {}
+): Promise<{ ok: boolean; status: number; json: () => Promise<any> }> {
+  try {
+    const res = await fetch(urlStr, {
+      method: options.method || "GET",
+      headers: options.headers,
+      body: options.body,
+    });
+    return {
+      ok: res.ok,
+      status: res.status,
+      json: () => res.json(),
+    };
+  } catch (fetchErr: any) {
+    console.warn(`Standard fetch failed for ${urlStr}: ${fetchErr.message}. Falling back to direct IPv4 resolution...`);
+    const url = new URL(urlStr);
+    const ips = await dns.promises.resolve4(url.hostname);
+    const ip = ips[0];
+
+    return new Promise((resolve, reject) => {
+      const req = https.request(
+        {
+          host: ip,
+          port: 443,
+          path: url.pathname + url.search,
+          method: options.method || "GET",
+          headers: {
+            ...(options.headers || {}),
+            Host: url.hostname,
+          },
+          servername: url.hostname,
+        },
+        (res) => {
+          let body = "";
+          res.on("data", (chunk) => (body += chunk));
+          res.on("end", () => {
+            let parsed = {};
+            try {
+              parsed = JSON.parse(body);
+            } catch {
+              parsed = {};
+            }
+            resolve({
+              ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
+              status: res.statusCode || 500,
+              json: async () => parsed,
+            });
+          });
+        }
+      );
+
+      req.on("error", reject);
+      if (options.body) req.write(options.body);
+      req.end();
+    });
   }
-  throw new Error(`Fetch to ${url} failed after ${retries} attempts`);
 }
 
 export async function GET(request: Request) {
@@ -69,17 +117,19 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 1. Exchange authorization code for tokens (with DNS/network retry)
-    const tokenRes = await fetchWithRetry("https://oauth2.googleapis.com/token", {
+    // 1. Exchange authorization code for tokens (with IPv4 fallback)
+    const bodyParams = new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }).toString();
+
+    const tokenRes = await robustGoogleFetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        grant_type: "authorization_code",
-      }),
+      body: bodyParams,
     });
 
     const tokens = await tokenRes.json();
@@ -91,8 +141,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // 2. Fetch User Profile from Google (with retry)
-    const profileRes = await fetchWithRetry("https://www.googleapis.com/oauth2/v2/userinfo", {
+    // 2. Fetch User Profile from Google (with IPv4 fallback)
+    const profileRes = await robustGoogleFetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 
