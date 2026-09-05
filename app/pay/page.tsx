@@ -15,7 +15,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Quick Pay School Fees",
+  description:
+    "Official Quick Pay Fee Portal for Delhi Public School (DPS) Kanpur campuses (Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar). Pay school fees online via UPI, Net Banking, and Cards.",
+  openGraph: {
+    title: "Quick Pay School Fees | DPS Kanpur",
+    description:
+      "Pay school fees online securely for DPS Kanpur students across Azad Nagar, Barra, Kidwai Nagar, and Servodaya Nagar campuses.",
+    url: "https://echo.dpskanpur.com/pay",
+  },
+};
 
 export default async function PublicQuickPayPage({
   searchParams,
