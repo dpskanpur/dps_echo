@@ -1,0 +1,49 @@
+name: Production Branch Guard
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify-push-authorization:
+    name: Verify Main Push Authorization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Push Actor
+        env:
+          ACTOR: ${{ github.actor }}
+          ALLOWED_ACTORS: "dpskanpur,aks2103,github-actions[bot]"
+        run: |
+          echo "================================================================="
+          echo "🔍 Checking authorization for push on branch 'main'..."
+          echo "Pushed by actor: $ACTOR"
+          echo "================================================================="
+
+          # Check if actor is in whitelist
+          IFS=',' read -r -a ALLOWED <<< "$ALLOWED_ACTORS"
+          IS_AUTHORIZED=false
+          for user in "${ALLOWED[@]}"; do
+            if [ "$ACTOR" = "$user" ]; then
+              IS_AUTHORIZED=true
+              break
+            fi
+          done
+
+          if [ "$IS_AUTHORIZED" = "false" ]; then
+            echo "::error title=Unauthorized Push to Main::User '$ACTOR' is not permitted to push directly to 'main'. All changes must be pushed to 'dev' and merged via Pull Request."
+            echo ""
+            echo "================================================================="
+            echo "⛔ BLOCKED: DIRECT PUSH TO 'main' IS FORBIDDEN FOR COLLABORATORS!"
+            echo "================================================================="
+            echo "User: $ACTOR"
+            echo "Policy: Collaborators (e.g. jitsharma14) must push only to the 'dev' branch."
+            echo "Next Steps:"
+            echo "  1. Switch to the dev branch: git checkout dev"
+            echo "  2. Push to dev: git push origin dev"
+            echo "  3. Open a Pull Request from 'dev' to 'main' for admin review."
+            echo "================================================================="
+            exit 1
+          fi
+
+          echo "✅ Push authorized ($ACTOR). Proceeding on 'main' branch."
