@@ -1,0 +1,422 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// Core Institutional Hierarchy & Multi-Campus
+// -------------------------------------------------------------
+
+model Campus {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g. "AZD", "BAR", "KID", "SRV"
+  name        String   // e.g. "DPS Azad Nagar", "DPS Barra"
+  tagline     String?
+  affiliation String?  // e.g. "CBSE Affiliation No. 2130722"
+  address     String
+  city        String   @default("Kanpur")
+  state       String   @default("Uttar Pradesh")
+  pincode     String   @default("208002")
+  phone       String
+  email       String
+  website     String?
+  logoUrl     String?
+  registrationFee Float @default(1000) // Fixed registration fee per campus (editable by Admin)
+  scholarIdPrefix       String   @default("DPS") // e.g. "DPS" -> DPS-AZD-2026-0001
+  registrationIdPrefix String   @default("REG") // e.g. "REG" -> REG-AZD-2026-0001
+  activeAcademicYear   String   @default("2026-2027") // e.g. "2026-2027"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  classes       Class[]
+  students      Student[]
+  feeHeads      FeeHead[]
+  feeStructures FeeStructure[]
+  feeInvoices   FeeInvoice[]
+  users         User[]
+}
+
+model User {
+  id          String           @id @default(cuid())
+  email       String           @unique
+  name        String
+  avatarUrl   String?
+  role        String           @default("STAFF") // SUPER_ADMIN, ADMIN, FEES_MANAGER, ADMISSIONS_MANAGER, STAFF
+  status      String           @default("PENDING") // ACTIVE, PENDING, SUSPENDED
+  campusId    String?
+  campus      Campus?          @relation(fields: [campusId], references: [id])
+  permissions UserPermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  lastLoginAt DateTime         @default(now())
+}
+
+model UserPermission {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module    String   // "students", "fees", "tc", "alumni", "rbac"
+  canView   Boolean  @default(false)
+  canUpdate Boolean  @default(false)
+  canDelete Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, module])
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "2025-2026", "2026-2027"
+  startDate DateTime
+  endDate   DateTime
+  isCurrent Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  feeStructures FeeStructure[]
+  feeInvoices   FeeInvoice[]
+}
+
+model Class {
+  id           String   @id @default(cuid())
+  campusId     String
+  name         String   // e.g. "Playgroup", "Nursery", "Prep", "Class I", "Class X", "Class XII (Science)"
+  numericGrade Int      // e.g. 0 for KG, 1..12
+  sequence     Int      // ordering index
+  createdAt    DateTime @default(now())
+
+  campus        Campus         @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  sections      Section[]
+  students      Student[]
+  feeStructures FeeStructure[]
+
+  @@unique([campusId, name])
+}
+
+model Section {
+  id          String   @id @default(cuid())
+  classId     String
+  name        String   // e.g. "A", "B", "C", "D"
+  roomNo      String?
+  maxCapacity Int      @default(40)
+  createdAt   DateTime @default(now())
+
+  class    Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students Student[]
+
+  @@unique([classId, name])
+}
+
+// Note: Enums are stored as Strings for broad SQLite & PostgreSQL database compatibility
+
+model Student {
+  id              String        @id @default(cuid())
+  registrationNo  String?       @unique // Unique Registration ID (e.g. "REG-AZD-2026-0042")
+  registrationDate DateTime?
+  scholarNo       String        @unique // Unique Permanent Scholar / Admission Number (e.g. "DPS-AZD-2026-0412")
+  admissionNo     String        // Display Admission No
+  admissionDate   DateTime
+  academicYearIn  String        // e.g. "2026-2027"
+  
+  // Demographics
+  firstName       String
+  middleName      String?
+  lastName        String
+  dob             DateTime
+  dobInWords      String?
+  gender          String        // MALE, FEMALE, OTHER
+  bloodGroup      String?       // "A+", "B+", "O+", "AB+", etc.
+  nationality     String        @default("Indian")
+  religion        String?       @default("Hinduism")
+  category        String?       @default("General") // General, SC, ST, OBC, EWS
+  motherTongue    String?       @default("Hindi")
+  aadhaarNo       String?
+  studentMobile   String?
+  studentEmail    String?
+  photoUrl        String?
+  
+  // Academic Placement
+  campusId        String
+  classId         String
+  sectionId       String?
+  rollNo          Int?
+  house           String?       // "Ganga", "Yamuna", "Jhelum", "Chenab", "Ravi", "Sutlej"
+  status          String        @default("REGISTERED") // REGISTERED, ACTIVE, TC_ISSUED, ALUMNI
+  
+  // Contact & Address
+  currentAddress  String?
+  currentPincode  String?
+  permanentAddress String?
+  permanentPincode String?
+  city            String?       @default("Kanpur")
+  emergencyContact String?
+  
+  // Official Form Fields
+  howHeardAboutUs String?       // Website, Reference, Newspaper, Billboard, Social Media
+  reasonJoining   String?
+
+  // Registration Payment & Channel Tracking
+  registrationSource      String   @default("STAFF_PORTAL") // "STAFF_PORTAL" | "PUBLIC_ONLINE"
+  registrationPaymentMode String   @default("CASH") // "CASH" | "ONLINE" | "UPI" | "CARD"
+  registrationFeePaid     Float    @default(1000)
+  registrationPaymentStatus String @default("PAID") // "PAID" | "PENDING"
+  registrationPaymentTxnId String?
+  
+  // Prior School History
+  previousSchool  String?
+  penNo           String?       // Permanent Education Number
+  previousBoard   String?       // CBSE, ICSE, UP Board, IB, Other
+  previousClass   String?
+  mediumInstruction String?     // English, Hindi, Other
+  reasonLeavingPrevious String?
+  previousMarksJson String?     // JSON string for Marks Obtained table
+  siblingsJson    String?       // JSON string for Siblings details
+  // Custom Dynamic Column Values (Admin defined)
+  customValuesJson String?      // JSON string object e.g. {"transportRoute": "Bus 12", "penNo": "20194"}
+
+  // Medical & Health
+  allergies       String?
+  medicalNotes    String?
+  previousTcNo    String?
+  
+  // Metadata & Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  campus              Campus                @relation(fields: [campusId], references: [id])
+  class               Class                 @relation(fields: [classId], references: [id])
+  section             Section?              @relation(fields: [sectionId], references: [id])
+  guardians           Guardian[]
+  documents           StudentDocument[]
+  transferCertificate TransferCertificate?
+  discounts           StudentDiscount[]
+  invoices            FeeInvoice[]
+  payments            FeePayment[]
+}
+
+model Guardian {
+  id           String   @id @default(cuid())
+  studentId    String
+  relation     String   // "FATHER", "MOTHER", "LOCAL_GUARDIAN"
+  name         String
+  phone        String
+  email        String?
+  occupation   String?
+  organization String?
+  designation  String?
+  qualification String?  // Educational Qualification
+  monthlyIncome String?
+  annualIncome String?
+  aadhaarNo    String?
+  address      String?
+  pincode      String?
+  officeAddress String?
+  officePincode String?
+  officeContact String?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model StudentDocument {
+  id          String   @id @default(cuid())
+  studentId   String
+  docType     String   // "BIRTH_CERTIFICATE", "AADHAAR_CARD", "PREVIOUS_MARKSHEET", "TRANSFER_CERTIFICATE", "PHOTO", "CASTE_CERTIFICATE", "IMMUNIZATION_RECORD"
+  title       String
+  fileName    String
+  fileUrl     String
+  fileSize    String?
+  uploadedAt  DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------------------------------
+// Transfer Certificate (TC) & Exit Records (CBSE Compliant)
+// -------------------------------------------------------------
+
+model TransferCertificate {
+  id                   String   @id @default(cuid())
+  studentId            String   @unique
+  tcNumber             String   @unique // e.g. "DPS/AZD/TC/2026/0142"
+  bookNumber           String?  // e.g. "Vol-12"
+  serialNumber         String?  // e.g. "89"
+  applicationDate      DateTime
+  issueDate            DateTime
+  dateOfLeaving        DateTime
+  
+  // CBSE Prescribed Standard Checklist Fields
+  motherName           String
+  fatherName           String
+  nationality          String   @default("Indian")
+  isBelongToSchedule   String   @default("No")
+  dateOfFirstAdmission DateTime
+  classInWhichFirstAdmitted String
+  classLastStudied     String
+  schoolBoardExamLastTaken String
+  isFailed             String   @default("No")
+  subjectsStudied      String   // Comma separated, e.g. "English, Hindi, Mathematics, Science, Social Science"
+  isQualifiedForPromotion String // "Yes, promoted to Class VII"
+  monthUptoWhichFeesPaid String   // "March 2026"
+  feeConcessionDetails String?  // "None" or "Staff Concession 50%"
+  totalWorkingDays     Int      @default(210)
+  totalDaysPresent     Int      @default(198)
+  isNccCadetBoyScout   String   @default("N/A")
+  gamesPlayedCoCurricular String?
+  generalConduct       String   @default("Good")
+  reasonForLeaving     String   // "Parent Job Transfer", "Relocation", "Higher Studies"
+  anyOtherRemarks      String?
+  
+  // Verification & Sign-off
+  preparedBy           String   @default("Accounts & Records Officer")
+  checkedBy            String   @default("Headmistress / Supervisor")
+  principalName        String   @default("Principal, DPS Kanpur")
+  verificationToken    String   @unique // For QR code lookup
+  status               String   @default("ISSUED") // "DRAFT", "ISSUED", "CANCELLED"
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------------------------------
+// Fee Management (Structures, Invoices, Receipts & Ledger)
+// -------------------------------------------------------------
+
+model FeeHead {
+  id           String   @id @default(cuid())
+  campusId     String
+  code         String   // e.g. "TUI", "DEV", "ADM", "TRANS", "LAB", "COMP"
+  name         String   // e.g. "Tuition Fee", "Annual Development Charges", "Admission Fee"
+  description  String?
+  isOptional   Boolean  @default(false)
+  isRefundable Boolean  @default(false) // e.g. Caution Money
+  createdAt    DateTime @default(now())
+
+  campus        Campus           @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  structures    FeeStructure[]
+  invoiceItems  FeeInvoiceItem[]
+
+  @@unique([campusId, code])
+}
+
+model FeeStructure {
+  id             String   @id @default(cuid())
+  campusId       String
+  academicYearId String
+  classId        String
+  feeHeadId      String
+  amount         Float    // In INR
+  frequency      String   // "ONE_TIME", "ANNUAL", "QUARTERLY", "MONTHLY"
+  dueDateOffset  Int?     // Days from start of period
+  createdAt      DateTime @default(now())
+
+  campus       Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  feeHead      FeeHead      @relation(fields: [feeHeadId], references: [id], onDelete: Cascade)
+
+  @@unique([campusId, academicYearId, classId, feeHeadId])
+}
+
+model StudentDiscount {
+  id           String   @id @default(cuid())
+  studentId    String
+  discountType String   // "SIBLING", "STAFF_WARD", "MERIT_SCHOLARSHIP", "EWS_RTE", "MANAGEMENT_SPECIAL"
+  percentage   Float?   // e.g. 20.0 (for 20% discount on tuition)
+  fixedAmount  Float?   // Fixed lump-sum concession
+  reason       String?
+  approvedBy   String?
+  createdAt    DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model FeeInvoice {
+  id             String   @id @default(cuid())
+  invoiceNo      String   @unique // e.g. "INV-AZD-2026-Q1-0845"
+  studentId      String
+  campusId       String
+  academicYearId String
+  periodName     String   // e.g. "Quarter 1 (Apr - Jun)", "Quarter 2 (Jul - Sep)", "Annual Fee 2026-27"
+  dueDate        DateTime
+  grossAmount    Float
+  discountAmount Float    @default(0.0)
+  fineAmount     Float    @default(0.0)
+  netAmount      Float    // (grossAmount - discountAmount + fineAmount)
+  paidAmount     Float    @default(0.0)
+  balanceAmount  Float    // (netAmount - paidAmount)
+  status         String   @default("PENDING") // "PENDING", "PARTIALLY_PAID", "PAID", "OVERDUE"
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  campus       Campus           @relation(fields: [campusId], references: [id])
+  academicYear AcademicYear     @relation(fields: [academicYearId], references: [id])
+  items        FeeInvoiceItem[]
+  payments     FeePayment[]
+}
+
+model FeeInvoiceItem {
+  id        String   @id @default(cuid())
+  invoiceId String
+  feeHeadId String
+  amount    Float
+
+  invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  feeHead FeeHead    @relation(fields: [feeHeadId], references: [id])
+}
+
+model FeePayment {
+  id             String   @id @default(cuid())
+  receiptNo      String   @unique // e.g. "REC-AZD-2026-00412"
+  invoiceId      String
+  studentId      String
+  paymentDate    DateTime @default(now())
+  paymentMode    String   // "CASH", "CHEQUE", "ONLINE_UPI", "POS_CARD", "NEFT_RTGS"
+  amountPaid     Float
+  transactionRef String?  // Cheque No / UPI Ref / Bank UTR / Card Auth Code
+  bankName       String?  // Bank name if cheque / DD / transfer
+  cashierName    String   @default("Accounts Desk")
+  notes          String?
+  status         String   @default("SUCCESS") // "SUCCESS", "BOUNCED", "REFUNDED"
+  createdAt      DateTime @default(now())
+
+  invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------------------------------
+// System-Wide Settings & Dynamic Directory Columns
+// -------------------------------------------------------------
+
+model SystemSettings {
+  id                      String   @id @default("global")
+  currentAcademicYear     String   @default("2026-2027")
+  scholarIdPrefix         String   @default("DPS")
+  registrationIdPrefix   String   @default("REG")
+  registrationFeeDefault  Float    @default(1000)
+  updatedAt               DateTime @updatedAt
+}
+
+model DirectoryColumn {
+  id                    String   @id @default(cuid())
+  key                   String   @unique // e.g. "transportRoute", "penNo", "house"
+  label                 String   // e.g. "Transport Route", "PEN No", "House Name"
+  type                  String   @default("text") // text, select, number, date
+  optionsJson           String?  // JSON array string e.g. ["Route A", "Route B"]
+  isVisibleInDirectory  Boolean  @default(true)
+  isVisibleInForm       Boolean  @default(true)
+  sequence              Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
