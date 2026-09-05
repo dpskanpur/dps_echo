@@ -3,7 +3,21 @@ import { formatDate } from "@/lib/utils";
 import { ShieldCheck, Search, Building2, CheckCircle2, AlertTriangle, QrCode, Lock } from "lucide-react";
 import Link from "next/link";
 
+import type { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Verify Transfer Certificate (TC)",
+  description:
+    "Official Transfer Certificate (TC) Verification Portal for Delhi Public School (DPS) Kanpur campuses. Verify student TC authenticity online via QR Code or TC Number.",
+  openGraph: {
+    title: "Verify Transfer Certificate (TC) | DPS Kanpur",
+    description:
+      "Verify Transfer Certificate (TC) authenticity for DPS Kanpur students across Azad Nagar, Barra, Kidwai Nagar, and Servodaya Nagar campuses.",
+    url: "https://echo.dpskanpur.com/verify-tc",
+  },
+};
 
 export default async function PublicVerifyTCPage({
   searchParams,
