@@ -258,7 +258,7 @@ export default async function PublicQuickPayPage({
 
       {/* Public Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500">
-        <p>© 2026 Delhi Public School Kanpur. All Rights Reserved. • DPS Echo System</p>
+        <p>© 2026 DPS Echo. All Rights Reserved.</p>
       </footer>
     </div>
   );
