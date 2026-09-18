@@ -31,9 +31,9 @@ export default async function AlumniPage({
 
   if (q) {
     whereClause.OR = [
-      { firstName: { contains: q } },
-      { lastName: { contains: q } },
-      { scholarNo: { contains: q } },
+      { firstName: { contains: q, mode: "insensitive" } },
+      { lastName: { contains: q, mode: "insensitive" } },
+      { scholarNo: { contains: q, mode: "insensitive" } },
     ];
   }
 

@@ -67,11 +67,11 @@ export default async function StudentsPage({
 
   if (q) {
     whereClause.OR = [
-      { firstName: { contains: q } },
-      { lastName: { contains: q } },
-      { scholarNo: { contains: q } },
-      { admissionNo: { contains: q } },
-      { registrationNo: { contains: q } },
+      { firstName: { contains: q, mode: "insensitive" } },
+      { lastName: { contains: q, mode: "insensitive" } },
+      { scholarNo: { contains: q, mode: "insensitive" } },
+      { admissionNo: { contains: q, mode: "insensitive" } },
+      { registrationNo: { contains: q, mode: "insensitive" } },
     ];
   }
 

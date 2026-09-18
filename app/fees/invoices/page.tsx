@@ -31,10 +31,10 @@ export default async function FeeInvoicesPage({
 
   if (q) {
     whereClause.OR = [
-      { invoiceNo: { contains: q } },
-      { student: { firstName: { contains: q } } },
-      { student: { lastName: { contains: q } } },
-      { student: { scholarNo: { contains: q } } },
+      { invoiceNo: { contains: q, mode: "insensitive" } },
+      { student: { firstName: { contains: q, mode: "insensitive" } } },
+      { student: { lastName: { contains: q, mode: "insensitive" } } },
+      { student: { scholarNo: { contains: q, mode: "insensitive" } } },
     ];
   }
 

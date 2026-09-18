@@ -2,6 +2,9 @@
   "name": "dps-echo",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev -p 8088",
     "build": "prisma generate && next build",
@@ -15,7 +18,7 @@
     "@prisma/client": "^5.22.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
-    "next": "15.1.0",
+    "next": "^15.5.25",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

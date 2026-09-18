@@ -1,15 +1,21 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
   ALLOWED_DOMAIN,
   SESSION_COOKIE_NAME,
   APP_MODULES,
+  EMPTY_MODULE_MATRIX,
   AppModuleId,
   ModulePermission,
   SessionUser,
   UserPermissions,
+  CampusScope,
   isAllowedDomain,
   deriveRoleFromEmail,
+  resolveCampusScope,
+  assertCampusAllowed,
+  isSuperAdminEmail,
 } from "./permissions";
 import {
   decodeSessionCookie,
@@ -25,39 +31,45 @@ export {
   APP_MODULES,
   isAllowedDomain,
   deriveRoleFromEmail,
+  resolveCampusScope,
+  assertCampusAllowed,
+  isSuperAdminEmail,
 };
-export type { AppModuleId, ModulePermission, SessionUser, UserPermissions };
+export type { AppModuleId, ModulePermission, SessionUser, UserPermissions, CampusScope };
+
+function emptyMatrix(): Record<AppModuleId, ModulePermission> {
+  return JSON.parse(JSON.stringify(EMPTY_MODULE_MATRIX));
+}
+
+function noAccess(roleDisplayName: string): UserPermissions {
+  return {
+    modules: emptyMatrix(),
+    hasAnyAccess: false,
+    isAdmin: false,
+    canManageStudents: false,
+    canManageFees: false,
+    isViewOnlyStudents: true,
+    isViewOnlyFees: true,
+    roleDisplayName,
+  };
+}
 
 export async function getUserPermissions(user: SessionUser | null): Promise<UserPermissions> {
-  // Default empty matrix
-  const matrix: Record<AppModuleId, ModulePermission> = {
-    students: { module: "students", canView: false, canUpdate: false, canDelete: false },
-    fees: { module: "fees", canView: false, canUpdate: false, canDelete: false },
-    tc: { module: "tc", canView: false, canUpdate: false, canDelete: false },
-    alumni: { module: "alumni", canView: false, canUpdate: false, canDelete: false },
-    rbac: { module: "rbac", canView: false, canUpdate: false, canDelete: false },
-  };
+  if (!user) return noAccess("Unauthenticated");
 
-  if (!user) {
-    return {
-      modules: matrix,
-      hasAnyAccess: false,
-      isAdmin: false,
-      canManageStudents: false,
-      canManageFees: false,
-      isViewOnlyStudents: true,
-      isViewOnlyFees: true,
-      roleDisplayName: "Unauthenticated",
-    };
-  }
+  // Account state gates everything, including administrators.
+  if (user.status === "SUSPENDED") return noAccess("Suspended Account");
+  if (user.status !== "ACTIVE") return noAccess("Access Pending Approval");
 
-  const cleanEmail = user.email.toLowerCase();
-  const isAdminUser = cleanEmail === "admin@dpskanpur.com" || user.role === "SUPER_ADMIN";
+  // Parents never hold staff module permissions.
+  if (user.role === "PARENT") return noAccess("Parent Account");
 
-  // If user is Super Admin, grant full wildcard access across all modules
+  const matrix = emptyMatrix();
+  const isAdminUser = isSuperAdminEmail(user.email) || user.role === "SUPER_ADMIN";
+
+  // Super Admin gets full wildcard access across all modules
   if (isAdminUser) {
-    Object.keys(matrix).forEach((key) => {
-      const mod = key as AppModuleId;
+    (Object.keys(matrix) as AppModuleId[]).forEach((mod) => {
       matrix[mod] = { module: mod, canView: true, canUpdate: true, canDelete: true };
     });
 
@@ -70,20 +82,6 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
       isViewOnlyStudents: false,
       isViewOnlyFees: false,
       roleDisplayName: "System Administrator (Full Access)",
-    };
-  }
-
-  // If user is suspended, revoke all access
-  if (user.status === "SUSPENDED") {
-    return {
-      modules: matrix,
-      hasAnyAccess: false,
-      isAdmin: false,
-      canManageStudents: false,
-      canManageFees: false,
-      isViewOnlyStudents: true,
-      isViewOnlyFees: true,
-      roleDisplayName: "Suspended Account",
     };
   }
 
@@ -123,36 +121,32 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
   };
 }
 
-const DEFAULT_DEV_ADMIN: SessionUser = {
-  id: "cmtagyppi0000125quh8ua737",
-  email: "admin@dpskanpur.com",
-  name: "System Admin (Bypass)",
-  avatarUrl: "/dps_crest.png",
-  role: "SUPER_ADMIN",
-  status: "ACTIVE",
-  campusId: null,
-};
-
+/**
+ * Resolves the signed-in staff user, or null.
+ *
+ * Fails closed: a missing, tampered, idle-expired or orphaned session
+ * yields null. There is no development fallback identity — anonymous
+ * callers are anonymous.
+ */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
 
-  if (!sessionCookie?.value) {
-    return DEFAULT_DEV_ADMIN;
-  }
+  if (!sessionCookie?.value) return null;
 
   try {
     const payload = await decodeSessionCookie(sessionCookie.value);
-    if (!payload || isSessionIdleExpired(payload)) {
-      return DEFAULT_DEV_ADMIN;
-    }
+    if (!payload || isSessionIdleExpired(payload)) return null;
 
+    // The cookie is only a claim; the database is the source of truth for
+    // role, campus and status, so a revoked user cannot ride an old cookie.
     const dbUser = await prisma.user.findUnique({
       where: { id: payload.id },
       select: { id: true, email: true, name: true, avatarUrl: true, role: true, status: true, campusId: true },
     });
 
-    if (!dbUser) return DEFAULT_DEV_ADMIN;
+    if (!dbUser) return null;
+    if (dbUser.status === "SUSPENDED") return null;
 
     return {
       id: dbUser.id,
@@ -163,9 +157,45 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       status: dbUser.status,
       campusId: dbUser.campusId,
     };
-  } catch (error) {
-    return DEFAULT_DEV_ADMIN;
+  } catch {
+    return null;
   }
+}
+
+/** Server-side guard for pages: returns the user or redirects to /login. */
+export async function requireUser(redirectTo = "/"): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect(`/login?redirect=${encodeURIComponent(redirectTo)}`);
+  }
+  return user;
+}
+
+/**
+ * Guard for server actions and route handlers. Throws instead of
+ * redirecting so a mutation can never proceed unauthenticated.
+ */
+export async function requirePermission(
+  module: AppModuleId,
+  level: "view" | "update" | "delete" = "update"
+): Promise<{ user: SessionUser; permissions: UserPermissions }> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Not authenticated. Please sign in again.");
+  }
+
+  const permissions = await getUserPermissions(user);
+  const mod = permissions.modules[module];
+  const allowed =
+    level === "view" ? mod.canView : level === "update" ? mod.canUpdate : mod.canDelete;
+
+  if (!allowed) {
+    throw new Error(
+      `Access denied: your account does not have "${level}" rights on the ${module} module.`
+    );
+  }
+
+  return { user, permissions };
 }
 
 export async function setSessionCookie(user: SessionUser) {
@@ -196,12 +226,13 @@ export async function loginOrCreateUser(
   }
 
   const cleanEmail = email.toLowerCase();
-  const isAdmin = cleanEmail === "admin@dpskanpur.com" || cleanEmail.startsWith("admin@");
+  const isAdmin = isSuperAdminEmail(cleanEmail);
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
 
   const assignedRole = isAdmin ? "SUPER_ADMIN" : (existingUser?.role || role || deriveRoleFromEmail(cleanEmail));
+  // New staff land in PENDING and must be granted access from the RBAC console.
   const assignedStatus = isAdmin ? "ACTIVE" : (existingUser?.status || "PENDING");
 
   // Create or update in database
@@ -222,6 +253,10 @@ export async function loginOrCreateUser(
       lastLoginAt: new Date(),
     },
   });
+
+  if (dbUser.status === "SUSPENDED") {
+    return { success: false, error: "This account has been suspended. Contact the system administrator." };
+  }
 
   // If Admin, ensure initial full permissions are seeded
   if (isAdmin) {

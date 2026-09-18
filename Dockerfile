@@ -1,6 +1,6 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
-# Install OpenSSL for Prisma engine compatibility on Alpine
+# OpenSSL is required by the Prisma query engine on Alpine
 RUN apk add --no-cache libc6-compat openssl
 
 # Stage 1: Dependencies
@@ -17,10 +17,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="file:./dev.db"
-RUN npx prisma generate
-RUN npx prisma db push
 
+# Prisma only parses DATABASE_URL at generate time — it never connects. The
+# real connection string is injected at runtime from Secret Manager.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+RUN npx prisma generate
+
+# The schema is NOT pushed here. Migrations are applied deliberately against
+# Cloud SQL (see README), never as a side effect of building an image.
 RUN npm run build
 
 # Stage 3: Runner
@@ -29,7 +33,6 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="file:/app/prisma/dev.db"
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 

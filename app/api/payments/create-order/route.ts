@@ -1,0 +1,128 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { createRazorpayOrder, getPublicKeyId, isGatewayConfigured } from "@/lib/razorpay";
+import { verifyPayToken } from "@/lib/pay-token";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * Creates a gateway order for one outstanding invoice.
+ *
+ * The caller must present a pay token issued by the public fee page after a
+ * successful scholar-number + date-of-birth check, and the invoice must
+ * belong to that same student. Nothing here marks anything as paid.
+ */
+export async function POST(request: Request) {
+  const limited = rateLimit(`create-order:${clientIp(request)}`, 15, 60_000);
+  if (!limited.allowed) {
+    return NextResponse.json(
+      { success: false, error: "Too many attempts. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+    );
+  }
+
+  if (!isGatewayConfigured()) {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "Online payment is not available right now. Please pay at the school accounts office.",
+      },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const invoiceId = String(body?.invoiceId || "");
+    const studentId = verifyPayToken(body?.payToken);
+
+    if (!studentId) {
+      return NextResponse.json(
+        { success: false, error: "Your session expired. Please look up the student again." },
+        { status: 401 }
+      );
+    }
+
+    const invoice = await prisma.feeInvoice.findUnique({
+      where: { id: invoiceId },
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            scholarNo: true,
+            studentEmail: true,
+            guardians: {
+              select: { name: true, email: true, phone: true, isPrimary: true },
+              orderBy: { isPrimary: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    // The token proves which student the visitor verified; an invoice
+    // belonging to anyone else is simply not theirs to pay.
+    if (!invoice || invoice.studentId !== studentId) {
+      return NextResponse.json({ success: false, error: "Invoice not found." }, { status: 404 });
+    }
+
+    if (invoice.balanceAmount <= 0) {
+      return NextResponse.json(
+        { success: false, error: "This invoice is already paid in full." },
+        { status: 409 }
+      );
+    }
+
+    const order = await createRazorpayOrder({
+      amountInRupees: invoice.balanceAmount,
+      receipt: invoice.invoiceNo,
+      notes: {
+        invoiceId: invoice.id,
+        invoiceNo: invoice.invoiceNo,
+        scholarNo: invoice.student.scholarNo,
+        campusId: invoice.campusId,
+      },
+    });
+
+    const guardian = invoice.student.guardians[0];
+
+    await prisma.paymentOrder.create({
+      data: {
+        gatewayOrderId: order.id,
+        invoiceId: invoice.id,
+        studentId: invoice.studentId,
+        amount: invoice.balanceAmount,
+        currency: "INR",
+        status: "CREATED",
+        payerEmail: guardian?.email || invoice.student.studentEmail || null,
+        payerContact: guardian?.phone || null,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: getPublicKeyId(),
+      invoiceNo: invoice.invoiceNo,
+      studentName: `${invoice.student.firstName} ${invoice.student.lastName}`.trim(),
+      prefill: {
+        name: guardian?.name || "",
+        email: guardian?.email || invoice.student.studentEmail || "",
+        contact: guardian?.phone || "",
+      },
+    });
+  } catch (err: any) {
+    console.error("[payments/create-order]", err?.message);
+    return NextResponse.json(
+      { success: false, error: "Could not start the payment. Please try again." },
+      { status: 500 }
+    );
+  }
+}

@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, ArrowRight, Quote, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowRight, Quote } from "lucide-react";
 import Link from "next/link";
 
 function LoginForm() {
@@ -13,6 +13,62 @@ function LoginForm() {
   const attemptedEmail = searchParams.get("attempted");
 
   const googleAuthHref = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+
+  // Each failure path in the OAuth handshake reports a distinct code. Showing
+  // it (and Google's own detail string) is the difference between "try again"
+  // and knowing which setting is wrong.
+  const ERROR_COPY: Record<string, { title: string; message: string }> = {
+    idle_timeout: {
+      title: "Session Expired",
+      message: "You were signed out after 10 minutes of inactivity.",
+    },
+    tab_closed: {
+      title: "Tab Closed",
+      message: "Your session ended because the tab was closed.",
+    },
+    domain_not_allowed: {
+      title: "Account Not Permitted",
+      message: `Account "${attemptedEmail || ""}" is unauthorized. Only @dpskanpur.com accounts can sign in.`,
+    },
+    google_oauth_missing: {
+      title: "Sign-in Not Configured",
+      message:
+        "GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are not set on the server, so Google sign-in cannot start.",
+    },
+    token_exchange_failed: {
+      title: "Google Rejected the Sign-in",
+      message:
+        "Google would not exchange the sign-in code. This is usually a redirect URI that is not registered on the OAuth client, or a stale client secret.",
+    },
+    no_code: {
+      title: "Sign-in Incomplete",
+      message: "Google returned without an authorization code. Please start the sign-in again.",
+    },
+    csrf_mismatch: {
+      title: "Security Check Failed",
+      message:
+        "The sign-in state did not match this browser. Start again in a single tab, and allow cookies for this site.",
+    },
+    profile_fetch_failed: {
+      title: "Could Not Read Google Profile",
+      message:
+        "Google authorized the sign-in but did not return an email address. Confirm the OAuth client requests the 'email' and 'profile' scopes.",
+    },
+    auth_failed: {
+      title: "Sign-in Failed",
+      message:
+        "The server could not complete sign-in. Check the server logs for the underlying error — commonly the database is unreachable or the Google profile request failed.",
+    },
+    session_required: {
+      title: "Sign-in Required",
+      message: "Please sign in to open that page.",
+    },
+  };
+
+  const errorCopy = errorParam ? ERROR_COPY[errorParam] : undefined;
+  const errorTitle = errorCopy?.title || "Sign-in Notice";
+  const errorMessage =
+    errorCopy?.message || "Could not authenticate your Google account. Please try again.";
 
   return (
     <div className="min-h-screen w-full bg-slate-950 flex items-stretch antialiased selection:bg-[#005A36] selection:text-white">
@@ -94,37 +150,21 @@ function LoginForm() {
           {errorParam && (
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-rose-900">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-              <div>
-                <strong className="block font-semibold">
-                  {errorParam === "idle_timeout" ? "Session Expired" : errorParam === "tab_closed" ? "Tab Closed" : "Sign-in Notice"}
-                </strong>
-                <p className="text-[11px] text-rose-700 mt-0.5 leading-relaxed">
-                  {errorParam === "idle_timeout"
-                    ? "You were signed out after 10 minutes of inactivity."
-                    : errorParam === "tab_closed"
-                    ? "Your session ended because the tab was closed."
-                    : errorParam === "domain_not_allowed"
-                    ? `Account "${attemptedEmail || ""}" is unauthorized. Only @dpskanpur.com is permitted.`
-                    : errorDetail
-                    ? `Google Error: ${errorDetail}`
-                    : "Could not authenticate your Google account. Please try again."}
-                </p>
+              <div className="min-w-0">
+                <strong className="block font-semibold">{errorTitle}</strong>
+                <p className="text-[11px] text-rose-700 mt-0.5 leading-relaxed">{errorMessage}</p>
+                {errorDetail && (
+                  <p className="text-[10px] text-rose-600/90 mt-1.5 font-mono break-words">
+                    {errorDetail}
+                  </p>
+                )}
+                <p className="text-[10px] text-rose-500/80 mt-1.5 font-mono">code: {errorParam}</p>
               </div>
             </div>
           )}
 
           {/* Google Sign-In Primary Action */}
           <div className="space-y-4">
-            {/* DEV BYPASS BUTTON */}
-            <Link
-              href="/?login_success=true"
-              className="w-full bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-4 rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 group cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Dev Mode: Enter Portal as Super Admin</span>
-              <ArrowRight className="w-4 h-4 text-emerald-300 group-hover:translate-x-0.5 transition" />
-            </Link>
-
             <a
               href={googleAuthHref}
               className="w-full bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 font-semibold py-3.5 px-4 rounded-xl text-xs sm:text-sm transition border border-slate-300 hover:border-emerald-600 shadow-xs flex items-center justify-between group cursor-pointer"

@@ -3,7 +3,32 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { generateTCNumber, generateReceiptNumber } from "@/lib/utils";
+import { generateTCNumber } from "@/lib/utils";
+import { requirePermission } from "@/lib/auth";
+import { assertCampusAllowed } from "@/lib/permissions";
+import { createReceiptForPayment } from "@/lib/fee-payments";
+import { queuePaymentReceiptNotification } from "@/lib/notifications";
+
+// -------------------------------------------------------------
+// Campus isolation helper
+//
+// A campus-bound user must not be able to reach another campus's
+// record by posting its id directly to a server action.
+// -------------------------------------------------------------
+
+async function assertStudentInScope(
+  user: { campusId?: string | null },
+  studentId: string
+): Promise<void> {
+  if (!user.campusId) return;
+  const record = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { campusId: true },
+  });
+  if (!record || record.campusId !== user.campusId) {
+    throw new Error("You do not have access to records belonging to another campus.");
+  }
+}
 
 // -------------------------------------------------------------
 // Student Management Actions
@@ -14,7 +39,9 @@ import { generateTCNumber, generateReceiptNumber } from "@/lib/utils";
 // -------------------------------------------------------------
 
 export async function registerStudent(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("students", "update");
   const campusId = formData.get("campusId") as string;
+  assertCampusAllowed(user, campusId);
   const classId = formData.get("classId") as string;
   const firstName = formData.get("firstName") as string;
   const middleName = (formData.get("middleName") as string) || null;
@@ -235,6 +262,8 @@ export async function registerStudent(formData: FormData): Promise<void> {
 
 // Public Portal Online Registration Action (Payment Mode: ONLINE ONLY)
 export async function registerStudentPublic(formData: FormData): Promise<void> {
+  // Public admission form — intentionally unauthenticated. The campus is
+  // validated against the database below rather than against a session.
   const campusId = formData.get("campusId") as string;
   const classId = formData.get("classId") as string;
   const firstName = (formData.get("firstName") as string).trim();
@@ -377,7 +406,9 @@ export async function registerStudentPublic(formData: FormData): Promise<void> {
 
 // Update Fixed Campus Registration Fee Action for Admin Portal
 export async function updateCampusRegistrationFee(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
   const campusId = formData.get("campusId") as string;
+  assertCampusAllowed(user, campusId);
   const registrationFee = parseFloat(formData.get("registrationFee") as string) || 1000;
 
   await prisma.campus.update({
@@ -396,7 +427,9 @@ export async function updateCampusRegistrationFee(formData: FormData): Promise<v
 // -------------------------------------------------------------
 
 export async function promoteStudentToAdmission(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("students", "update");
   const studentId = formData.get("studentId") as string;
+  await assertStudentInScope(user, studentId);
   const sectionId = (formData.get("sectionId") as string) || null;
   const rollNo = formData.get("rollNo") ? parseInt(formData.get("rollNo") as string, 10) : null;
   const bloodGroup = (formData.get("bloodGroup") as string) || "B+";
@@ -467,7 +500,9 @@ export async function promoteStudentToAdmission(formData: FormData): Promise<voi
 // -------------------------------------------------------------
 
 export async function createStudent(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("students", "update");
   const campusId = formData.get("campusId") as string;
+  assertCampusAllowed(user, campusId);
   const classId = formData.get("classId") as string;
   const sectionId = (formData.get("sectionId") as string) || null;
   const firstName = formData.get("firstName") as string;
@@ -564,7 +599,9 @@ export async function createStudent(formData: FormData): Promise<void> {
 // -------------------------------------------------------------
 
 export async function issueTransferCertificate(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("tc", "update");
   const studentId = formData.get("studentId") as string;
+  await assertStudentInScope(user, studentId);
   const reasonForLeaving = (formData.get("reasonForLeaving") as string) || "Parent Relocation";
   const generalConduct = (formData.get("generalConduct") as string) || "Good";
   const subjectsStudied =
@@ -646,59 +683,46 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
 // -------------------------------------------------------------
 
 export async function collectFeePayment(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("fees", "update");
+
   const invoiceId = formData.get("invoiceId") as string;
   const paymentMode = (formData.get("paymentMode") as string) || "CASH";
   const amountPaid = parseFloat((formData.get("amountPaid") as string) || "0");
   const transactionRef = (formData.get("transactionRef") as string) || "CASH-COUNTER";
+  const bankName = (formData.get("bankName") as string) || "";
   const notes = (formData.get("notes") as string) || "";
-  const cashierName = (formData.get("cashierName") as string) || "Accounts Desk";
+  const cashierName = (formData.get("cashierName") as string) || user.name || "Accounts Desk";
   const returnUrl = formData.get("returnUrl") as string;
 
-  if (amountPaid <= 0) {
-    throw new Error("Payment amount must be greater than zero.");
+  // Online modes are only ever written by the verified gateway webhook.
+  if (paymentMode === "ONLINE_UPI") {
+    throw new Error(
+      "Online payments are recorded automatically from the payment gateway and cannot be entered at the counter."
+    );
   }
 
   const invoice = await prisma.feeInvoice.findUnique({
     where: { id: invoiceId },
-    include: { campus: true, student: true },
+    select: { campusId: true, studentId: true },
   });
 
   if (!invoice) {
     throw new Error("Invoice not found.");
   }
 
-  const year = new Date().getFullYear();
-  const count = await prisma.feePayment.count();
-  const receiptNo = generateReceiptNumber(invoice.campus.code, year, count + 1);
+  assertCampusAllowed(user, invoice.campusId);
 
-  await prisma.feePayment.create({
-    data: {
-      receiptNo,
-      invoiceId: invoice.id,
-      studentId: invoice.studentId,
-      paymentDate: new Date(),
-      paymentMode,
-      amountPaid,
-      transactionRef,
-      cashierName,
-      notes,
-      status: "SUCCESS",
-    },
+  const result = await createReceiptForPayment({
+    invoiceId,
+    amountPaid,
+    paymentMode,
+    transactionRef,
+    bankName,
+    cashierName,
+    notes,
   });
 
-  // Update invoice paid & balance amount
-  const newPaidAmount = invoice.paidAmount + amountPaid;
-  const newBalance = Math.max(0, invoice.netAmount - newPaidAmount);
-  const newStatus = newBalance === 0 ? "PAID" : newPaidAmount > 0 ? "PARTIALLY_PAID" : "PENDING";
-
-  await prisma.feeInvoice.update({
-    where: { id: invoice.id },
-    data: {
-      paidAmount: newPaidAmount,
-      balanceAmount: newBalance,
-      status: newStatus,
-    },
-  });
+  await queuePaymentReceiptNotification(result.paymentId);
 
   revalidatePath("/fees/collect");
   revalidatePath("/fees/invoices");
@@ -709,13 +733,15 @@ export async function collectFeePayment(formData: FormData): Promise<void> {
   if (returnUrl) {
     redirect(returnUrl);
   } else {
-    redirect(`/fees/cashier`);
+    redirect(`/fees/cashier?receipt=${encodeURIComponent(result.receiptNo)}`);
   }
 }
 
 // Delete Student Record
 export async function deleteStudent(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("students", "delete");
   const studentId = formData.get("studentId") as string;
+  await assertStudentInScope(user, studentId);
 
   await prisma.feePayment.deleteMany({ where: { studentId } });
   await prisma.feeInvoiceItem.deleteMany({ where: { invoice: { studentId } } });
@@ -733,7 +759,9 @@ export async function deleteStudent(formData: FormData): Promise<void> {
 
 // Update Existing Student Record
 export async function updateStudent(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("students", "update");
   const studentId = formData.get("studentId") as string;
+  await assertStudentInScope(user, studentId);
   const firstName = (formData.get("firstName") as string).trim();
   const middleName = (formData.get("middleName") as string)?.trim() || null;
   const lastName = (formData.get("lastName") as string).trim();
@@ -866,7 +894,9 @@ export async function updateStudent(formData: FormData): Promise<void> {
 // -------------------------------------------------------------
 
 export async function updateCampusSettings(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
   const campusId = formData.get("campusId") as string;
+  assertCampusAllowed(user, campusId);
   if (!campusId) return;
 
   const registrationFee = parseFloat(formData.get("registrationFee") as string) || 1000;
@@ -903,6 +933,7 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
 }
 
 export async function updateSystemSettings(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
   const currentAcademicYear = (formData.get("currentAcademicYear") as string) || "2026-2027";
   const scholarIdPrefix = (formData.get("scholarIdPrefix") as string) || "DPS";
   const registrationIdPrefix = (formData.get("registrationIdPrefix") as string) || "REG";
@@ -932,6 +963,7 @@ export async function updateSystemSettings(formData: FormData): Promise<void> {
 }
 
 export async function createDirectoryColumn(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
   const label = (formData.get("label") as string).trim();
   const keyRaw = (formData.get("key") as string)?.trim() || label.toLowerCase().replace(/[^a-z0-9]/g, "");
   const key = keyRaw || `col_${Date.now()}`;
@@ -958,6 +990,7 @@ export async function createDirectoryColumn(formData: FormData): Promise<void> {
 }
 
 export async function deleteDirectoryColumn(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
   const columnId = formData.get("columnId") as string;
 
   await prisma.directoryColumn.delete({ where: { id: columnId } });
@@ -968,6 +1001,7 @@ export async function deleteDirectoryColumn(formData: FormData): Promise<void> {
 }
 
 export async function toggleDirectoryColumnVisibility(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
   const columnId = formData.get("columnId") as string;
   const isVisible = formData.get("isVisible") === "true";
 
