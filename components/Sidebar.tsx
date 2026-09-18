@@ -20,6 +20,7 @@ import {
   Lock,
   KeyRound,
   ShieldCheck,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserPermissions } from "@/lib/permissions";
@@ -40,6 +41,7 @@ export function Sidebar({
   const canTc = permissions?.modules?.tc?.canView ?? true;
   const canAlumni = permissions?.modules?.alumni?.canView ?? true;
   const canRbac = (permissions?.modules?.rbac?.canView || permissions?.isAdmin) ?? false;
+  const canNotifications = (permissions?.modules?.notifications?.canView || permissions?.isAdmin) ?? false;
 
   const canUpdateStudents = permissions?.modules?.students?.canUpdate ?? false;
   const canUpdateFees = permissions?.modules?.fees?.canUpdate ?? false;
@@ -259,6 +261,29 @@ export function Sidebar({
                   <span>Daily Cashier Register</span>
                 </Link>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Parent Communication */}
+        {canNotifications && (
+          <div>
+            <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Parent Communication
+            </div>
+            <div className="space-y-1">
+              <Link
+                href="/notifications"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
+                  pathname.startsWith("/notifications")
+                    ? "bg-[#0F9D58] text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                )}
+              >
+                <Bell className="w-4 h-4 shrink-0" />
+                <span>Notifications</span>
+              </Link>
             </div>
           </div>
         )}

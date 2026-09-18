@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -41,6 +41,7 @@ model Campus {
   feeStructures FeeStructure[]
   feeInvoices   FeeInvoice[]
   users         User[]
+  notifications Notification[]
 }
 
 model User {
@@ -48,11 +49,12 @@ model User {
   email       String           @unique
   name        String
   avatarUrl   String?
-  role        String           @default("STAFF") // SUPER_ADMIN, ADMIN, FEES_MANAGER, ADMISSIONS_MANAGER, STAFF
+  role        String           @default("STAFF") // SUPER_ADMIN, ADMIN, PRINCIPAL, FEES_MANAGER, ADMISSIONS_MANAGER, STAFF, PARENT
   status      String           @default("PENDING") // ACTIVE, PENDING, SUSPENDED
   campusId    String?
   campus      Campus?          @relation(fields: [campusId], references: [id])
   permissions UserPermission[]
+  guardians   Guardian[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   lastLoginAt DateTime         @default(now())
@@ -62,7 +64,7 @@ model UserPermission {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  module    String   // "students", "fees", "tc", "alumni", "rbac"
+  module    String   // "students", "fees", "tc", "alumni", "rbac", "notifications"
   canView   Boolean  @default(false)
   canUpdate Boolean  @default(false)
   canDelete Boolean  @default(false)
@@ -199,6 +201,8 @@ model Student {
   discounts           StudentDiscount[]
   invoices            FeeInvoice[]
   payments            FeePayment[]
+  paymentOrders       PaymentOrder[]
+  notifications       Notification[]
 }
 
 model Guardian {
@@ -221,9 +225,14 @@ model Guardian {
   officePincode String?
   officeContact String?
   isPrimary    Boolean  @default(false)
+  // Optional link to a portal login account (groundwork for the parent app)
+  userId       String?
   createdAt    DateTime @default(now())
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
 }
 
 model StudentDocument {
@@ -362,8 +371,9 @@ model FeeInvoice {
   student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   campus       Campus           @relation(fields: [campusId], references: [id])
   academicYear AcademicYear     @relation(fields: [academicYearId], references: [id])
-  items        FeeInvoiceItem[]
-  payments     FeePayment[]
+  items         FeeInvoiceItem[]
+  payments      FeePayment[]
+  paymentOrders PaymentOrder[]
 }
 
 model FeeInvoiceItem {
@@ -391,8 +401,9 @@ model FeePayment {
   status         String   @default("SUCCESS") // "SUCCESS", "BOUNCED", "REFUNDED"
   createdAt      DateTime @default(now())
 
-  invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  invoice      FeeInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  paymentOrder PaymentOrder?
 }
 
 // -------------------------------------------------------------
@@ -419,4 +430,82 @@ model DirectoryColumn {
   sequence              Int      @default(0)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// -------------------------------------------------------------
+// Online Payment Gateway (Razorpay) — Orders, Webhooks & Idempotency
+// -------------------------------------------------------------
+
+model PaymentOrder {
+  id               String    @id @default(cuid())
+  gateway          String    @default("RAZORPAY")
+  gatewayOrderId   String    @unique // e.g. "order_NkL2p9..."
+  gatewayPaymentId String?   @unique // set once the gateway confirms capture
+  invoiceId        String
+  studentId        String
+  amount           Float     // Amount in INR (major unit) that was requested
+  amountPaid       Float     @default(0.0)
+  currency         String    @default("INR")
+  status           String    @default("CREATED") // "CREATED", "PAID", "FAILED", "CANCELLED"
+  feePaymentId     String?   @unique // FeePayment row created after verified capture
+  payerContact     String?
+  payerEmail       String?
+  failureReason    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  paidAt           DateTime?
+
+  invoice    FeeInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  student    Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feePayment FeePayment? @relation(fields: [feePaymentId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([status])
+}
+
+// Every gateway webhook delivery is recorded so a replayed event is never applied twice
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  gateway     String   @default("RAZORPAY")
+  eventId     String   @unique // Razorpay "x-razorpay-event-id" header
+  eventType   String   // "payment.captured", "payment.failed", "order.paid"
+  status      String   @default("PROCESSED") // "PROCESSED", "IGNORED", "ERROR"
+  payloadJson String
+  error       String?
+  receivedAt  DateTime @default(now())
+
+  @@index([eventType])
+}
+
+// -------------------------------------------------------------
+// Notifications (Fee Reminders, Payment Receipts & Announcements)
+// -------------------------------------------------------------
+
+model Notification {
+  id            String    @id @default(cuid())
+  campusId      String?
+  studentId     String?
+  channel       String    // "EMAIL", "SMS", "PUSH"
+  category      String    // "FEE_DUE", "FEE_OVERDUE", "PAYMENT_SUCCESS", "ANNOUNCEMENT", "REGISTRATION"
+  recipient     String    // Email address or E.164 mobile number
+  recipientName String?
+  subject       String?
+  body          String
+  status        String    @default("PENDING") // "PENDING", "SENT", "FAILED", "SKIPPED"
+  provider      String?   // "SMTP", "RESEND", "MSG91", "TWILIO", "CONSOLE"
+  providerRef   String?   // Provider message id for audit
+  error         String?
+  // Guarantees one reminder per invoice per window even if the job runs repeatedly
+  dedupeKey     String?   @unique
+  attempts      Int       @default(0)
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  campus  Campus?  @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
 }

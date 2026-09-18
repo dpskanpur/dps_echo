@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { getCurrentUser, getUserPermissions } from "@/lib/auth";
+import { requireUser, getUserPermissions } from "@/lib/auth";
+import { resolveCampusScope } from "@/lib/permissions";
+import { TrendChart, TrendPoint } from "@/components/TrendChart";
 import { SessionTimeoutCountdown } from "@/components/SessionTimeoutCountdown";
 import {
   Users,
@@ -28,11 +30,16 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ campus?: string; error?: string }>;
 }) {
-  const { campus: campusId, error } = await searchParams;
-  const user = await getCurrentUser();
+  const { campus: requestedCampusId, error } = await searchParams;
+  const user = await requireUser("/");
   const permissions = await getUserPermissions(user);
 
+  // A campus-bound user cannot widen this by editing ?campus= in the URL.
+  const scope = resolveCampusScope(user, requestedCampusId);
+  const campusId = scope.campusId || undefined;
+
   const campuses = await prisma.campus.findMany({
+    where: scope.locked ? { id: scope.campusId! } : {},
     orderBy: { name: "asc" },
   });
 
@@ -71,7 +78,7 @@ export default async function DashboardPage({
   }
 
   // HAS PERMISSIONS: Render personalized dynamic dashboard
-  const filterCampus = campusId && campusId !== "ALL" ? { campusId } : {};
+  const filterCampus = scope.where;
 
   // Aggregate Metrics (only query permitted domains)
   const canViewStudents = permissions.modules.students.canView;
@@ -108,7 +115,7 @@ export default async function DashboardPage({
 
   const allPayments = canViewFees
     ? await prisma.feePayment.findMany({
-        where: campusId && campusId !== "ALL" ? { invoice: { campusId } } : {},
+        where: scope.campusId ? { invoice: { campusId: scope.campusId } } : {},
         include: {
           student: { include: { campus: true, class: true } },
           invoice: true,
@@ -130,6 +137,103 @@ export default async function DashboardPage({
         include: { campus: true, class: true, section: true },
         orderBy: { createdAt: "desc" },
         take: 5,
+      })
+    : [];
+
+  // -------------------------------------------------------------
+  // Twelve-month trends
+  //
+  // Rows are bucketed in JS rather than with a SQL date_trunc so the same
+  // code path works on both the SQLite dev database and Cloud SQL.
+  // -------------------------------------------------------------
+
+  const now = new Date();
+  const windowStart = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+  const monthBuckets = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+    return {
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      label: date.toLocaleDateString("en-IN", { month: "short" }),
+      isYearStart: date.getMonth() === 0,
+    };
+  });
+
+  const bucketKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`;
+
+  const admissionsInWindow = canViewStudents
+    ? await prisma.student.findMany({
+        where: { ...filterCampus, admissionDate: { gte: windowStart } },
+        select: { admissionDate: true },
+      })
+    : [];
+
+  const paymentsInWindow = canViewFees
+    ? await prisma.feePayment.findMany({
+        where: {
+          paymentDate: { gte: windowStart },
+          ...(scope.campusId ? { invoice: { campusId: scope.campusId } } : {}),
+        },
+        select: { paymentDate: true, amountPaid: true },
+      })
+    : [];
+
+  const invoicesInWindow = canViewFees
+    ? await prisma.feeInvoice.findMany({
+        where: { ...filterCampus, createdAt: { gte: windowStart } },
+        select: { createdAt: true, netAmount: true },
+      })
+    : [];
+
+  const enrollmentTrend: TrendPoint[] = monthBuckets.map((bucket) => ({
+    label: bucket.label,
+    primary: admissionsInWindow.filter((a) => bucketKey(a.admissionDate) === bucket.key).length,
+  }));
+
+  const collectionTrend: TrendPoint[] = monthBuckets.map((bucket) => ({
+    label: bucket.label,
+    primary: paymentsInWindow
+      .filter((p) => bucketKey(p.paymentDate) === bucket.key)
+      .reduce((acc, p) => acc + p.amountPaid, 0),
+    secondary: invoicesInWindow
+      .filter((i) => bucketKey(i.createdAt) === bucket.key)
+      .reduce((acc, i) => acc + i.netAmount, 0),
+  }));
+
+  const totalAdmissionsThisWindow = enrollmentTrend.reduce((acc, p) => acc + p.primary, 0);
+  const collectedThisWindow = collectionTrend.reduce((acc, p) => acc + p.primary, 0);
+  const invoicedThisWindow = collectionTrend.reduce((acc, p) => acc + (p.secondary || 0), 0);
+  const collectionRate =
+    invoicedThisWindow > 0 ? Math.round((collectedThisWindow / invoicedThisWindow) * 100) : 0;
+
+  // Actionable defaulter list — the largest outstanding balances, not just a count.
+  const topDefaulters = canViewFees
+    ? await prisma.feeInvoice.findMany({
+        where: {
+          ...filterCampus,
+          balanceAmount: { gt: 0 },
+          status: { in: ["OVERDUE", "PENDING", "PARTIALLY_PAID"] },
+          dueDate: { lt: now },
+        },
+        orderBy: { balanceAmount: "desc" },
+        take: 6,
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              scholarNo: true,
+              class: { select: { name: true } },
+              campus: { select: { code: true } },
+              guardians: {
+                where: { isPrimary: true },
+                select: { phone: true },
+                take: 1,
+              },
+            },
+          },
+        },
       })
     : [];
 
@@ -250,6 +354,120 @@ export default async function DashboardPage({
               </Link>
             )}
           </div>
+
+          {/* Trends */}
+          {(canViewStudents || canViewFees) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {canViewStudents && (
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Enrollment Trend</h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        New admissions over the last 12 months
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-xl font-black text-slate-900">{totalAdmissionsThisWindow}</div>
+                      <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                        Admissions
+                      </div>
+                    </div>
+                  </div>
+
+                  <TrendChart
+                    points={enrollmentTrend}
+                    primaryLabel="New admissions"
+                    formatValue={(v) => `${v} student${v === 1 ? "" : "s"}`}
+                  />
+                </div>
+              )}
+
+              {canViewFees && (
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Fee Collection Trend</h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Collected against invoiced, last 12 months
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-xl font-black text-slate-900">{collectionRate}%</div>
+                      <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                        Collected
+                      </div>
+                    </div>
+                  </div>
+
+                  <TrendChart
+                    points={collectionTrend}
+                    primaryLabel="Collected"
+                    secondaryLabel="Invoiced"
+                    formatValue={(v) => formatCurrency(v)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Defaulter Summary — the list, not just the number */}
+          {canViewFees && (
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <h2 className="text-base font-bold text-slate-900">Largest Outstanding Dues</h2>
+                </div>
+                <Link href="/fees/defaulters" className="text-xs font-bold text-[#0F9D58] hover:underline">
+                  Full Defaulter List →
+                </Link>
+              </div>
+
+              {topDefaulters.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No overdue invoices. Everything is settled.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {topDefaulters.map((inv) => {
+                    const daysOverdue = Math.max(
+                      0,
+                      Math.floor((now.getTime() - new Date(inv.dueDate).getTime()) / 86400000)
+                    );
+                    return (
+                      <Link
+                        key={inv.id}
+                        href={`/students/${inv.student.id}`}
+                        className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/80 -mx-2 px-2 rounded-lg transition"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 text-xs truncate">
+                            {inv.student.firstName} {inv.student.lastName}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono truncate">
+                            {inv.student.scholarNo} • {inv.student.class.name} •{" "}
+                            {inv.student.campus.code}
+                            {inv.student.guardians[0]?.phone
+                              ? ` • ${inv.student.guardians[0].phone}`
+                              : ""}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-black text-xs text-rose-600">
+                            {formatCurrency(inv.balanceAmount)}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-medium">
+                            {daysOverdue} day{daysOverdue === 1 ? "" : "s"} overdue
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Main Data Tables Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -60,10 +60,10 @@ export default async function FeeCollectionDeskPage({
         where: {
           status: "ACTIVE",
           OR: [
-            { firstName: { contains: q } },
-            { lastName: { contains: q } },
-            { scholarNo: { contains: q } },
-            { admissionNo: { contains: q } },
+            { firstName: { contains: q, mode: "insensitive" } },
+            { lastName: { contains: q, mode: "insensitive" } },
+            { scholarNo: { contains: q, mode: "insensitive" } },
+            { admissionNo: { contains: q, mode: "insensitive" } },
           ],
         },
         include: { campus: true, class: true, section: true },

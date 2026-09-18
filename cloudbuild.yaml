@@ -1,0 +1,56 @@
+steps:
+  # Step 1: Build Container Image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Step 2: Push Container Image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'
+
+  # Step 3: Deploy Service to Google Cloud Run
+  #
+  # Secrets live in Secret Manager, not in this file and not in the image.
+  # Grant the runtime service account roles/secretmanager.secretAccessor and
+  # roles/cloudsql.client before the first deploy.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=3'
+      - '--add-cloudsql-instances=${_SQL_INSTANCE}'
+      - '--set-env-vars=NODE_ENV=production,NEXT_PUBLIC_APP_URL=${_APP_URL},NEXTAUTH_URL=${_APP_URL}'
+      - '--set-secrets=DATABASE_URL=dps-echo-database-url:latest,SESSION_SECRET=dps-echo-session-secret:latest,GOOGLE_CLIENT_ID=dps-echo-google-client-id:latest,GOOGLE_CLIENT_SECRET=dps-echo-google-client-secret:latest,RAZORPAY_KEY_ID=dps-echo-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=dps-echo-razorpay-key-secret:latest,RAZORPAY_WEBHOOK_SECRET=dps-echo-razorpay-webhook-secret:latest,CRON_SECRET=dps-echo-cron-secret:latest,ECHO_API_KEY=dps-echo-api-key:latest,RESEND_API_KEY=dps-echo-resend-api-key:latest,NOTIFY_EMAIL_FROM=dps-echo-notify-email-from:latest,MSG91_AUTH_KEY=dps-echo-msg91-auth-key:latest,MSG91_SENDER_ID=dps-echo-msg91-sender-id:latest'
+
+substitutions:
+  _PROJECT_ID: 'dpskanpur-backup'
+  _REGION: 'asia-southeast1'
+  _SERVICE_NAME: 'dps-echo'
+  # projectId:region:instanceName of the Cloud SQL for PostgreSQL instance
+  _SQL_INSTANCE: 'dpskanpur-backup:asia-southeast1:dps-echo-db'
+  _APP_URL: 'https://echo.dpskanpur.com'
+
+images:
+  - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+  - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'

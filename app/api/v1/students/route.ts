@@ -1,23 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { authorizeApiRequest, apiCampusWhere } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/v1/students - Retrieve filtered student list for API & MCP agents
 export async function GET(request: Request) {
+  const auth = await authorizeApiRequest(request, "students", "view");
+  if (!auth.ok) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query") || searchParams.get("search") || "";
     const campusId = searchParams.get("campusId");
     const status = searchParams.get("status");
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10) || 50, 200);
 
-    const where: any = {};
-
-    if (campusId) {
-      where.campusId = campusId;
-    }
+    // A campus-bound caller can never widen the filter past their own campus.
+    const where: any = { ...apiCampusWhere(auth, campusId) };
 
     if (status) {
       where.status = status;
@@ -25,11 +27,11 @@ export async function GET(request: Request) {
 
     if (query) {
       where.OR = [
-        { firstName: { contains: query } },
-        { lastName: { contains: query } },
-        { registrationNo: { contains: query } },
-        { scholarNo: { contains: query } },
-        { admissionNo: { contains: query } },
+        { firstName: { contains: query, mode: "insensitive" } },
+        { lastName: { contains: query, mode: "insensitive" } },
+        { registrationNo: { contains: query, mode: "insensitive" } },
+        { scholarNo: { contains: query, mode: "insensitive" } },
+        { admissionNo: { contains: query, mode: "insensitive" } },
       ];
     }
 
@@ -60,6 +62,11 @@ export async function GET(request: Request) {
 
 // POST /api/v1/students - Programmatic registration API for AI agents & MCP
 export async function POST(request: Request) {
+  const auth = await authorizeApiRequest(request, "students", "update");
+  if (!auth.ok) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+  }
+
   try {
     const body = await request.json();
     const {
@@ -79,6 +86,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: "Missing required fields: campusId, classId, firstName, lastName, dob, gender" },
         { status: 400 }
+      );
+    }
+
+    if (auth.campusId && campusId !== auth.campusId) {
+      return NextResponse.json(
+        { success: false, error: "You may only create records for your own campus." },
+        { status: 403 }
       );
     }
 
