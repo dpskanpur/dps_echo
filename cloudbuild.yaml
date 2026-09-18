@@ -1,0 +1,44 @@
+steps:
+  # Step 1: Build Container Image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Step 2: Push Container Image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'
+
+  # Step 3: Deploy Service to Google Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=1Gi'
+      - '--cpu=1'
+
+substitutions:
+  _PROJECT_ID: 'dpskanpur-backup'
+  _REGION: 'asia-southeast1'
+  _SERVICE_NAME: 'dps-echo'
+
+images:
+  - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
+  - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'
