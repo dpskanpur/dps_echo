@@ -43,6 +43,7 @@ images:
   - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:$BUILD_ID'
   - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:latest'
 
+logsBucket: 'gs://dpskanpur-backup_cloudbuild/logs'
+
 options:
-  logging: CLOUD_LOGGING_ONLY
   machineType: 'N1_HIGHCPU_8'

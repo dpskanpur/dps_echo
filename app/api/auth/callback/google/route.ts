@@ -1,63 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import dns from "dns";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
-
-// Prefer A records over AAAA. On machines behind a VPN resolver (Tailscale
-// MagicDNS, for example) the IPv6 resolution path can fail outright and
-// surface as ENOTFOUND even though IPv4 resolves fine.
-try {
-  dns.setDefaultResultOrder("ipv4first");
-} catch {
-  // Not available on every runtime; the default order still works elsewhere.
-}
-
-/**
- * Calls a Google endpoint, retrying briefly on transient network errors.
- *
- * An earlier version fell back to resolving the hostname itself and dialling
- * the raw IP. On a machine using a VPN resolver (Tailscale's 100.100.100.100,
- * for example) that side path fails with a misleading "queryA ECONNREFUSED"
- * and masks the real error. Node's own resolver already handles this
- * correctly, so a short retry is both simpler and more reliable.
- */
-async function googleFetch(
-  urlStr: string,
-  options: { method?: string; headers?: Record<string, string>; body?: string } = {},
-  attempts = 3
-): Promise<Response> {
-  let lastError: any;
-
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    try {
-      return await fetch(urlStr, {
-        method: options.method || "GET",
-        headers: options.headers,
-        body: options.body,
-        signal: AbortSignal.timeout(10_000),
-      });
-    } catch (err: any) {
-      lastError = err;
-      const reason = err?.cause?.message || err?.message || "unknown error";
-      console.warn(`[oauth] ${urlStr} attempt ${attempt + 1}/${attempts} failed: ${reason}`);
-      if (attempt < attempts - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
-      }
-    }
-  }
-
-  const reason = lastError?.cause?.message || lastError?.message || "unknown error";
-  const hostname = new URL(urlStr).hostname;
-  const isDnsFailure = /ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(reason);
-
-  throw new Error(
-    isDnsFailure
-      ? `DNS lookup for ${hostname} failed (${reason}). The server process cannot resolve hostnames — ` +
-        `restart the dev server, and if a VPN resolver is active check that it is reachable.`
-      : `Could not reach ${hostname}: ${reason}`
-  );
-}
+import { resilientFetch } from "@/lib/resilient-fetch";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -114,7 +59,7 @@ export async function GET(request: Request) {
       grant_type: "authorization_code",
     }).toString();
 
-    const tokenRes = await googleFetch("https://oauth2.googleapis.com/token", {
+    const tokenRes = await resilientFetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: bodyParams,
@@ -130,7 +75,7 @@ export async function GET(request: Request) {
     }
 
     // 2. Fetch User Profile from Google (with IPv4 fallback)
-    const profileRes = await googleFetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    const profileRes = await resilientFetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 

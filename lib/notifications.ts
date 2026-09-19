@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { resilientFetch } from "@/lib/resilient-fetch";
 
 /**
  * Notification dispatch.
@@ -347,7 +348,7 @@ async function sendEmail(to: string, subject: string, body: string): Promise<Sen
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await resilientFetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -375,7 +376,7 @@ async function sendSms(to: string, body: string): Promise<SendOutcome> {
   }
 
   try {
-    const res = await fetch("https://api.msg91.com/api/v2/sendsms", {
+    const res = await resilientFetch("https://api.msg91.com/api/v2/sendsms", {
       method: "POST",
       headers: { authkey: authKey, "Content-Type": "application/json" },
       body: JSON.stringify({
