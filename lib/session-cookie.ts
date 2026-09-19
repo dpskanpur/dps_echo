@@ -24,13 +24,7 @@ async function signPayload(data: string): Promise<string> {
   const keyData = encoder.encode(SECRET_KEY);
   const msgData = encoder.encode(data);
 
-  let cryptoSubtle: SubtleCrypto;
-  if (typeof globalThis !== "undefined" && globalThis.crypto?.subtle) {
-    cryptoSubtle = globalThis.crypto.subtle;
-  } else {
-    const nodeCrypto = await import("crypto");
-    cryptoSubtle = nodeCrypto.webcrypto.subtle as SubtleCrypto;
-  }
+  const cryptoSubtle = globalThis.crypto?.subtle || (crypto as any)?.subtle;
 
   const key = await cryptoSubtle.importKey(
     "raw",

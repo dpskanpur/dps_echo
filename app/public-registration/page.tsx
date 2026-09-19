@@ -423,28 +423,25 @@ export default async function PublicRegistrationPage({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">
-                  Select Online Payment Method *
+                  Select Online Payment Gateway *
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="flex items-center gap-2 p-3 bg-white border border-emerald-400 rounded-xl cursor-pointer hover:bg-emerald-50 transition">
+                <div className="p-3 bg-white border border-emerald-400 rounded-xl flex items-center justify-between shadow-xs">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
                       type="radio"
                       name="paymentGateway"
                       value="RAZORPAY"
                       defaultChecked
-                      className="accent-emerald-700"
+                      className="w-4 h-4 accent-emerald-700 cursor-pointer"
                     />
-                    <span className="text-xs font-bold text-slate-800">Razorpay / UPI / Cards</span>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Razorpay Payment Gateway</div>
+                      <div className="text-[11px] text-slate-500 font-medium">UPI, Credit/Debit Cards, NetBanking & Wallets</div>
+                    </div>
                   </label>
-                  <label className="flex items-center gap-2 p-3 bg-white border border-emerald-200 rounded-xl cursor-pointer hover:bg-emerald-50 transition">
-                    <input
-                      type="radio"
-                      name="paymentGateway"
-                      value="NETBANKING"
-                      className="accent-emerald-700"
-                    />
-                    <span className="text-xs font-bold text-slate-800">NetBanking / NEFT</span>
-                  </label>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md shrink-0">
+                    Secure
+                  </span>
                 </div>
               </div>
             </div>
