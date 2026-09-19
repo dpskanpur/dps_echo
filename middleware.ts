@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE_NAME } from "@/lib/permissions";
 import { decodeSessionCookie, isSessionIdleExpired } from "@/lib/session-cookie";
+import { publicUrl } from "@/lib/public-url";
 
 /**
  * Routes reachable without a staff session.
@@ -37,7 +38,7 @@ function denyApi(reason: string) {
 }
 
 function redirectToLogin(request: NextRequest, error?: string) {
-  const url = new URL("/login", request.url);
+  const url = publicUrl("/login", request);
   const target = request.nextUrl.pathname + request.nextUrl.search;
   if (target && target !== "/") url.searchParams.set("redirect", target);
   if (error) url.searchParams.set("error", error);

@@ -1,159 +1,89 @@
 # DPS Echo (`dps_echo`)
 
-School administration portal for the **Delhi Public School Kanpur** group
-(`https://echo.dpskanpur.com`), covering four campuses: Azad Nagar, Barra,
-Kidwai Nagar and Servodaya Nagar.
+Official school administration and admissions portal for the **Delhi Public School Kanpur** group, covering four campuses: **DPS Azad Nagar (AZD)**, **DPS Barra (BAR)**, **DPS Kidwai Nagar (KID)**, and **DPS Servodaya Nagar (SRV)**.
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Prisma · PostgreSQL ·
-Tailwind · Google Cloud Run
+**Live Service URL:** [https://echo.dpskanpur.com](https://echo.dpskanpur.com)  
+**Cloud Run URL:** [https://dps-echo-1095199168782.asia-southeast1.run.app](https://dps-echo-1095199168782.asia-southeast1.run.app)
 
-**Runtime:** Node 22 LTS (`.nvmrc`). The container image builds on
-`node:22-alpine`; Node 20 reached end of life in April 2026 and no longer
-receives security patches.
+**Tech Stack:** Next.js 15 (App Router) · TypeScript · Prisma ORM · PostgreSQL · Tailwind CSS · Google Cloud Run · GCP Cloud Build
+
+**Runtime:** Node 22 LTS (`.nvmrc`). The container image builds on `node:22-alpine`.
 
 ---
 
-## Modules
+## 1. Key Modules & Features
 
-| Module | What it covers |
+| Module | Features & Capabilities |
 |---|---|
-| Student Information | Admissions (staff + public online), student dossier, guardians, documents, class/section masters, bulk CSV import |
-| Fee & Finance | Fee heads, class-wise structures, invoices, receipts, partial payments, discounts, ledger, defaulters, daily cashier register |
-| Online Payments | Parent self-service fee payment via Razorpay (UPI / cards / net banking) |
-| Notifications | Fee due & overdue reminders, payment receipts and announcements over email + SMS |
-| Transfer Certificate | CBSE-format TC issuance with QR-based public verification |
-| Alumni | Graduated student archive |
-| RBAC | Per-module view/update/delete matrix for staff, scoped by campus |
-
-> Transfer Certificate and Alumni were built beyond the original module scope —
-> they are in production use and carry their own maintenance cost.
+| **Student Directory & Dossier** | Admissions (staff + public online form), student dossier, guardian info, document uploads, class/section masters, drag-and-drop **CSV Bulk Import** |
+| **Public Online Registration** | Mobile-responsive public admission form (`/public-registration`) with Razorpay online gateway payment |
+| **Fee & Financial Management** | Class-wise fee structures, quarterly invoices, payment receipts, partial fee collection, discounts, ledger, defaulters register, cashier daily register |
+| **Online Payments** | Razorpay integration (UPI, Credit/Debit Cards, NetBanking, Wallets) with webhooks (`/api/payments/webhook`) |
+| **Notifications** | Automated fee due/overdue reminders over email & SMS |
+| **Transfer Certificate (TC)** | CBSE-format TC generator with QR code public verification portal (`/verify-tc`) |
+| **Alumni Network** | Archive of graduated students |
+| **Campus RBAC Console** | Module-level permission matrix (View / Update / Delete) scoped per campus (`/admin/rbac`) |
 
 ---
 
-## Access model
+## 2. Authentication & Security Model
 
-Staff sign in with Google Workspace; only `@dpskanpur.com` accounts are
-accepted. New accounts land in `PENDING` and get no access until an
-administrator grants permissions in the RBAC console.
-
-There is **no bypass login**. Authentication fails closed: a missing, forged
-or idle-expired session is anonymous, and anonymous callers reach only the
-public pages (`/pay`, `/verify-tc`, `/public-registration`, `/login`).
-
-A user carrying a `campusId` is pinned to that campus. Editing `?campus=` in
-the URL, or posting another campus's record id to a server action, is refused
-server-side rather than filtered in the UI.
+- **Staff Authentication**: Restricted to Google Workspace `@dpskanpur.com` email accounts.
+- **Role-Based Access**: New staff land in `PENDING` status and require explicit permission assignment by a Super Admin in `/admin/rbac`.
+- **Anonymous Access**: Only public routes are accessible without a session: `/login`, `/pay`, `/verify-tc`, `/public-registration`.
+- **Session Security**: Signed HMAC session cookies validated via `lib/session-cookie.ts` and enforced in `middleware.ts`.
 
 ---
 
-## Local development
+## 3. Local Development Setup
 
 ```bash
-# 0. Match the runtime used in production
-nvm use            # reads .nvmrc -> Node 22 LTS
+# 1. Use Node 22 LTS
+nvm use
 
-# 1. Start PostgreSQL
+# 2. Install dependencies
+npm install
+
+# 3. Configure local environment
+cp .env.example .env
+
+# 4. Start PostgreSQL (or local container)
 docker compose up -d
 
-# 2. Configure the environment
-cp .env.example .env        # then fill in the values (see below)
-
-# 3. Create the schema and seed reference data
+# 5. Apply Prisma migrations & seed reference data
 npx prisma migrate dev --name init
 npm run db:seed
 
-# 4. Run
-npm install
-npm run dev                 # http://localhost:8088
+# 6. Start development server on port 8088
+npm run dev
 ```
 
-`SESSION_SECRET` is required in production — the app refuses to start without
-it, because a default signing key would let anyone forge an administrator
-session. Generate one with `openssl rand -hex 32`.
-
-For Google sign-in, register `http://localhost:8088/api/auth/callback/google`
-as an authorized redirect URI on the OAuth client.
+Local server starts at `http://localhost:8088/`.
 
 ---
 
-## Payments
+## 4. Multi-Repository CLI Workflow (`scripts/dps_manager.py`)
 
-Online payment is only enabled when `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
-and `RAZORPAY_WEBHOOK_SECRET` are all set; otherwise the public fee page shows
-dues but disables the pay button rather than pretending to collect money.
-
-A fee is marked paid in exactly one place: the signed webhook at
-`/api/payments/webhook`. The browser callback is never treated as proof of
-payment. Configure the webhook in the Razorpay dashboard against
-`payment.captured` and `payment.failed`. Every delivery is recorded by event
-id, so a replayed webhook cannot produce a second receipt.
-
----
-
-## Scheduled jobs
-
-Fee reminders run from Cloud Scheduler:
+All development across the 8 DPS Kanpur repositories follows strict Git workflows:
 
 ```bash
-curl -X POST https://echo.dpskanpur.com/api/cron/fee-reminders \
-     -H "x-cron-secret: $CRON_SECRET"
-```
+# Check branch status
+python3 scripts/dps_manager.py status --site dps_echo
 
-It marks past-due invoices `OVERDUE`, queues due/overdue reminders on every
-channel a parent can be reached on, then flushes the queue. Re-running it is
-safe — a parent is not messaged twice for the same invoice in the same window.
+# Commit & push changes to dev branch
+python3 scripts/dps_manager.py push -m "feat(module): description" --site dps_echo
 
-Unconfigured channels record messages as `SKIPPED` instead of dropping them,
-so nothing is lost while a provider is being set up.
+# Create Pull Request (dev -> main)
+python3 scripts/dps_manager.py pr create --site dps_echo -t "Title"
 
----
-
-## API
-
-`/api/v1/students` accepts either a staff session or a service token:
-
-```bash
-curl https://echo.dpskanpur.com/api/v1/students?query=sharma \
-     -H "Authorization: Bearer $ECHO_API_KEY"
-```
-
-Token auth is disabled entirely when `ECHO_API_KEY` is unset. Set
-`ECHO_API_CAMPUS_ID` to pin a token to one campus.
-
----
-
-## Deployment
-
-Cloud Build builds the image and deploys to Cloud Run with Cloud SQL attached
-and secrets injected from Secret Manager. Before the first deploy:
-
-1. Create the Cloud SQL (PostgreSQL) instance named in `_SQL_INSTANCE`.
-2. Create the Secret Manager secrets referenced in `cloudbuild.yaml`.
-3. Grant the runtime service account `roles/cloudsql.client` and
-   `roles/secretmanager.secretAccessor`.
-
-Migrations are **not** applied during the image build. Apply them deliberately
-against Cloud SQL (via the Cloud SQL Auth Proxy) before rolling out a release:
-
-```bash
-cloud-sql-proxy dpskanpur-backup:asia-southeast1:dps-echo-db &
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/dps_echo" \
-  npx prisma migrate deploy
+# Merge PR into main (Triggers GCP Cloud Build & Cloud Run deployment)
+python3 scripts/dps_manager.py pr merge --site dps_echo
 ```
 
 ---
 
-## Git workflow
+## 5. Production Infrastructure & Cloud Build
 
-> Direct pushes to `main` are blocked. All work goes to `dev`.
-
-```bash
-git checkout dev
-git pull origin dev
-git add -A
-git commit -m "feat(fees): ..."
-git push origin dev
-```
-
-Open a pull request from `dev` to `main`; merging triggers the production
-Cloud Run deployment.
+- **Google Cloud Run**: Deployed to region `asia-southeast1` in GCP project `dpskanpur-backup`.
+- **Containerization**: `Dockerfile` using multi-stage Node 22 Alpine build with Next.js standalone output (`output: "standalone"`).
+- **Automated Pipeline**: Merging to `main` triggers GCP Cloud Build (`cloudbuild.yaml`) to build the Docker image and update the `dps-echo` Cloud Run service.
