@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
+import { NoCampusState } from "@/components/NoCampusState";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -25,6 +26,16 @@ export default async function FeeStructuresPage({
 
   const activeCampus =
     campuses.find((c) => c.id === campusId) || campuses[0];
+
+  if (!activeCampus) {
+    return (
+      <NoCampusState
+        user={user}
+        permissions={permissions}
+        context="Fee structures are defined per campus."
+      />
+    );
+  }
 
   const feeHeads = await prisma.feeHead.findMany({
     where: { campusId: activeCampus.id },
