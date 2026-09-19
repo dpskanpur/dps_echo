@@ -17,6 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Prisma only parses DATABASE_URL at generate time — it never connects. The
 # real connection string is injected at runtime from Secret Manager.
