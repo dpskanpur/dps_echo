@@ -7,6 +7,7 @@ import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { deleteStudent } from "@/lib/actions";
 import { DeleteStudentButton } from "@/components/DeleteStudentButton";
+import { BulkImportModal } from "@/components/BulkImportModal";
 import {
   Users,
   UserPlus,
@@ -117,13 +118,16 @@ export default async function StudentsPage({
 
             <div className="flex items-center gap-2">
               {permissions.modules.students.canUpdate ? (
-                <Link
-                  href="/students/new"
-                  className="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>+ New Student Registration</span>
-                </Link>
+                <>
+                  <Link
+                    href="/students/new"
+                    className="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>+ New Student Registration</span>
+                  </Link>
+                  <BulkImportModal />
+                </>
               ) : (
                 <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-medium">
                   <Lock className="w-3.5 h-3.5 text-amber-600" />
