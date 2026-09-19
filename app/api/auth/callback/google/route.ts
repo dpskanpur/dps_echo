@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicUrl, publicBaseUrl } from "@/lib/public-url";
 import { cookies } from "next/headers";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   const rawState = searchParams.get("state") || "/";
 
   if (!code) {
-    return NextResponse.redirect(new URL("/login?error=no_code", request.url));
+    return NextResponse.redirect(publicUrl("/login?error=no_code", request));
   }
 
   // Parse state parameter (format: "csrfToken:redirectPath")
@@ -30,23 +31,18 @@ export async function GET(request: Request) {
 
   if (csrfTokenFromState && storedCsrfToken && csrfTokenFromState !== storedCsrfToken) {
     console.error("OAuth CSRF Mismatch attack detected!");
-    return NextResponse.redirect(new URL("/login?error=csrf_mismatch", request.url));
+    return NextResponse.redirect(publicUrl("/login?error=csrf_mismatch", request));
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-  let redirectUri: string;
-  if (process.env.NEXTAUTH_URL) {
-    redirectUri = `${process.env.NEXTAUTH_URL.replace(/\/$/, "")}/api/auth/callback/google`;
-  } else {
-    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:8088";
-    const proto = request.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
-    redirectUri = `${proto}://${host}/api/auth/callback/google`;
-  }
+  // Must match the redirect_uri sent in the authorize step byte for byte,
+  // or Google rejects the code exchange.
+  const redirectUri = `${publicBaseUrl(request)}/api/auth/callback/google`;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(new URL("/login?error=google_oauth_missing", request.url));
+    return NextResponse.redirect(publicUrl("/login?error=google_oauth_missing", request));
   }
 
   try {
@@ -70,7 +66,7 @@ export async function GET(request: Request) {
       console.error("Token exchange failed:", tokens);
       const detail = tokens.error_description || tokens.error || "token_exchange_failed";
       return NextResponse.redirect(
-        new URL(`/login?error=token_exchange_failed&detail=${encodeURIComponent(detail)}`, request.url)
+        publicUrl(`/login?error=token_exchange_failed&detail=${encodeURIComponent(detail)}`, request)
       );
     }
 
@@ -88,7 +84,7 @@ export async function GET(request: Request) {
       const detail =
         profile?.error?.message || `userinfo returned HTTP ${profileRes.status} without an email`;
       return NextResponse.redirect(
-        new URL(`/login?error=profile_fetch_failed&detail=${encodeURIComponent(detail)}`, request.url)
+        publicUrl(`/login?error=profile_fetch_failed&detail=${encodeURIComponent(detail)}`, request)
       );
     }
 
@@ -99,9 +95,9 @@ export async function GET(request: Request) {
     // 3. Strict Domain Verification
     if (!isAllowedDomain(email)) {
       return NextResponse.redirect(
-        new URL(
+        publicUrl(
           `/login?error=domain_not_allowed&attempted=${encodeURIComponent(email)}`,
-          request.url
+          request
         )
       );
     }
@@ -109,10 +105,10 @@ export async function GET(request: Request) {
     // 4. Log in or create User with auto-derived role
     const result = await loginOrCreateUser(email, name, avatarUrl);
     if (!result.success || !result.user) {
-      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(result.error || "")}`, request.url));
+      return NextResponse.redirect(publicUrl(`/login?error=${encodeURIComponent(result.error || "")}`, request));
     }
 
-    const redirectUrlObj = new URL(redirectTarget, request.url);
+    const redirectUrlObj = publicUrl(redirectTarget, request);
     redirectUrlObj.searchParams.set("login_success", "true");
 
     const response = NextResponse.redirect(redirectUrlObj);
@@ -126,7 +122,7 @@ export async function GET(request: Request) {
     console.error("OAuth callback error:", err);
     const detail = String(err?.message || "unknown error").slice(0, 200);
     return NextResponse.redirect(
-      new URL(`/login?error=auth_failed&detail=${encodeURIComponent(detail)}`, request.url)
+      publicUrl(`/login?error=auth_failed&detail=${encodeURIComponent(detail)}`, request)
     );
   }
 }

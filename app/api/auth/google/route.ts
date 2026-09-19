@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicUrl, publicBaseUrl } from "@/lib/public-url";
 import crypto from "crypto";
 import { ALLOWED_DOMAIN } from "@/lib/auth";
 
@@ -8,18 +9,11 @@ export async function GET(request: Request) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
 
-  let redirectUri: string;
-  if (process.env.NEXTAUTH_URL) {
-    redirectUri = `${process.env.NEXTAUTH_URL.replace(/\/$/, "")}/api/auth/callback/google`;
-  } else {
-    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:8088";
-    const proto = request.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
-    redirectUri = `${proto}://${host}/api/auth/callback/google`;
-  }
+  const redirectUri = `${publicBaseUrl(request)}/api/auth/callback/google`;
 
   if (!clientId) {
     return NextResponse.redirect(
-      new URL(`/login?error=google_oauth_missing&redirect=${encodeURIComponent(redirectPath)}`, request.url)
+      publicUrl(`/login?error=google_oauth_missing&redirect=${encodeURIComponent(redirectPath)}`, request)
     );
   }
 

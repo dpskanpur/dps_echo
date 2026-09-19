@@ -1,38 +1,41 @@
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 
-# testing
+# Testing & Coverage
 /coverage
 
-# next.js
+# Next.js Build Outputs
 /.next/
 /out/
-
-# production
 /build
 
-# misc
+# Miscellaneous & System
 .DS_Store
+Thumbs.db
 *.pem
+*.swp
 
-# debug
+# Debug & Execution Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+dev.log
 
-# local env files
+# Environment Files
 .env*.local
 .env
 
-# typescript
+# TypeScript Artifacts
 *.tsbuildinfo
 next-env.d.ts
 
-# SQLite database file
+# Database Artifacts
 /prisma/*.db
 /prisma/*.db-journal
 
-# local dev server output
-dev.log
+# Temporary & Scratch Files
+scratch/
+tmp/
