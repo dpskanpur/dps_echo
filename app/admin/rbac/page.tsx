@@ -33,6 +33,7 @@ import {
   createDirectoryColumn,
   deleteDirectoryColumn,
   toggleDirectoryColumnVisibility,
+  createCampus,
 } from "@/lib/actions";
 import Link from "next/link";
 
@@ -99,7 +100,9 @@ export default async function AdminSettingsPage({
               <div className="px-3.5 py-2 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs font-bold flex items-center gap-2 shadow-xs">
                 <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>
-                  {notice === "campus_updated"
+                  {notice === "campus_created"
+                    ? `Campus ${selectedCampus?.name || ""} created successfully!`
+                    : notice === "campus_updated"
                     ? `Settings for ${selectedCampus?.name || "Campus"} updated successfully!`
                     : notice === "column_added"
                     ? "New Directory Column added to Student Registry!"
@@ -122,7 +125,7 @@ export default async function AdminSettingsPage({
               }`}
             >
               <Building2 className="w-4 h-4 text-emerald-800" />
-              <span>1. School-Specific Settings & Fees</span>
+              <span>1. Settings & Fees</span>
             </Link>
 
             <Link
@@ -181,6 +184,185 @@ export default async function AdminSettingsPage({
                 </div>
               </div>
 
+              {/* Create Campus — rendered outside the selectedCampus guard so
+                  it is reachable on an empty database */}
+              <details
+                className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden group"
+                open={campuses.length === 0}
+              >
+                <summary className="p-5 cursor-pointer flex items-center gap-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition list-none">
+                  <Plus className="w-4 h-4 text-emerald-800" />
+                  <span>Add a New Campus</span>
+                  {campuses.length === 0 && (
+                    <span className="ml-auto text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                      No campuses yet — start here
+                    </span>
+                  )}
+                </summary>
+
+                <form
+                  action={createCampus}
+                  className="p-6 sm:p-8 pt-0 space-y-5 max-w-5xl border-t border-slate-100"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Campus Code *
+                      </label>
+                      <input
+                        type="text"
+                        name="code"
+                        required
+                        maxLength={6}
+                        placeholder="AZD"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        2–6 letters. Used in IDs: DPS-<strong>AZD</strong>-2026-0001
+                      </p>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Campus Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        required
+                        placeholder="DPS Azad Nagar"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Address *</label>
+                    <input
+                      type="text"
+                      name="address"
+                      required
+                      placeholder="Azad Nagar, Kanpur"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
+                      <input
+                        type="text"
+                        name="city"
+                        defaultValue="Kanpur"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">State</label>
+                      <input
+                        type="text"
+                        name="state"
+                        defaultValue="Uttar Pradesh"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Pincode</label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        defaultValue="208002"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Phone *</label>
+                      <input
+                        type="text"
+                        name="phone"
+                        required
+                        placeholder="+91 512 000 0000"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        placeholder="azadnagar@dpskanpur.com"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        CBSE Affiliation
+                      </label>
+                      <input
+                        type="text"
+                        name="affiliation"
+                        placeholder="CBSE Affiliation No. 2130722"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Academic Year
+                      </label>
+                      <input
+                        type="text"
+                        name="activeAcademicYear"
+                        defaultValue="2026-2027"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Registration Fee (₹)
+                      </label>
+                      <input
+                        type="number"
+                        name="registrationFee"
+                        defaultValue={1000}
+                        min={0}
+                        step={50}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="createClasses"
+                      defaultChecked
+                      className="accent-[#0F9D58] mt-0.5"
+                    />
+                    <span className="text-[11px] text-emerald-900 leading-relaxed">
+                      <strong className="block font-bold">
+                        Create the standard class structure
+                      </strong>
+                      Pre-Nursery through Class XII with sections A/B (and C from Class VI). Without
+                      classes this campus cannot accept an admission.
+                    </span>
+                  </label>
+
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 px-5 py-3 text-xs font-bold rounded-xl bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" /> Create Campus
+                  </button>
+                </form>
+              </details>
+
               {/* Campus Configuration Form */}
               {selectedCampus && (
                 <form action={updateCampusSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8 max-w-5xl">
@@ -189,7 +371,7 @@ export default async function AdminSettingsPage({
                   {/* Header Badge */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center font-black text-lg shadow-xs">
+                      <div className="h-12 min-w-12 px-3.5 shrink-0 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center font-black text-xs font-mono tracking-wider uppercase shadow-xs">
                         {selectedCampus.code}
                       </div>
                       <div>

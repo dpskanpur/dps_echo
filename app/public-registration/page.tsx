@@ -48,6 +48,22 @@ export default async function PublicRegistrationPage({
   const selectedCampus =
     campuses.find((c) => c.id === campusId) || campuses[0];
 
+  // Public page: on an unconfigured database this must read as "not open yet"
+  // rather than crashing in front of a parent.
+  if (!selectedCampus) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-7 text-center space-y-3">
+          <h1 className="text-lg font-black text-slate-900">Registration Not Open</h1>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Online registration is not accepting applications at the moment. Please contact the
+            school office for assistance.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const classes = await prisma.class.findMany({
     where: { campusId: selectedCampus.id },
     include: { sections: true },

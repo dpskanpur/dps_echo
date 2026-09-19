@@ -1014,3 +1014,117 @@ export async function toggleDirectoryColumnVisibility(formData: FormData): Promi
   revalidatePath("/students");
   redirect("/admin/rbac?notice=column_toggled");
 }
+
+// -------------------------------------------------------------
+// Campus Onboarding
+// -------------------------------------------------------------
+
+/** Class ladder mirrored from prisma/seed.ts so a new campus matches the others. */
+const STANDARD_CLASSES = [
+  { name: "Pre-Nursery", numericGrade: 0, sequence: 1 },
+  { name: "Nursery", numericGrade: 0, sequence: 2 },
+  { name: "Prep", numericGrade: 0, sequence: 3 },
+  { name: "Class I", numericGrade: 1, sequence: 4 },
+  { name: "Class II", numericGrade: 2, sequence: 5 },
+  { name: "Class III", numericGrade: 3, sequence: 6 },
+  { name: "Class IV", numericGrade: 4, sequence: 7 },
+  { name: "Class V", numericGrade: 5, sequence: 8 },
+  { name: "Class VI", numericGrade: 6, sequence: 9 },
+  { name: "Class VII", numericGrade: 7, sequence: 10 },
+  { name: "Class VIII", numericGrade: 8, sequence: 11 },
+  { name: "Class IX", numericGrade: 9, sequence: 12 },
+  { name: "Class X", numericGrade: 10, sequence: 13 },
+  { name: "Class XI (Science)", numericGrade: 11, sequence: 14 },
+  { name: "Class XI (Commerce)", numericGrade: 11, sequence: 15 },
+  { name: "Class XII (Science)", numericGrade: 12, sequence: 16 },
+  { name: "Class XII (Commerce)", numericGrade: 12, sequence: 17 },
+];
+
+/**
+ * Creates a campus and, optionally, its standard class/section ladder.
+ *
+ * Without classes a campus cannot accept an admission, so the ladder is
+ * created by default — otherwise the first thing a new campus does is fail
+ * on the admission form.
+ */
+export async function createCampus(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("rbac", "update");
+
+  // Creating a campus is a platform-level act. A user pinned to one campus
+  // administers that campus, not the estate.
+  if (user.campusId) {
+    throw new Error("Only a platform administrator can create a new campus.");
+  }
+
+  const code = ((formData.get("code") as string) || "").trim().toUpperCase();
+  const name = ((formData.get("name") as string) || "").trim();
+  const address = ((formData.get("address") as string) || "").trim();
+  const phone = ((formData.get("phone") as string) || "").trim();
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const city = ((formData.get("city") as string) || "Kanpur").trim();
+  const state = ((formData.get("state") as string) || "Uttar Pradesh").trim();
+  const pincode = ((formData.get("pincode") as string) || "208002").trim();
+  const affiliation = ((formData.get("affiliation") as string) || "").trim() || null;
+  const activeAcademicYear =
+    ((formData.get("activeAcademicYear") as string) || "").trim() || "2026-2027";
+  const registrationFeeRaw = (formData.get("registrationFee") as string) || "1000";
+  const createClasses = formData.get("createClasses") === "on";
+
+  if (!code || !name || !address || !phone || !email) {
+    throw new Error("Campus code, name, address, phone and email are all required.");
+  }
+
+  if (!/^[A-Z]{2,6}$/.test(code)) {
+    throw new Error("Campus code must be 2–6 letters, e.g. AZD.");
+  }
+
+  const registrationFee = parseFloat(registrationFeeRaw);
+  if (!Number.isFinite(registrationFee) || registrationFee < 0) {
+    throw new Error("Registration fee must be a non-negative number.");
+  }
+
+  const existing = await prisma.campus.findUnique({ where: { code } });
+  if (existing) {
+    throw new Error(`A campus with code "${code}" already exists.`);
+  }
+
+  const campus = await prisma.campus.create({
+    data: {
+      code,
+      name,
+      address,
+      phone,
+      email,
+      city,
+      state,
+      pincode,
+      affiliation,
+      activeAcademicYear,
+      registrationFee,
+    },
+  });
+
+  if (createClasses) {
+    for (const item of STANDARD_CLASSES) {
+      const cls = await prisma.class.create({
+        data: {
+          campusId: campus.id,
+          name: item.name,
+          numericGrade: item.numericGrade,
+          sequence: item.sequence,
+        },
+      });
+
+      const sectionNames = ["A", "B", ...(item.numericGrade >= 6 ? ["C"] : [])];
+      for (const sName of sectionNames) {
+        await prisma.section.create({
+          data: { classId: cls.id, name: sName },
+        });
+      }
+    }
+  }
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/");
+  redirect(`/admin/rbac?tab=system&campusId=${campus.id}&notice=campus_created`);
+}

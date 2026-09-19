@@ -128,19 +128,6 @@ export function Sidebar({
                     <UserPlus className="w-4 h-4 shrink-0" />
                     <span>New Admission</span>
                   </Link>
-
-                  <Link
-                    href="/students/import"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                      pathname === "/students/import"
-                        ? "bg-[#0F9D58] text-white shadow-sm"
-                        : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                    )}
-                  >
-                    <UploadCloud className="w-4 h-4 shrink-0" />
-                    <span>Bulk Import (CSV)</span>
-                  </Link>
                 </>
               )}
 

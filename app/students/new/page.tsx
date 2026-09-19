@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
+import { NoCampusState } from "@/components/NoCampusState";
 import { registerStudent } from "@/lib/actions";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -43,6 +44,16 @@ export default async function NewAdmissionPage({
 
   const selectedCampus =
     campuses.find((c) => c.id === campusId) || campuses[0];
+
+  if (!selectedCampus) {
+    return (
+      <NoCampusState
+        user={user}
+        permissions={permissions}
+        context="A campus is required before a student can be admitted."
+      />
+    );
+  }
 
   const classes = await prisma.class.findMany({
     where: { campusId: selectedCampus.id },
