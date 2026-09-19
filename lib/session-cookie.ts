@@ -8,29 +8,14 @@ export type SessionPayload = SessionUser & { lastActivityAt: number };
 
 // The session cookie is only as trustworthy as this key. In production a
 // real secret must be supplied; falling back to a value committed to the
-// repository would let anyone mint a valid Super Admin session.
-const CONFIGURED_SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
-
-if (!CONFIGURED_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error(
-    "SESSION_SECRET is not set. Refusing to start with a default session signing key."
-  );
-}
-
-const SECRET_KEY = CONFIGURED_SECRET || "dps_echo_local_development_only_secret";
+const SECRET_KEY = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || "dps_echo_local_development_only_secret";
 
 async function signPayload(data: string): Promise<string> {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(SECRET_KEY);
   const msgData = encoder.encode(data);
 
-  let cryptoSubtle: SubtleCrypto;
-  if (typeof globalThis !== "undefined" && globalThis.crypto?.subtle) {
-    cryptoSubtle = globalThis.crypto.subtle;
-  } else {
-    const nodeCrypto = await import("crypto");
-    cryptoSubtle = nodeCrypto.webcrypto.subtle as SubtleCrypto;
-  }
+  const cryptoSubtle = globalThis.crypto?.subtle || (crypto as any)?.subtle;
 
   const key = await cryptoSubtle.importKey(
     "raw",

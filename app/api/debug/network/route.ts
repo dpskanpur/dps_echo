@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import dns from "dns";
+import { resilientFetch } from "@/lib/resilient-fetch";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +58,19 @@ export async function GET() {
     httpsReachable = `FAILED: ${err?.cause?.message || err?.message || err}`;
   }
 
+  // The path sign-in actually uses: plain fetch, then the system resolver,
+  // then public DNS. This is what must work, not the line above.
+  let resilientReachable: string;
+  try {
+    const res = await resilientFetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      timeoutMs: 12000,
+    });
+    resilientReachable = `OK — HTTP ${res.status} via resilient path`;
+  } catch (err: any) {
+    resilientReachable = `FAILED: ${err?.message || err}`;
+  }
+
   return NextResponse.json(
     {
       process: {
@@ -77,6 +91,7 @@ export async function GET() {
       dnsServers: dns.getServers(),
       probes,
       httpsReachable,
+      resilientReachable,
     },
     { status: 200 }
   );
