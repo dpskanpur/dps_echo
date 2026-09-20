@@ -3,7 +3,7 @@ import { publicUrl, publicBaseUrl } from "@/lib/public-url";
 import { cookies } from "next/headers";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
-import { resilientFetch } from "@/lib/resilient-fetch";
+import { httpRequest } from "@/lib/http";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
       grant_type: "authorization_code",
     }).toString();
 
-    const tokenRes = await resilientFetch("https://oauth2.googleapis.com/token", {
+    const tokenRes = await httpRequest("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: bodyParams,
@@ -71,7 +71,7 @@ export async function GET(request: Request) {
     }
 
     // 2. Fetch User Profile from Google (with IPv4 fallback)
-    const profileRes = await resilientFetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    const profileRes = await httpRequest("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 

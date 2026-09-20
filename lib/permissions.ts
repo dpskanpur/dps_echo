@@ -1,8 +1,12 @@
 export const ALLOWED_DOMAIN = "dpskanpur.com";
 export const SESSION_COOKIE_NAME = "dps_echo_session";
-export const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
-export const SESSION_MAX_AGE_SECONDS = 10 * 60;
-export const IDLE_WARNING_MS = 2 * 60 * 1000;
+// TEMPORARY: raised from 10 minutes to 2 days so a dropped session does not
+// strand anyone while Google sign-in is unreliable on this network.
+// Revert to 10 minutes before this handles live student data in production —
+// a two-day session on a shared machine is a real exposure.
+export const IDLE_TIMEOUT_MS = 2 * 24 * 60 * 60 * 1000;
+export const SESSION_MAX_AGE_SECONDS = 2 * 24 * 60 * 60;
+export const IDLE_WARNING_MS = 10 * 60 * 1000;
 
 export const APP_MODULES = [
   { id: "students", label: "Student Management", description: "Student Directory, Admissions, Profile Dossier" },
@@ -10,6 +14,7 @@ export const APP_MODULES = [
   { id: "tc", label: "Transfer Certificate (TC)", description: "No-Dues Verification, CBSE TC Issuance & Clearance" },
   { id: "alumni", label: "Alumni Archive", description: "Graduated Students & Alumni Records" },
   { id: "notifications", label: "Notifications", description: "Fee Reminders, Payment Receipts & Announcement Dispatch Log" },
+  { id: "sessions", label: "Academic Sessions", description: "Open, close and switch the active academic session for new records" },
   { id: "rbac", label: "RBAC & User Access", description: "Role & Permission Management for Staff & Faculty" },
 ] as const;
 
@@ -21,6 +26,7 @@ export const EMPTY_MODULE_MATRIX: Record<AppModuleId, ModulePermission> = {
   tc: { module: "tc", canView: false, canUpdate: false, canDelete: false },
   alumni: { module: "alumni", canView: false, canUpdate: false, canDelete: false },
   notifications: { module: "notifications", canView: false, canUpdate: false, canDelete: false },
+  sessions: { module: "sessions", canView: false, canUpdate: false, canDelete: false },
   rbac: { module: "rbac", canView: false, canUpdate: false, canDelete: false },
 };
 

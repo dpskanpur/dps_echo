@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getActiveSessionName } from "@/lib/academic-session";
 import { authorizeApiRequest, apiCampusWhere } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
@@ -117,7 +118,7 @@ export async function POST(request: Request) {
         scholarNo,
         admissionNo: "REGISTRATION_PENDING",
         status: "REGISTERED",
-        academicYearIn: "2026-2027",
+        academicYearIn: await getActiveSessionName(),
         campus: { connect: { id: campusId } },
         class: { connect: { id: classId } },
         firstName: firstName.toUpperCase(),
