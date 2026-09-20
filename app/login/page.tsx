@@ -3,7 +3,6 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowRight, Quote } from "lucide-react";
-import { ClearAuthError } from "@/components/ClearAuthError";
 import { DesktopOnlyNotice } from "@/components/DesktopOnlyNotice";
 import Link from "next/link";
 
@@ -154,7 +153,6 @@ function LoginForm() {
           </div>
 
           {/* Error Notice */}
-          {errorParam && <ClearAuthError />}
           {errorParam && (
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-rose-900">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
