@@ -5,17 +5,14 @@ import {
   User,
   Phone,
   MapPin,
-  ClipboardList,
-  Sparkles,
   ShieldCheck,
   CreditCard,
   Lock,
 } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";
 import { RegistrationFormWrapper } from "@/components/RegistrationFormWrapper";
+import { PublicShell } from "@/components/PublicShell";
 import { CampusSelector } from "@/components/CampusSelector";
 
 import type { Metadata } from "next";
@@ -110,76 +107,34 @@ export default async function PublicRegistrationPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
-      {/* Top Header Banner */}
-      <header className="bg-emerald-900 text-white shadow-md border-b border-emerald-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-white p-1.5 rounded-xl shadow-xs">
-              <Image
-                src="/dps_crest.png"
-                alt="DPS Crest"
-                width={44}
-                height={44}
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="text-base sm:text-lg font-black tracking-tight text-amber-300 uppercase">
-                Delhi Public School Kanpur
-              </h1>
-              <p className="text-xs text-emerald-200">
-                Official Online Applicant Registration Portal (Session 2026-2027)
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-xs font-bold text-emerald-200 hover:text-white transition bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-700/50"
-            >
-              Staff Portal Login →
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
-        {/* Banner Card */}
-        <div className="bg-gradient-to-r from-emerald-900 via-emerald-850 to-teal-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-800 relative overflow-hidden">
-          <div className="relative z-10 space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              Online Registration Open for Session 2026-2027
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">
-              Apply Online for Student Admission
-            </h2>
-            <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl leading-relaxed">
-              Complete the online registration form below. Registration requires an online fee payment of{" "}
-              <strong className="text-amber-300">₹{selectedCampus.registrationFee.toLocaleString("en-IN")}</strong>. All online applications are reviewed by the school admission committee before issuing final admission confirmation.
-            </p>
-          </div>
-        </div>
-
+    <PublicShell
+      width="wide"
+      eyebrow="Admissions 2026-2027"
+      title="Apply for admission"
+      subtitle={`Complete the form below to register an applicant. A registration fee of ₹${selectedCampus.registrationFee.toLocaleString("en-IN")} is payable online. Every application is reviewed by the admission committee before admission is confirmed.`}
+      badge={
+        <>
+          <ShieldCheck className="w-3.5 h-3.5" /> Registration open
+        </>
+      }
+    >
+      <div className="space-y-5">
         {/* Public Registration Form */}
         <RegistrationFormWrapper action={registerStudentPublic}>
           <input type="hidden" name="campusId" value={selectedCampus.id} />
 
           {/* SECTION 1: CAMPUS & CLASS SELECTION */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
               <Building2 className="w-4 h-4 text-emerald-800" />
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-slate-900">
                 1. Select Campus & Seeking Class
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Select DPS Campus <span className="text-rose-500 font-bold">*</span>
                 </label>
                 <CampusSelector
@@ -191,7 +146,7 @@ export default async function PublicRegistrationPage({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Seeking Admission in Class <span className="text-rose-500 font-bold">*</span>
                 </label>
                 <select
@@ -208,7 +163,7 @@ export default async function PublicRegistrationPage({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Academic Session
                 </label>
                 <div className="p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
@@ -219,10 +174,10 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 2: STUDENT DEMOGRAPHICS */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
               <User className="w-4 h-4 text-emerald-800" />
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-slate-900">
                 2. Student Personal Information
               </h3>
             </div>
@@ -257,7 +212,7 @@ export default async function PublicRegistrationPage({
               <DobInputWithWords />
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Gender <span className="text-rose-500 font-bold">*</span>
                 </label>
                 <select
@@ -299,7 +254,7 @@ export default async function PublicRegistrationPage({
               />
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Category <span className="text-rose-500 font-bold">*</span>
                 </label>
                 <select
@@ -342,10 +297,10 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 3: GUARDIAN DETAILS */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
               <Phone className="w-4 h-4 text-emerald-800" />
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-slate-900">
                 3. Parent / Guardian Details
               </h3>
             </div>
@@ -402,17 +357,17 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 4: RESIDENTIAL ADDRESS */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
               <MapPin className="w-4 h-4 text-emerald-800" />
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              <h3 className="text-sm font-semibold text-slate-900">
                 4. Residential Address
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Full Residential Address <span className="text-rose-500 font-bold">*</span>
                 </label>
                 <textarea
@@ -502,12 +457,7 @@ export default async function PublicRegistrationPage({
             </button>
           </div>
         </RegistrationFormWrapper>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs">
-        <p>© 2026 Delhi Public School Kanpur. Official Echo Admissions Portal.</p>
-      </footer>
-    </div>
+      </div>
+    </PublicShell>
   );
 }

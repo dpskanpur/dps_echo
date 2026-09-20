@@ -23,6 +23,7 @@ import {
   Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SidebarLink } from "./SidebarLink";
 import { UserPermissions } from "@/lib/permissions";
 
 export function Sidebar({
@@ -48,22 +49,18 @@ export function Sidebar({
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800 min-h-screen">
-      {/* Brand Header */}
-      <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#0F9D58] flex items-center justify-center font-bold text-white text-lg shadow-md shadow-emerald-950/40">
-          DE
-        </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <h1 className="font-bold text-white tracking-wide">DPS Echo</h1>
-            <span className="text-[10px] font-semibold bg-emerald-500/20 text-[#34A853] px-1.5 py-0.5 rounded border border-emerald-500/30">
-              v1.0
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 truncate max-w-[140px]">
-            {permissions?.roleDisplayName || "Staff Desk"}
-          </p>
-        </div>
+      {/* Brand Header — white-on-transparent variant of the ECHO lockup, so
+          it sits directly on the dark rail with no panel behind it. The gold
+          flame is kept; the greens and wordmark are white. */}
+      <div className="p-5 border-b border-slate-800 space-y-2.5">
+        <img
+          src="/echo-logo-white.png"
+          alt="ECHO — DPS Kanpur Portal"
+          className="h-10 w-auto object-contain"
+        />
+        <p className="text-xs text-slate-400 truncate">
+          {permissions?.roleDisplayName || "Staff Desk"}
+        </p>
       </div>
 
       {/* Navigation Links */}
@@ -74,18 +71,12 @@ export function Sidebar({
             Overview
           </div>
           <div className="space-y-1">
-            <Link
-              href="/"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                pathname === "/"
-                  ? "bg-[#0F9D58] text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-              )}
-            >
-              <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>Dashboard</span>
-            </Link>
+            <SidebarLink
+                href="/"
+                icon={LayoutDashboard}
+                label="Dashboard"
+                active={pathname === "/"}
+              />
           </div>
         </div>
 
@@ -101,64 +92,40 @@ export function Sidebar({
               )}
             </div>
             <div className="space-y-1">
-              <Link
+              <SidebarLink
                 href="/students"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname === "/students"
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                )}
-              >
-                <Users className="w-4 h-4 shrink-0" />
-                <span>Student Directory</span>
-              </Link>
+                icon={Users}
+                label="Student Directory"
+                active={pathname === "/students"}
+              />
 
               {canUpdateStudents && (
                 <>
-                  <Link
-                    href="/students/new"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                      pathname === "/students/new"
-                        ? "bg-[#0F9D58] text-white shadow-sm"
-                        : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                    )}
-                  >
-                    <UserPlus className="w-4 h-4 shrink-0" />
-                    <span>New Admission</span>
-                  </Link>
+                  <SidebarLink
+                href="/students/new"
+                icon={UserPlus}
+                label="New Admission"
+                active={pathname === "/students/new"}
+              />
                 </>
               )}
 
               {canTc && (
-                <Link
-                  href="/tc"
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                    pathname.startsWith("/tc")
-                      ? "bg-[#0F9D58] text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                  )}
-                >
-                  <FileText className="w-4 h-4 shrink-0" />
-                  <span>Transfer Certificate (TC)</span>
-                </Link>
+                <SidebarLink
+                href="/tc"
+                icon={FileText}
+                label="Transfer Certificate (TC)"
+                active={pathname.startsWith("/tc")}
+              />
               )}
 
               {canAlumni && (
-                <Link
-                  href="/alumni"
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                    pathname.startsWith("/alumni")
-                      ? "bg-[#0F9D58] text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                  )}
-                >
-                  <GraduationCap className="w-4 h-4 shrink-0" />
-                  <span>Alumni Archive</span>
-                </Link>
+                <SidebarLink
+                href="/alumni"
+                icon={GraduationCap}
+                label="Alumni Archive"
+                active={pathname.startsWith("/alumni")}
+              />
               )}
             </div>
           </div>
@@ -176,77 +143,47 @@ export function Sidebar({
               )}
             </div>
             <div className="space-y-1">
-              <Link
+              <SidebarLink
                 href="/fees/collect"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/fees/collect")
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60",
-                  !canUpdateFees && "opacity-60"
-                )}
-              >
-                <CreditCard className="w-4 h-4 shrink-0" />
-                <span>Fee Collection Desk</span>
-                {!canUpdateFees && (
+                icon={CreditCard}
+                label="Fee Collection Desk"
+                active={pathname.startsWith("/fees/collect")}
+                className={cn(!canUpdateFees && "opacity-60")}
+                trailing={!canUpdateFees && (
                   <span className="ml-auto text-[9px] text-slate-500 bg-slate-800 px-1 rounded flex items-center gap-0.5">
                     <Lock className="w-2.5 h-2.5" /> Read
                   </span>
                 )}
-              </Link>
+              />
 
-              <Link
+              <SidebarLink
                 href="/fees/structures"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/fees/structures")
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                )}
-              >
-                <Layers className="w-4 h-4 shrink-0" />
-                <span>Fee Structures</span>
-              </Link>
+                icon={Layers}
+                label="Fee Structures"
+                active={pathname.startsWith("/fees/structures")}
+              />
 
-              <Link
+              <SidebarLink
                 href="/fees/invoices"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/fees/invoices")
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                )}
-              >
-                <Receipt className="w-4 h-4 shrink-0" />
-                <span>Invoices & Ledger</span>
-              </Link>
+                icon={Receipt}
+                label={<>Invoices & Ledger</>}
+                active={pathname.startsWith("/fees/invoices")}
+              />
 
-              <Link
+              <SidebarLink
                 href="/fees/defaulters"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/fees/defaulters")
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                )}
-              >
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Defaulters & Dues</span>
-              </Link>
+                icon={AlertTriangle}
+                label={<>Defaulters & Dues</>}
+                active={pathname.startsWith("/fees/defaulters")}
+              />
 
               {canUpdateFees && (
-                <Link
-                  href="/fees/cashier"
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                    pathname.startsWith("/fees/cashier")
-                      ? "bg-[#0F9D58] text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                  )}
-                >
-                  <Coins className="w-4 h-4 shrink-0" />
-                  <span>Daily Cashier Register</span>
-                </Link>
+                <SidebarLink
+                href="/fees/cashier"
+                icon={Coins}
+                label="Daily Cashier Register"
+                active={pathname.startsWith("/fees/cashier")}
+              />
               )}
             </div>
           </div>
@@ -259,18 +196,12 @@ export function Sidebar({
               Parent Communication
             </div>
             <div className="space-y-1">
-              <Link
+              <SidebarLink
                 href="/notifications"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/notifications")
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                )}
-              >
-                <Bell className="w-4 h-4 shrink-0" />
-                <span>Notifications</span>
-              </Link>
+                icon={Bell}
+                label="Notifications"
+                active={pathname.startsWith("/notifications")}
+              />
             </div>
           </div>
         )}
@@ -282,18 +213,12 @@ export function Sidebar({
               Administration & Access
             </div>
             <div className="space-y-1">
-              <Link
+              <SidebarLink
                 href="/admin/rbac"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
-                  pathname.startsWith("/admin/rbac") || pathname.startsWith("/campuses")
-                    ? "bg-[#0F9D58] text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                )}
-              >
-                <KeyRound className="w-4 h-4 shrink-0 text-[#34A853]" />
-                <span>Admin & System Settings</span>
-              </Link>
+                icon={KeyRound}
+                label={<>Admin & System Settings</>}
+                active={pathname.startsWith("/admin/rbac") || pathname.startsWith("/campuses")}
+              />
             </div>
           </div>
         )}

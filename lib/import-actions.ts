@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { getActiveSessionName } from "@/lib/academic-session";
 
 export interface StudentImportRow {
   campusCode: string; // AZD, BAR, KID, SRV
@@ -30,6 +31,9 @@ export async function bulkImportStudents(rows: StudentImportRow[]): Promise<{
   importedCount: number;
   errors: string[];
 }> {
+  // Resolved once so every row in the batch lands in the same session.
+  const activeSession = await getActiveSessionName();
+
   const errors: string[] = [];
   let importedCount = 0;
 
@@ -121,7 +125,7 @@ export async function bulkImportStudents(rows: StudentImportRow[]): Promise<{
           scholarNo,
           admissionNo,
           admissionDate: new Date(),
-          academicYearIn: `${currentYear}-${currentYear + 1}`,
+          academicYearIn: activeSession,
           firstName: row.firstName.trim(),
           lastName: row.lastName.trim(),
           dob: parsedDob,

@@ -1,0 +1,16 @@
+# Secrets must never enter an image layer
+.env
+.env.*
+!.env.example
+
+# Not needed in the build context
+node_modules
+.next
+.git
+.gitignore
+dev.log
+*.log
+prisma/dev.db
+prisma/*.db-journal
+tsconfig.tsbuildinfo
+docker-compose.yml

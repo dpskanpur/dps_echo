@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { resilientFetch } from "@/lib/resilient-fetch";
+import { httpRequest } from "@/lib/http";
 
 /**
  * Razorpay REST helpers.
@@ -65,7 +65,7 @@ export async function createRazorpayOrder(params: {
 
   const auth = Buffer.from(`${config.keyId}:${config.keySecret}`).toString("base64");
 
-  const res = await resilientFetch(`${RAZORPAY_API}/orders`, {
+  const res = await httpRequest(`${RAZORPAY_API}/orders`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,

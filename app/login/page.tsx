@@ -3,6 +3,8 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowRight, Quote } from "lucide-react";
+import { ClearAuthError } from "@/components/ClearAuthError";
+import { DesktopOnlyNotice } from "@/components/DesktopOnlyNotice";
 import Link from "next/link";
 
 function LoginForm() {
@@ -71,7 +73,12 @@ function LoginForm() {
     errorCopy?.message || "Could not authenticate your Google account. Please try again.";
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 flex items-stretch antialiased selection:bg-[#005A36] selection:text-white">
+    <>
+      {/* Staff sign-in is gated the same way as the portal behind it, so nobody
+          authenticates on a phone only to find they cannot use the console. */}
+      <DesktopOnlyNotice />
+
+      <div className="hidden md:flex min-h-screen w-full bg-slate-950 items-stretch antialiased selection:bg-[#005A36] selection:text-white">
       {/* LEFT COLUMN: Campus Photo & Slogan (Preserved) */}
       <div className="hidden lg:flex lg:w-3/5 xl:w-2/3 relative flex-col justify-between p-10 xl:p-14 overflow-hidden bg-slate-900">
         {/* Campus Background Image */}
@@ -147,6 +154,7 @@ function LoginForm() {
           </div>
 
           {/* Error Notice */}
+          {errorParam && <ClearAuthError />}
           {errorParam && (
             <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-rose-900">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -219,6 +227,7 @@ function LoginForm() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

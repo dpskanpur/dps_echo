@@ -9,16 +9,11 @@ interface CampusOption {
   name: string;
 }
 
-export function CampusSwitcher({
-  campuses,
-  selectedCampusId,
-}: {
-  campuses: CampusOption[];
-  selectedCampusId?: string;
-}) {
+export function CampusSwitcher({ campuses }: { campuses: CampusOption[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const selectedCampusId = searchParams.get("campus");
 
   const handleCampusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCampusId = e.target.value;

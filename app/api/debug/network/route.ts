@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dns from "dns";
-import { resilientFetch } from "@/lib/resilient-fetch";
+import { httpRequest } from "@/lib/http";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +62,7 @@ export async function GET() {
   // then public DNS. This is what must work, not the line above.
   let resilientReachable: string;
   try {
-    const res = await resilientFetch("https://oauth2.googleapis.com/token", {
+    const res = await httpRequest("https://oauth2.googleapis.com/token", {
       method: "POST",
       timeoutMs: 12000,
     });

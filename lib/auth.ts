@@ -81,7 +81,7 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
       canManageFees: true,
       isViewOnlyStudents: false,
       isViewOnlyFees: false,
-      roleDisplayName: "System Administrator (Full Access)",
+      roleDisplayName: "Admin",
     };
   }
 

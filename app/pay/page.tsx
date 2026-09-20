@@ -5,14 +5,8 @@ import { issuePayToken } from "@/lib/pay-token";
 import { isGatewayConfigured } from "@/lib/razorpay";
 import { rateLimit } from "@/lib/rate-limit";
 import { RazorpayCheckoutButton } from "@/components/RazorpayCheckoutButton";
-import {
-  CheckCircle2,
-  Search,
-  Receipt,
-  Lock,
-  Building2,
-  AlertTriangle,
-} from "lucide-react";
+import { CheckCircle2, Search, Receipt, Lock, Building2, AlertTriangle } from "lucide-react";
+import { PublicShell } from "@/components/PublicShell";
 
 import type { Metadata } from "next";
 
@@ -102,42 +96,22 @@ export default async function PublicQuickPayPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col justify-between">
-      {/* Public Header */}
-      <header className="bg-emerald-950 text-white py-4 px-6 border-b border-emerald-900 shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-300 flex items-center justify-center font-bold text-slate-950 text-sm shadow">
-              DE
-            </div>
-            <div>
-              <h1 className="text-sm font-black tracking-wide">DPS Kanpur</h1>
-              <p className="text-[11px] text-emerald-300 font-medium">Official Quick Pay Parent Gateway</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-emerald-200">
-            <Lock className="w-3.5 h-3.5 text-emerald-400" /> Secure Payment Gateway
-          </div>
-        </div>
-      </header>
-
-      {/* Main Form & Invoices Container */}
-      <main className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-6 my-auto">
-        {/* Banner */}
-        <div className="text-center space-y-1">
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900">Online Fee Payment Portal</h2>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Pay student quarterly tuition &amp; school dues instantly with UPI, Net Banking, or
-            Debit/Credit card. No login required.
-          </p>
-        </div>
-
+    <PublicShell
+      eyebrow="Fee Payment"
+      title="Pay school fees"
+      subtitle="Enter the student's scholar number and date of birth to see outstanding dues and pay by UPI, card or net banking. No login required."
+      badge={
+        <>
+          <Lock className="w-3.5 h-3.5" /> Secure payment
+        </>
+      }
+    >
+      <div className="space-y-6">
         {!gatewayLive && (
-          <div className="max-w-xl mx-auto p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs text-amber-900">
-              <strong className="block font-bold">Online payment is temporarily unavailable</strong>
+              <strong className="block font-semibold">Online payment is temporarily unavailable</strong>
               <p className="text-[11px] text-amber-800 mt-0.5">
                 You can still review your dues below. Please pay at the school accounts office in the
                 meantime.
@@ -147,11 +121,11 @@ export default async function PublicQuickPayPage({
         )}
 
         {/* Search / Lookup Box */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-xl mx-auto">
-          <form method="GET" className="space-y-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
+          <form method="GET" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Student Scholar Number / Admission Number *
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Scholar or admission number
               </label>
               <input
                 type="text"
@@ -159,41 +133,41 @@ export default async function PublicQuickPayPage({
                 required
                 defaultValue={scholarNo || ""}
                 placeholder="e.g. DPS-AZD-2018-0245"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Student Date of Birth (for verification) *
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Date of birth
               </label>
               <input
                 type="date"
                 name="dob"
                 required
                 defaultValue={dob || ""}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
               />
             </div>
 
             {searchError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 font-medium">
+              <div className="sm:col-span-2 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800">
                 {searchError}
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition shadow-sm flex items-center justify-center gap-2"
+              className="sm:col-span-2 w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition flex items-center justify-center gap-2"
             >
-              <Search className="w-4 h-4" /> Fetch Outstanding Dues
+              <Search className="w-4 h-4" /> Show outstanding dues
             </button>
           </form>
         </div>
 
         {/* Found Student Dues */}
         {student && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6 max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-5">
             {/* Student Dossier Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
@@ -204,23 +178,23 @@ export default async function PublicQuickPayPage({
                   {student.scholarNo} • {student.class.name} • {student.campus.name}
                 </p>
               </div>
-              <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">
-                Verified Student
+              <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full shrink-0">
+                Verified
               </span>
             </div>
 
             {/* Invoices List */}
             {student.invoices.length === 0 ? (
-              <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-1">
-                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                <h4 className="font-bold text-emerald-950 text-sm">All Fees are Paid!</h4>
+              <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-lg text-center space-y-1.5">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
+                <h4 className="font-semibold text-emerald-950 text-sm">All fees are paid</h4>
                 <p className="text-xs text-emerald-800">
                   There are no pending invoices for {student.firstName}. Thank you!
                 </p>
               </div>
             ) : (
               student.invoices.map((inv: any) => (
-                <div key={inv.id} className="bg-slate-50 rounded-xl border border-slate-200 p-5 space-y-4">
+                <div key={inv.id} className="bg-slate-50 rounded-lg border border-slate-200 p-4 sm:p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-mono text-xs font-bold text-slate-900 block">
@@ -285,12 +259,12 @@ export default async function PublicQuickPayPage({
               <div className="pt-2 space-y-3">
                 <div className="flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-slate-400" />
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Recent Payments
+                  <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                    Recent payments
                   </h4>
                 </div>
 
-                <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 overflow-hidden">
+                <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 overflow-hidden">
                   {student.payments.map((p: any) => (
                     <div key={p.id} className="p-3 flex items-center justify-between bg-white">
                       <div className="min-w-0">
@@ -323,12 +297,7 @@ export default async function PublicQuickPayPage({
             </div>
           </div>
         )}
-      </main>
-
-      {/* Public Footer */}
-      <footer className="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500">
-        <p>© 2026 DPS Echo. All Rights Reserved.</p>
-      </footer>
-    </div>
+      </div>
+    </PublicShell>
   );
 }

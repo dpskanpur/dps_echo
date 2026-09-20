@@ -7,6 +7,7 @@ import { generateTCNumber } from "@/lib/utils";
 import { requirePermission } from "@/lib/auth";
 import { assertCampusAllowed } from "@/lib/permissions";
 import { createReceiptForPayment } from "@/lib/fee-payments";
+import { getActiveSessionName, resolveAdmissionSession } from "@/lib/academic-session";
 import { queuePaymentReceiptNotification } from "@/lib/notifications";
 
 // -------------------------------------------------------------
@@ -40,6 +41,10 @@ async function assertStudentInScope(
 
 export async function registerStudent(formData: FormData): Promise<void> {
   const { user } = await requirePermission("students", "update");
+  // Current or future session only; a past session is refused.
+  const admissionSession = await resolveAdmissionSession(
+    formData.get("academicYearIn") as string
+  );
   const campusId = formData.get("campusId") as string;
   assertCampusAllowed(user, campusId);
   const classId = formData.get("classId") as string;
@@ -146,7 +151,7 @@ export async function registerStudent(formData: FormData): Promise<void> {
       scholarNo,
       admissionNo,
       admissionDate: new Date(),
-      academicYearIn: `${year}-${year + 1}`,
+      academicYearIn: admissionSession,
       firstName,
       middleName,
       lastName,
@@ -263,7 +268,9 @@ export async function registerStudent(formData: FormData): Promise<void> {
 // Public Portal Online Registration Action (Payment Mode: ONLINE ONLY)
 export async function registerStudentPublic(formData: FormData): Promise<void> {
   // Public admission form — intentionally unauthenticated. The campus is
-  // validated against the database below rather than against a session.
+  // validated against the database below rather than against a session, and
+  // the session is always the active one: the public cannot pick it.
+  const admissionSession = await getActiveSessionName();
   const campusId = formData.get("campusId") as string;
   const classId = formData.get("classId") as string;
   const firstName = (formData.get("firstName") as string).trim();
@@ -331,7 +338,7 @@ export async function registerStudentPublic(formData: FormData): Promise<void> {
       scholarNo,
       admissionNo: "REGISTRATION_PENDING",
       admissionDate: new Date(),
-      academicYearIn: `${year}-${year + 1}`,
+      academicYearIn: admissionSession,
       firstName,
       middleName,
       lastName,
@@ -501,6 +508,9 @@ export async function promoteStudentToAdmission(formData: FormData): Promise<voi
 
 export async function createStudent(formData: FormData): Promise<void> {
   const { user } = await requirePermission("students", "update");
+  const admissionSession = await resolveAdmissionSession(
+    formData.get("academicYearIn") as string
+  );
   const campusId = formData.get("campusId") as string;
   assertCampusAllowed(user, campusId);
   const classId = formData.get("classId") as string;
@@ -546,7 +556,7 @@ export async function createStudent(formData: FormData): Promise<void> {
       scholarNo,
       admissionNo,
       admissionDate: new Date(),
-      academicYearIn: `${year}-${year + 1}`,
+      academicYearIn: admissionSession,
       firstName,
       lastName,
       dob,

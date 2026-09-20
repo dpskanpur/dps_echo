@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { CampusSwitcher } from "./CampusSwitcher";
-import { IdleTimerBadge } from "./IdleTimerBadge";
+import { SessionSwitcher } from "./SessionSwitcher";
+import { listAcademicSessions } from "@/lib/academic-session";
 import { Search, UserCheck, LogOut, Shield } from "lucide-react";
 import Link from "next/link";
 import { UserPermissions } from "@/lib/permissions";
@@ -11,23 +12,35 @@ interface CampusOption {
   name: string;
 }
 
+interface SessionOption {
+  id: string;
+  name: string;
+  isCurrent: boolean;
+}
+
 interface UserInfo {
   name?: string;
   email?: string;
   role?: string;
 }
 
-export function Navbar({
+export async function Navbar({
   campuses,
-  selectedCampusId,
   user,
   permissions,
 }: {
   campuses: CampusOption[];
-  selectedCampusId?: string;
   user?: UserInfo;
   permissions?: UserPermissions;
 }) {
+  // The switcher reads the selected value from the URL itself.
+  let sessions: SessionOption[] = [];
+  try {
+    sessions = await listAcademicSessions();
+  } catch {
+    // A session list failure must not take the whole shell down.
+  }
+
   const userName = user?.name || "DPS Staff";
   const userRole = permissions?.roleDisplayName || user?.role || "ADMIN";
   const userEmail = user?.email || "admin@dpskanpur.com";
@@ -43,19 +56,15 @@ export function Navbar({
       {/* Campus Selector & Academic Year */}
       <div className="flex items-center gap-4">
         <Suspense fallback={<div className="h-8 w-44 bg-slate-100 rounded-lg animate-pulse" />}>
-          <CampusSwitcher campuses={campuses} selectedCampusId={selectedCampusId} />
+          <CampusSwitcher campuses={campuses} />
         </Suspense>
-        <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-md font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          Academic Session: <strong className="text-slate-800">2025-2026</strong>
-        </div>
+        <Suspense fallback={<div className="h-8 w-40 bg-slate-100 rounded-lg animate-pulse" />}>
+          <SessionSwitcher sessions={sessions} />
+        </Suspense>
       </div>
 
       {/* Right User & Quick Search */}
       <div className="flex items-center gap-3">
-        {/* Live Idle Session Counter */}
-        <IdleTimerBadge showFullLabel={true} />
-
         <div className="relative hidden lg:block w-56">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input

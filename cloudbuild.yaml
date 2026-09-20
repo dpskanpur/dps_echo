@@ -33,6 +33,14 @@ steps:
       - '--allow-unauthenticated'
       - '--memory=1Gi'
       - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=3'
+      # Public hostname, so OAuth redirects don't use the container's
+      # internal 0.0.0.0:8080 address.
+      - '--set-env-vars=NEXTAUTH_URL=${_APP_URL},NEXT_PUBLIC_APP_URL=${_APP_URL}'
+      # Credentials come from Secret Manager — never the repo or the image.
+      # Created by ./scripts/setup-secrets.sh
+      - '--set-secrets=DATABASE_URL=dps-echo-database-url:latest,SESSION_SECRET=dps-echo-session-secret:latest,GOOGLE_CLIENT_ID=dps-echo-google-client-id:latest,GOOGLE_CLIENT_SECRET=dps-echo-google-client-secret:latest'
 
 substitutions:
   _PROJECT_ID: 'dpskanpur-backup'
