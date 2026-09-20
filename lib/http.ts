@@ -1,12 +1,11 @@
-/**
- * Outbound HTTP for third-party APIs (Google OAuth, Razorpay, notification
- * providers).
- *
- * Plain fetch with a bounded timeout and one retry for a transient blip.
- * That is all. If the host cannot resolve a name, that is a fault in the
- * environment and the request should fail loudly rather than be worked
- * around in application code.
- */
+import dns from "node:dns";
+
+// Ensure Node defaults to IPv4 first to prevent AAAA IPv6 resolution timeouts/failures
+if (typeof dns.setDefaultResultOrder === "function") {
+  try {
+    dns.setDefaultResultOrder("ipv4first");
+  } catch {}
+}
 
 export interface HttpInit {
   method?: string;
@@ -31,15 +30,31 @@ function describe(err: any): string {
 export async function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
   const timeoutMs = init.timeoutMs ?? 15000;
   let lastError: any;
+  const targetUrl = new URL(url);
 
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(url, {
+      let requestUrl = url;
+      const headers = { ...(init.headers || {}) };
+
+      // On second attempt, if first attempt failed with a network/DNS error, try IPv4 resolution
+      if (attempt > 0 && lastError) {
+        try {
+          const addresses = await dns.promises.resolve4(targetUrl.hostname);
+          if (addresses && addresses.length > 0) {
+            requestUrl = url.replace(targetUrl.hostname, addresses[0]);
+            headers["Host"] = targetUrl.hostname;
+          }
+        } catch {}
+      }
+
+      const res = await fetch(requestUrl, {
         method: init.method || "GET",
-        headers: init.headers,
+        headers,
         body: init.body,
         signal: AbortSignal.timeout(timeoutMs),
       });
+
       const body = await res.text();
       return {
         ok: res.ok,
@@ -55,9 +70,9 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
       };
     } catch (err) {
       lastError = err;
-      if (attempt === 0) await new Promise((r) => setTimeout(r, 300));
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 300));
     }
   }
 
-  throw new Error(`Request to ${new URL(url).hostname} failed: ${describe(lastError)}`);
+  throw new Error(`Request to ${targetUrl.hostname} failed: ${describe(lastError)}`);
 }
