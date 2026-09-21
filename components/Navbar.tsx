@@ -2,9 +2,16 @@ import { Suspense } from "react";
 import { CampusSwitcher } from "./CampusSwitcher";
 import { SessionSwitcher } from "./SessionSwitcher";
 import { listAcademicSessions } from "@/lib/academic-session";
-import { Search, UserCheck, LogOut, Shield } from "lucide-react";
+import { Search, UserCheck, LogOut, Shield, UserPlus, CreditCard, QrCode } from "lucide-react";
 import Link from "next/link";
 import { UserPermissions } from "@/lib/permissions";
+
+/** Parent-facing pages, reachable from the staff header as icons. */
+const PUBLIC_PORTALS = [
+  { href: "/public-registration", label: "Online Registration", icon: UserPlus },
+  { href: "/pay", label: "Quick Pay Fees", icon: CreditCard },
+  { href: "/verify-tc", label: "Verify TC (QR)", icon: QrCode },
+] as const;
 
 interface CampusOption {
   id: string;
@@ -61,6 +68,25 @@ export async function Navbar({
         <Suspense fallback={<div className="h-8 w-40 bg-slate-100 rounded-lg animate-pulse" />}>
           <SessionSwitcher sessions={sessions} />
         </Suspense>
+
+        {/* Public portals — icon only. These open the parent-facing pages in a
+            new tab, so they never interrupt whatever staff are working on.
+            title/aria-label carry the meaning the labels used to. */}
+        <div className="hidden sm:flex items-center gap-1 pl-3 border-l border-slate-200">
+          {PUBLIC_PORTALS.map((portal) => (
+            <a
+              key={portal.href}
+              href={portal.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`${portal.label} (opens in a new tab)`}
+              aria-label={`${portal.label} — public page, opens in a new tab`}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-800 hover:bg-emerald-50 transition"
+            >
+              <portal.icon className="w-4 h-4" />
+            </a>
+          ))}
+        </div>
       </div>
 
       {/* Right User & Quick Search */}

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -8,18 +7,11 @@ import {
   UserPlus,
   FileText,
   GraduationCap,
-  CreditCard,
   Layers,
   Receipt,
   AlertTriangle,
-  Coins,
-  QrCode,
-  ExternalLink,
   Building2,
-  UploadCloud,
-  Lock,
   KeyRound,
-  ShieldCheck,
   Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -143,18 +135,6 @@ export function Sidebar({
               )}
             </div>
             <div className="space-y-1">
-              <SidebarLink
-                href="/fees/collect"
-                icon={CreditCard}
-                label="Fee Collection Desk"
-                active={pathname.startsWith("/fees/collect")}
-                className={cn(!canUpdateFees && "opacity-60")}
-                trailing={!canUpdateFees && (
-                  <span className="ml-auto text-[9px] text-slate-500 bg-slate-800 px-1 rounded flex items-center gap-0.5">
-                    <Lock className="w-2.5 h-2.5" /> Read
-                  </span>
-                )}
-              />
 
               <SidebarLink
                 href="/fees/structures"
@@ -176,15 +156,6 @@ export function Sidebar({
                 label={<>Defaulters & Dues</>}
                 active={pathname.startsWith("/fees/defaulters")}
               />
-
-              {canUpdateFees && (
-                <SidebarLink
-                href="/fees/cashier"
-                icon={Coins}
-                label="Daily Cashier Register"
-                active={pathname.startsWith("/fees/cashier")}
-              />
-              )}
             </div>
           </div>
         )}
@@ -223,49 +194,6 @@ export function Sidebar({
           </div>
         )}
 
-        {/* Public Portals */}
-        <div>
-          <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Public Portals
-          </div>
-          <div className="space-y-1">
-            <Link
-              href="/public-registration"
-              target="_blank"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-emerald-400/90 hover:text-emerald-300 hover:bg-slate-800/60"
-            >
-              <ExternalLink className="w-4 h-4 shrink-0" />
-              <span>Online Registration</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
-                Public
-              </span>
-            </Link>
-
-            <Link
-              href="/pay"
-              target="_blank"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-emerald-400/90 hover:text-emerald-300 hover:bg-slate-800/60"
-            >
-              <ExternalLink className="w-4 h-4 shrink-0" />
-              <span>Quick Pay Fees</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
-                Public
-              </span>
-            </Link>
-
-            <Link
-              href="/verify-tc"
-              target="_blank"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all text-emerald-400/90 hover:text-emerald-300 hover:bg-slate-800/60"
-            >
-              <QrCode className="w-4 h-4 shrink-0" />
-              <span>Verify TC (QR)</span>
-              <span className="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-medium">
-                Public
-              </span>
-            </Link>
-          </div>
-        </div>
       </nav>
 
       {/* Footer Institution Status */}

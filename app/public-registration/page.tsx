@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPublicCampuses, getPublicClasses } from "@/lib/public-data";
 import { registerStudentPublic } from "@/lib/actions";
 import {
   Building2,
@@ -21,12 +21,10 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Online Student Registration 2026-27",
-  description:
-    "Official Online Student Registration Portal for Delhi Public School (DPS) Kanpur campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar. Apply for admissions 2026-27 online.",
+  description: "Official Online Student Registration Portal for Delhi Public School (DPS) Kanpur campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar. Apply for admissions 2026-27 online.",
   openGraph: {
     title: "Online Student Registration 2026-27 | DPS Kanpur",
-    description:
-      "Official Online Student Registration Portal for Delhi Public School Kanpur campuses.",
+    description: "Official Online Student Registration Portal for Delhi Public School Kanpur campuses.",
     url: "https://echo.dpskanpur.com/public-registration",
   },
 };
@@ -38,11 +36,10 @@ export default async function PublicRegistrationPage({
 }) {
   const { campus: campusId } = await searchParams;
 
+  // Cached across requests — see lib/public-data.ts
   let campuses: any[] = [];
   try {
-    campuses = await prisma.campus.findMany({
-      orderBy: { name: "asc" },
-    });
+    campuses = await getPublicCampuses();
   } catch (error) {
     console.error("Public registration campus query error:", error);
   }
@@ -64,7 +61,7 @@ export default async function PublicRegistrationPage({
   if (!selectedCampus) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-7 text-center space-y-3">
+        <div className="max-w-md w-full bg-white border border-slate-300 p-7 text-center space-y-3">
           <h1 className="text-lg font-black text-slate-900">Registration Not Open</h1>
           <p className="text-xs text-slate-500 leading-relaxed">
             Online registration is not accepting applications at the moment. Please contact the
@@ -77,11 +74,7 @@ export default async function PublicRegistrationPage({
 
   let classes: any[] = [];
   try {
-    classes = await prisma.class.findMany({
-      where: { campusId: selectedCampus.id },
-      include: { sections: true },
-      orderBy: { sequence: "asc" },
-    });
+    classes = await getPublicClasses(selectedCampus.id);
   } catch (error) {
     console.error("Public registration classes query error:", error);
   }
@@ -124,8 +117,8 @@ export default async function PublicRegistrationPage({
           <input type="hidden" name="campusId" value={selectedCampus.id} />
 
           {/* SECTION 1: CAMPUS & CLASS SELECTION */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <div className="bg-white border border-slate-300 p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
               <Building2 className="w-4 h-4 text-emerald-800" />
               <h3 className="text-sm font-semibold text-slate-900">
                 1. Select Campus & Seeking Class
@@ -152,7 +145,7 @@ export default async function PublicRegistrationPage({
                 <select
                   name="classId"
                   required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  className="w-full bg-slate-50 border border-slate-300 p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 >
                   {classes.map((cls) => (
                     <option key={cls.id} value={cls.id}>
@@ -166,7 +159,7 @@ export default async function PublicRegistrationPage({
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Academic Session
                 </label>
-                <div className="p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+                <div className="p-2.5 bg-slate-100 border border-slate-300 text-xs font-bold text-slate-800">
                   2026-2027
                 </div>
               </div>
@@ -174,8 +167,8 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 2: STUDENT DEMOGRAPHICS */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <div className="bg-white border border-slate-300 p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
               <User className="w-4 h-4 text-emerald-800" />
               <h3 className="text-sm font-semibold text-slate-900">
                 2. Student Personal Information
@@ -218,7 +211,7 @@ export default async function PublicRegistrationPage({
                 <select
                   name="gender"
                   required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  className="w-full bg-slate-50 border border-slate-300 p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 >
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
@@ -260,7 +253,7 @@ export default async function PublicRegistrationPage({
                 <select
                   name="category"
                   required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  className="w-full bg-slate-50 border border-slate-300 p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 >
                   <option value="General">General</option>
                   <option value="OBC">OBC</option>
@@ -297,8 +290,8 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 3: GUARDIAN DETAILS */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <div className="bg-white border border-slate-300 p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
               <Phone className="w-4 h-4 text-emerald-800" />
               <h3 className="text-sm font-semibold text-slate-900">
                 3. Parent / Guardian Details
@@ -357,8 +350,8 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 4: RESIDENTIAL ADDRESS */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+          <div className="bg-white border border-slate-300 p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
               <MapPin className="w-4 h-4 text-emerald-800" />
               <h3 className="text-sm font-semibold text-slate-900">
                 4. Residential Address
@@ -375,7 +368,7 @@ export default async function PublicRegistrationPage({
                   required
                   rows={2}
                   placeholder="House No., Street Name, Locality, Kanpur"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  className="w-full bg-slate-50 border border-slate-300 p-2.5 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 ></textarea>
               </div>
 
@@ -391,7 +384,7 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* SECTION 5: ONLINE PAYMENT GATEWAY (ONLINE ONLY) */}
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-300 p-6 shadow-sm space-y-4">
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-emerald-200">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-emerald-800" />
@@ -399,7 +392,7 @@ export default async function PublicRegistrationPage({
                   5. Mandatory Online Registration Fee Payment
                 </h3>
               </div>
-              <span className="bg-emerald-800 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+              <span className="bg-emerald-800 text-white text-xs font-bold px-3 py-1 flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Online Gateway Only
               </span>
             </div>
@@ -409,7 +402,7 @@ export default async function PublicRegistrationPage({
                 <p className="text-xs text-slate-700 leading-relaxed">
                   As per school policy for online public applications, the registration fee must be paid strictly via <strong className="text-emerald-900 font-bold">Online Payment Gateway</strong>. Cash payments are accepted only for physical counter registrations.
                 </p>
-                <div className="p-3 bg-white rounded-xl border border-emerald-200 flex items-center justify-between">
+                <div className="p-3 bg-white border border-emerald-200 flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700">Fixed Registration Fee ({selectedCampus.code}):</span>
                   <span className="text-base font-black text-emerald-900">₹{selectedCampus.registrationFee.toLocaleString("en-IN")}</span>
                 </div>
@@ -419,7 +412,7 @@ export default async function PublicRegistrationPage({
                 <label className="block text-xs font-bold text-slate-700 mb-2">
                   Select Online Payment Gateway *
                 </label>
-                <div className="p-3 bg-white border border-emerald-400 rounded-xl flex items-center justify-between shadow-xs">
+                <div className="p-3 bg-white border border-emerald-400 flex items-center justify-between">
                   <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
                       type="radio"
@@ -433,7 +426,7 @@ export default async function PublicRegistrationPage({
                       <div className="text-[11px] text-slate-500 font-medium">UPI, Credit/Debit Cards, NetBanking & Wallets</div>
                     </div>
                   </label>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 shrink-0">
                     Secure
                   </span>
                 </div>
@@ -442,7 +435,7 @@ export default async function PublicRegistrationPage({
           </div>
 
           {/* Submit Registration Button */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-300">
             <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
               <ShieldCheck className="w-4 h-4 text-emerald-700" />
               <span>Status will be saved as REGISTERED (Pending Admin Confirmation)</span>
@@ -450,7 +443,7 @@ export default async function PublicRegistrationPage({
 
             <button
               type="submit"
-              className="bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-8 rounded-xl text-xs transition shadow-lg flex items-center gap-2 cursor-pointer"
+              className="bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-8 text-xs transition flex items-center gap-2 cursor-pointer"
             >
               <CreditCard className="w-4 h-4 text-amber-300" />
               <span>Pay ₹{selectedCampus.registrationFee.toLocaleString("en-IN")} & Complete Online Registration</span>
