@@ -9,7 +9,6 @@ import { formatDate, formatCurrency } from "@/lib/utils";
 import { promoteStudentToAdmission, updateStudent } from "@/lib/actions";
 import {
   User,
-  CreditCard,
   FileText,
   Users,
   Building2,
@@ -182,13 +181,6 @@ export default async function StudentDetailPage({
 
                 {student.status === "ACTIVE" && (
                   <>
-                    <Link
-                      href={`/fees/collect?studentId=${student.id}`}
-                      className="inline-flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition shadow-xs"
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      Collect Fee Desk
-                    </Link>
                     <Link
                       href={`/tc?studentId=${student.id}`}
                       className="inline-flex items-center gap-1.5 bg-purple-700 hover:bg-purple-800 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition shadow-xs"
@@ -743,12 +735,6 @@ export default async function StudentDetailPage({
                   <h3 className="font-bold text-slate-900 text-sm">Fee Invoices & Payments History</h3>
                   <p className="text-xs text-slate-500">Breakdown of quarterly demands, concessions, and collected receipts.</p>
                 </div>
-                <Link
-                  href={`/fees/collect?studentId=${student.id}`}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition"
-                >
-                  + Record Payment
-                </Link>
               </div>
 
               <div className="divide-y divide-slate-100">

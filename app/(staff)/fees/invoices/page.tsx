@@ -4,7 +4,8 @@ import { Navbar } from "@/components/Navbar";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Receipt, Search, Filter, CreditCard, CheckCircle2 } from "lucide-react";
+import { Receipt, Search, Filter, CheckCircle2, Send } from "lucide-react";
+import { sendFeeReminder } from "@/lib/notification-actions";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -12,9 +13,16 @@ export const dynamic = "force-dynamic";
 export default async function FeeInvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ campus?: string; status?: string; q?: string }>;
+  searchParams: Promise<{
+    campus?: string;
+    status?: string;
+    q?: string;
+    notice?: string;
+    queued?: string;
+    sent?: string;
+  }>;
 }) {
-  const { campus: campusId, status, q } = await searchParams;
+  const { campus: campusId, status, q, notice, queued, sent } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
@@ -23,6 +31,14 @@ export default async function FeeInvoicesPage({
   }
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
+
+  const canNotify = permissions.isAdmin || permissions.modules.notifications.canUpdate;
+
+  const filterQuery = new URLSearchParams();
+  if (campusId) filterQuery.set("campus", campusId);
+  if (status) filterQuery.set("status", status);
+  if (q) filterQuery.set("q", q);
+  const returnUrl = `/fees/invoices${filterQuery.toString() ? `?${filterQuery}` : ""}`;
 
   const whereClause: any = {
     ...(campusId && campusId !== "ALL" ? { campusId } : {}),
@@ -63,12 +79,6 @@ export default async function FeeInvoicesPage({
                 Complete audit trail of fee demands, payments, concessions, and outstanding balances.
               </p>
             </div>
-            <Link
-              href="/fees/collect"
-              className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-xs"
-            >
-              <CreditCard className="w-4 h-4" /> Collect Payment at Desk
-            </Link>
           </div>
 
           {/* Filter Bar */}
@@ -106,6 +116,24 @@ export default async function FeeInvoicesPage({
               </button>
             </form>
           </div>
+
+          {notice && (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 flex items-start gap-2.5 text-xs text-sky-900">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                {notice === "reminder_settled" ? (
+                  <span className="font-semibold">
+                    No reminder sent — that invoice is already settled.
+                  </span>
+                ) : (
+                  <span className="font-medium">
+                    <span className="font-bold">Reminder dispatched.</span> {queued ?? 0} message(s)
+                    queued · {sent ?? 0} sent.
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Invoices Table */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
@@ -182,14 +210,31 @@ export default async function FeeInvoicesPage({
 
                         <td className="py-3 px-4 text-right">
                           {inv.balanceAmount > 0 ? (
-                            <Link
-                              href={`/fees/collect?studentId=${inv.studentId}`}
-                              className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-2.5 py-1 rounded text-[11px]"
-                            >
-                              Pay Due
-                            </Link>
+                            <div className="flex items-center justify-end gap-3 whitespace-nowrap">
+                              <Link
+                                href={`/students/${inv.studentId}?tab=fees`}
+                                className="text-slate-500 hover:text-slate-800 font-semibold text-[11px] underline underline-offset-2"
+                              >
+                                Ledger
+                              </Link>
+                              {canNotify && (
+                                <form action={sendFeeReminder}>
+                                  <input type="hidden" name="invoiceId" value={inv.id} />
+                                  <input type="hidden" name="returnUrl" value={returnUrl} />
+                                  <button
+                                    type="submit"
+                                    title={`Remind the parent about ${inv.invoiceNo}`}
+                                    className="inline-flex items-center gap-1 bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-2.5 py-1 rounded text-[11px] transition"
+                                  >
+                                    <Send className="w-3 h-3" /> Remind
+                                  </button>
+                                </form>
+                              )}
+                            </div>
                           ) : (
-                            <span className="text-emerald-700 font-semibold text-[11px]">✓ Settled</span>
+                            <span className="text-emerald-700 font-semibold text-[11px] whitespace-nowrap">
+                              ✓ Settled
+                            </span>
                           )}
                         </td>
                       </tr>

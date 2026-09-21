@@ -6,13 +6,35 @@ import {
 
 export type SessionPayload = SessionUser & { lastActivityAt: number };
 
-// The session cookie is only as trustworthy as this key. In production a
-// real secret must be supplied; falling back to a value committed to the
-const SECRET_KEY = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || "dps_echo_local_development_only_secret";
+const DEV_FALLBACK_SECRET = "dps_echo_local_development_only_secret";
+
+/**
+ * The session cookie is only as trustworthy as this key. A value committed to
+ * the repository would let anyone mint a valid admin session, so production
+ * must supply a real one.
+ *
+ * Resolved on each call rather than at module load: `next build` evaluates
+ * this module while collecting page data, and the secret is injected from
+ * Secret Manager at runtime, not at image build time. Throwing at module
+ * scope would therefore break the build rather than catch a misconfigured
+ * deployment.
+ */
+export function resolveSessionSecret(): string {
+  const configured = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
+  if (configured) return configured;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "SESSION_SECRET is not set. Refusing to sign sessions with a default key."
+    );
+  }
+
+  return DEV_FALLBACK_SECRET;
+}
 
 async function signPayload(data: string): Promise<string> {
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(SECRET_KEY);
+  const keyData = encoder.encode(resolveSessionSecret());
   const msgData = encoder.encode(data);
 
   const cryptoSubtle = globalThis.crypto?.subtle || (crypto as any)?.subtle;
