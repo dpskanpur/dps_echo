@@ -9,11 +9,21 @@ interface CampusOption {
   name: string;
 }
 
+/**
+ * Pages whose records belong to exactly one campus. Fee structures, fee heads
+ * and admissions are defined per school, so a combined view would show one
+ * campus's data under a label claiming to show all of them.
+ */
+const SINGLE_CAMPUS_PATHS = ["/fees/structures", "/students/new"];
+
 export function CampusSwitcher({ campuses }: { campuses: CampusOption[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const selectedCampusId = searchParams.get("campus");
+
+  const requiresOneCampus = SINGLE_CAMPUS_PATHS.some((p) => pathname.startsWith(p));
+  const selectedCampusId =
+    searchParams.get("campus") ?? (requiresOneCampus ? campuses[0]?.id : null);
 
   const handleCampusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCampusId = e.target.value;
@@ -36,7 +46,7 @@ export function CampusSwitcher({ campuses }: { campuses: CampusOption[] }) {
         aria-label="Select Campus"
         className="text-sm font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-4"
       >
-        <option value="ALL">🏢 All Campuses (Combined)</option>
+        {!requiresOneCampus && <option value="ALL">🏢 All Campuses (Combined)</option>}
         {campuses.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name} ({c.code})

@@ -164,7 +164,7 @@ export function RazorpayCheckoutButton({
 
   if (phase === "paid") {
     return (
-      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+      <div className="p-4 bg-emerald-50 border border-emerald-200 flex items-start gap-3">
         <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
         <div className="text-xs text-emerald-950">
           <strong className="block font-bold">Payment received</strong>
@@ -179,7 +179,7 @@ export function RazorpayCheckoutButton({
 
   if (phase === "pending") {
     return (
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+      <div className="p-4 bg-amber-50 border border-amber-200 flex items-start gap-3">
         <Receipt className="w-6 h-6 text-amber-600 shrink-0" />
         <div className="text-xs text-amber-950">
           <strong className="block font-bold">Payment received — receipt on its way</strong>
@@ -201,7 +201,7 @@ export function RazorpayCheckoutButton({
         type="button"
         onClick={startPayment}
         disabled={busy}
-        className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl text-xs transition shadow-md flex items-center justify-center gap-2"
+        className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 text-xs transition flex items-center justify-center gap-2"
       >
         {busy ? (
           <>
@@ -223,10 +223,10 @@ export function RazorpayCheckoutButton({
 
       {message && (
         <div
-          className={`p-2.5 rounded-lg border text-[11px] flex items-start gap-2 ${
+          className={`p-2.5  border text-[11px] flex items-start gap-2 ${
             phase === "error"
               ? "bg-rose-50 border-rose-200 text-rose-800"
-              : "bg-slate-50 border-slate-200 text-slate-600"
+              : "bg-slate-50 border-slate-300 text-slate-600"
           }`}
         >
           {phase === "error" && <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />}

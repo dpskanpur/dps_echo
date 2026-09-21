@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { generateTCNumber } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { requirePermission } from "@/lib/auth";
 import { assertCampusAllowed } from "@/lib/permissions";
 import { createReceiptForPayment } from "@/lib/fee-payments";
 import { getActiveSessionName, resolveAdmissionSession } from "@/lib/academic-session";
+import { PUBLIC_REFERENCE_TAG } from "@/lib/public-data";
 import { queuePaymentReceiptNotification } from "@/lib/notifications";
 
 // -------------------------------------------------------------
@@ -939,6 +940,7 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   revalidatePath("/admin/rbac");
   revalidatePath("/campuses");
   revalidatePath("/students/new");
+  revalidateTag(PUBLIC_REFERENCE_TAG);
   redirect(`/admin/rbac?tab=system&campusId=${campusId}&notice=campus_updated`);
 }
 
@@ -1134,6 +1136,7 @@ export async function createCampus(formData: FormData): Promise<void> {
     }
   }
 
+  revalidateTag(PUBLIC_REFERENCE_TAG);
   revalidatePath("/admin/rbac");
   revalidatePath("/");
   redirect(`/admin/rbac?tab=system&campusId=${campus.id}&notice=campus_created`);
