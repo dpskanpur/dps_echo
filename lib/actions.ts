@@ -6,10 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { generateTCNumber } from "@/lib/utils";
 import { requirePermission } from "@/lib/auth";
 import { assertCampusAllowed } from "@/lib/permissions";
-import { createReceiptForPayment } from "@/lib/fee-payments";
 import { getActiveSessionName, resolveAdmissionSession } from "@/lib/academic-session";
 import { PUBLIC_REFERENCE_TAG } from "@/lib/public-data";
-import { queuePaymentReceiptNotification } from "@/lib/notifications";
 
 // -------------------------------------------------------------
 // Campus isolation helper
@@ -687,65 +685,6 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
   revalidatePath("/tc");
   revalidatePath(`/students/${studentId}`);
   redirect(`/tc?tcId=${tc.id}`);
-}
-
-// -------------------------------------------------------------
-// Fee Collection & Payment Actions
-// -------------------------------------------------------------
-
-export async function collectFeePayment(formData: FormData): Promise<void> {
-  const { user } = await requirePermission("fees", "update");
-
-  const invoiceId = formData.get("invoiceId") as string;
-  const paymentMode = (formData.get("paymentMode") as string) || "CASH";
-  const amountPaid = parseFloat((formData.get("amountPaid") as string) || "0");
-  const transactionRef = (formData.get("transactionRef") as string) || "CASH-COUNTER";
-  const bankName = (formData.get("bankName") as string) || "";
-  const notes = (formData.get("notes") as string) || "";
-  const cashierName = (formData.get("cashierName") as string) || user.name || "Accounts Desk";
-  const returnUrl = formData.get("returnUrl") as string;
-
-  // Online modes are only ever written by the verified gateway webhook.
-  if (paymentMode === "ONLINE_UPI") {
-    throw new Error(
-      "Online payments are recorded automatically from the payment gateway and cannot be entered at the counter."
-    );
-  }
-
-  const invoice = await prisma.feeInvoice.findUnique({
-    where: { id: invoiceId },
-    select: { campusId: true, studentId: true },
-  });
-
-  if (!invoice) {
-    throw new Error("Invoice not found.");
-  }
-
-  assertCampusAllowed(user, invoice.campusId);
-
-  const result = await createReceiptForPayment({
-    invoiceId,
-    amountPaid,
-    paymentMode,
-    transactionRef,
-    bankName,
-    cashierName,
-    notes,
-  });
-
-  await queuePaymentReceiptNotification(result.paymentId);
-
-  revalidatePath("/fees/collect");
-  revalidatePath("/fees/invoices");
-  revalidatePath("/fees/defaulters");
-  revalidatePath("/fees/cashier");
-  revalidatePath(`/students/${invoice.studentId}`);
-
-  if (returnUrl) {
-    redirect(returnUrl);
-  } else {
-    redirect(`/fees/cashier?receipt=${encodeURIComponent(result.receiptNo)}`);
-  }
 }
 
 // Delete Student Record

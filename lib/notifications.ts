@@ -140,7 +140,8 @@ function isoWeekStamp(d: Date): string {
  */
 export async function queueFeeReminder(
   invoiceId: string,
-  kind: "FEE_DUE" | "FEE_OVERDUE"
+  kind: "FEE_DUE" | "FEE_OVERDUE",
+  options: { dedupeSuffix?: string } = {}
 ): Promise<number> {
   const invoice = await prisma.feeInvoice.findUnique({
     where: { id: invoiceId },
@@ -172,7 +173,13 @@ export async function queueFeeReminder(
   const payUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://echo.dpskanpur.com"}/pay`;
 
   const overdue = kind === "FEE_OVERDUE";
-  const stamp = overdue ? isoWeekStamp(new Date()) : invoice.dueDate.toISOString().slice(0, 10);
+
+  // The stamp is what stops the scheduled job messaging the same parent twice
+  // for one invoice: weekly while overdue, once per due date otherwise. A
+  // staff member sending a reminder by hand passes a suffix so their send is
+  // never silently swallowed by that window.
+  const baseStamp = overdue ? isoWeekStamp(new Date()) : invoice.dueDate.toISOString().slice(0, 10);
+  const stamp = options.dedupeSuffix ? `${baseStamp}:${options.dedupeSuffix}` : baseStamp;
 
   const subject = overdue
     ? `Overdue school fees for ${childName} — ${invoice.invoiceNo}`

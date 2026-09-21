@@ -8,8 +8,23 @@ import { assertCampusAllowed, resolveCampusScope } from "@/lib/permissions";
 import {
   enqueueNotification,
   dispatchPendingNotifications,
+  queueFeeReminder,
   resolveContacts,
 } from "@/lib/notifications";
+
+const UNSETTLED = {
+  status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] },
+  balanceAmount: { gt: 0 },
+};
+
+function startOfToday(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function reminderKind(dueDate: Date, today: Date): "FEE_DUE" | "FEE_OVERDUE" {
+  return dueDate < today ? "FEE_OVERDUE" : "FEE_DUE";
+}
 
 /** Flushes whatever is queued, on demand from the notifications console. */
 export async function dispatchQueuedNotifications(): Promise<void> {
@@ -125,5 +140,94 @@ export async function sendAnnouncement(formData: FormData): Promise<void> {
   revalidatePath("/notifications");
   redirect(
     `/notifications?notice=announced&queued=${queued}&sent=${result.sent}&failed=${result.failed}&skipped=${result.skipped}`
+  );
+}
+
+/**
+ * Sends one parent a reminder for one unpaid invoice, on every channel that
+ * parent can be reached on.
+ *
+ * Unlike the scheduled job this always goes out: a staff member clicking
+ * "Remind" has decided this parent needs chasing now, so the weekly dedupe
+ * window is bypassed with a per-send suffix.
+ */
+export async function sendFeeReminder(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("notifications", "update");
+
+  const invoiceId = (formData.get("invoiceId") as string) || "";
+  const returnUrl = (formData.get("returnUrl") as string) || "/fees/defaulters";
+
+  const invoice = await prisma.feeInvoice.findUnique({
+    where: { id: invoiceId },
+    select: { id: true, campusId: true, dueDate: true, balanceAmount: true },
+  });
+
+  if (!invoice) throw new Error("Invoice not found.");
+  assertCampusAllowed(user, invoice.campusId);
+
+  if (invoice.balanceAmount <= 0) {
+    redirect(`${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=reminder_settled`);
+  }
+
+  const kind = reminderKind(invoice.dueDate, startOfToday());
+  const queued = await queueFeeReminder(invoice.id, kind, {
+    dedupeSuffix: `manual:${Date.now().toString(36)}`,
+  });
+
+  const result = await dispatchPendingNotifications(50);
+
+  revalidatePath("/fees/defaulters");
+  revalidatePath("/notifications");
+  redirect(
+    `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=reminder_sent` +
+      `&queued=${queued}&sent=${result.sent}&failed=${result.failed}&skipped=${result.skipped}`
+  );
+}
+
+/**
+ * Reminds the parents of every student with an unpaid invoice in the current
+ * campus / session filter.
+ *
+ * This one keeps the dedupe window. Clicking it twice in an afternoon must
+ * not message the same parent twice, so a reminder already queued for an
+ * invoice this week is skipped rather than repeated.
+ */
+export async function sendBulkFeeReminders(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("notifications", "update");
+
+  const requestedCampusId = (formData.get("campusId") as string) || "";
+  const sessionName = (formData.get("sessionName") as string) || "";
+  const returnUrl = (formData.get("returnUrl") as string) || "/fees/defaulters";
+
+  const scope = resolveCampusScope(user, requestedCampusId || null);
+  if (requestedCampusId && requestedCampusId !== "ALL") {
+    assertCampusAllowed(user, requestedCampusId);
+  }
+
+  const invoices = await prisma.feeInvoice.findMany({
+    where: {
+      ...UNSETTLED,
+      ...scope.where,
+      ...(sessionName ? { academicYear: { name: sessionName } } : {}),
+    },
+    select: { id: true, dueDate: true },
+    orderBy: { dueDate: "asc" },
+    take: 2000,
+  });
+
+  const today = startOfToday();
+  let queued = 0;
+  for (const invoice of invoices) {
+    queued += await queueFeeReminder(invoice.id, reminderKind(invoice.dueDate, today));
+  }
+
+  const result = await dispatchPendingNotifications(500);
+
+  revalidatePath("/fees/defaulters");
+  revalidatePath("/notifications");
+  redirect(
+    `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=bulk_reminders` +
+      `&invoices=${invoices.length}&queued=${queued}` +
+      `&sent=${result.sent}&failed=${result.failed}&skipped=${result.skipped}`
   );
 }

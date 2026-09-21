@@ -265,13 +265,13 @@ export default async function TransferCertificatePage({
                   <div>
                     <h3 className="font-bold">Pending Fee Dues Detected ({targetStudent.invoices.length} Invoices)</h3>
                     <p className="mt-0.5 text-rose-700">
-                      Standard school policy requires fee dues to be cleared before formal TC handover. You may still generate the draft TC or collect payment first.
+                      Standard school policy requires fee dues to be cleared before formal TC handover. Dues are settled by the parent through the online fee portal; you may still generate the draft TC in the meantime.
                     </p>
                     <Link
-                      href={`/fees/collect?studentId=${targetStudent.id}`}
-                      className="inline-block mt-2 bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1 rounded text-[11px]"
+                      href={`/students/${targetStudent.id}?tab=fees`}
+                      className="inline-block mt-2 text-rose-700 hover:text-rose-800 font-bold text-[11px] underline underline-offset-2"
                     >
-                      Clear Dues in Fee Desk →
+                      View Fee Ledger →
                     </Link>
                   </div>
                 </div>

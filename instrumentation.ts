@@ -14,5 +14,10 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const dns = await import("node:dns");
     dns.setDefaultResultOrder("ipv4first");
+
+    // Surface a missing session signing key at boot, so a misconfigured
+    // revision fails to start instead of failing on the first sign-in.
+    const { resolveSessionSecret } = await import("@/lib/session-cookie");
+    resolveSessionSecret();
   }
 }

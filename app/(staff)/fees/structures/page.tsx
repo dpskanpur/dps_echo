@@ -15,7 +15,7 @@ import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-sessio
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Layers, Building2, Plus, Info } from "lucide-react";
+import { Layers, Building2, Plus, Info, ChevronDown } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -103,20 +103,32 @@ export default async function FeeStructuresPage({
             </div>
           </div>
 
-          {/* Fee Heads — editable */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
+          {/* Fee Heads — collapsed by default; reference data, not daily work */}
+          <details
+            open={notice === "head_deleted"}
+            className="group bg-white rounded-xl border border-slate-200 shadow-xs open:pb-5"
+          >
+            <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer select-none p-5 flex items-center justify-between gap-4 rounded-xl hover:bg-slate-50/70 transition">
+              <div className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-emerald-800" /> Institutional Fee Heads
+                  <Info className="w-4 h-4 text-emerald-800 shrink-0" /> Institutional Fee Heads
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-1.5 py-0.5 normal-case tracking-normal">
+                    {feeHeads.length}
+                  </span>
                 </h2>
                 <p className="text-[11px] text-slate-500 mt-1">
                   The levies a fee structure can charge. The code is what an uploaded template
                   matches on.
                 </p>
               </div>
-            </div>
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 shrink-0 whitespace-nowrap">
+                <span className="hidden sm:inline group-open:hidden">Manage</span>
+                <span className="hidden sm:group-open:inline">Hide</span>
+                <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+              </span>
+            </summary>
 
+            <div className="px-5 space-y-4">
             {notice === "head_deleted" && (
               <p className="text-[11px] text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
                 Fee head <strong>{noticeName}</strong> deleted.
@@ -173,8 +185,9 @@ export default async function FeeStructuresPage({
               >
                 <Plus className="w-3 h-3" /> Add
               </button>
-            </form>
-          </div>
+              </form>
+            </div>
+          </details>
 
           {/* Define: upload a template, or add one row at a time */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
