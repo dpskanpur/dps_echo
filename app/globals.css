@@ -8,10 +8,32 @@
   --accent-gold: #D4AC0D;
 }
 
-body {
-  background-color: #F8FAFC;
-  color: #0F172A;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+@layer base {
+  body {
+    @apply bg-whiten text-body font-normal text-base relative z-[1] dark:bg-boxdark-2 dark:text-bodydark;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+/* Custom Scrollbar for TailAdmin Sidebar & Tables */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* TailAdmin Card Component Utility */
+.tailadmin-card {
+  @apply rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1;
 }
 
 /* Print Specific Rules for CBSE TC and 3-Part Receipts
