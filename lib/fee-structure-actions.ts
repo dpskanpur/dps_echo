@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/auth";
 import { assertCampusAllowed } from "@/lib/permissions";
 import { getActiveSession } from "@/lib/academic-session";
+import { logAuditAction } from "@/lib/audit-log";
 import {
   FEE_FREQUENCIES,
   FeeStructureImportRow,
@@ -87,6 +88,17 @@ export async function upsertFeeStructure(formData: FormData): Promise<void> {
     create: { campusId, academicYearId, classId, feeHeadId, amount, frequency },
   });
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campusId,
+    action: "FEE_STRUCTURE_UPSERT",
+    entityType: "FeeStructure",
+    details: { classId, feeHeadId, amount, frequency, academicYearId },
+  });
+
   revalidatePath("/fees/structures");
 }
 
@@ -102,6 +114,17 @@ export async function deleteFeeStructure(formData: FormData): Promise<void> {
 
   assertCampusAllowed(user, existing.campusId);
   await prisma.feeStructure.delete({ where: { id } });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: existing.campusId,
+    action: "FEE_STRUCTURE_DELETE",
+    entityType: "FeeStructure",
+    entityId: id,
+  });
 
   revalidatePath("/fees/structures");
 }
@@ -202,6 +225,17 @@ export async function importFeeStructures(
     )
   );
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campusId,
+    action: "FEE_STRUCTURE_IMPORT",
+    entityType: "FeeStructure",
+    details: { appliedCount: valid.length, academicYearId },
+  });
+
   revalidatePath("/fees/structures");
   return { success: true, applied: valid.length, errors: [] };
 }
@@ -228,8 +262,20 @@ export async function createFeeHead(formData: FormData): Promise<void> {
   });
   if (existing) throw new Error(`Fee head "${code}" already exists at this campus.`);
 
-  await prisma.feeHead.create({
+  const newHead = await prisma.feeHead.create({
     data: { campusId, code, name, isOptional, isRefundable },
+  });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campusId,
+    action: "FEE_HEAD_CREATE",
+    entityType: "FeeHead",
+    entityId: newHead.id,
+    details: { code, name, isOptional, isRefundable },
   });
 
   revalidatePath("/fees/structures");
@@ -271,6 +317,18 @@ export async function updateFeeHead(formData: FormData): Promise<void> {
   await prisma.feeHead.update({
     where: { id },
     data: { name, code, description, isOptional, isRefundable },
+  });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: existing.campusId,
+    action: "FEE_HEAD_UPDATE",
+    entityType: "FeeHead",
+    entityId: id,
+    details: { code, name, description, isOptional, isRefundable },
   });
 
   revalidatePath("/fees/structures");
@@ -317,6 +375,18 @@ export async function deleteFeeHead(formData: FormData): Promise<void> {
   }
 
   await prisma.feeHead.delete({ where: { id } });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: head.campusId,
+    action: "FEE_HEAD_DELETE",
+    entityType: "FeeHead",
+    entityId: id,
+    details: { code: head.code, name: head.name },
+  });
 
   revalidatePath("/fees/structures");
   redirect(

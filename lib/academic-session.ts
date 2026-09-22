@@ -150,3 +150,6 @@ export async function resolveAdmissionSession(requested?: string | null): Promis
 
   return match.name;
 }
+
+/** Alias for getActiveSessionName to support legacy/audit-log calls */
+export const getCurrentAcademicSession = getActiveSessionName;

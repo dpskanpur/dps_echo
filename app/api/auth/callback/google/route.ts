@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { loginOrCreateUser, isAllowedDomain } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, encodeSessionCookie, sessionCookieOptions } from "@/lib/session-cookie";
 import { httpRequest } from "@/lib/http";
+import { logAuditAction } from "@/lib/audit-log";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -107,6 +108,17 @@ export async function GET(request: Request) {
     if (!result.success || !result.user) {
       return NextResponse.redirect(publicUrl(`/login?error=${encodeURIComponent(result.error || "")}`, request));
     }
+
+    await logAuditAction({
+      userId: result.user.id,
+      userEmail: result.user.email,
+      userName: result.user.name,
+      userRole: result.user.role,
+      action: "AUTH_LOGIN",
+      entityType: "User",
+      entityId: result.user.id,
+      details: `Google OAuth login (${result.user.role})`,
+    });
 
     const redirectUrlObj = publicUrl(redirectTarget, request);
     redirectUrlObj.searchParams.set("login_success", "true");
