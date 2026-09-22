@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, getUserPermissions, APP_MODULES, AppModuleId, isAllowedDomain } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { logAuditAction } from "@/lib/audit-log";
 
 /**
  * Asserts that the currently logged in user has RBAC admin rights
@@ -29,7 +30,7 @@ export async function updateUserModulePermission(
   canUpdate: boolean,
   canDelete: boolean
 ) {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
 
   // If canUpdate or canDelete is true, canView must automatically be true
   const effectiveView = canView || canUpdate || canDelete;
@@ -52,6 +53,18 @@ export async function updateUserModulePermission(
     },
   });
 
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "RBAC_UPDATE_PERMISSION",
+    entityType: "UserPermission",
+    entityId: userId,
+    details: { module, canView: effectiveView, canUpdate, canDelete },
+  });
+
   revalidatePath("/admin/rbac");
   revalidatePath("/");
   return { success: true };
@@ -64,7 +77,7 @@ export async function applyRolePreset(
   userId: string,
   preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "REVOKE_ALL"
 ) {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
@@ -124,6 +137,18 @@ export async function applyRolePreset(
     data: { role: newRole, status: preset === "REVOKE_ALL" ? "PENDING" : "ACTIVE" },
   });
 
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "RBAC_APPLY_PRESET",
+    entityType: "User",
+    entityId: userId,
+    details: { targetEmail: user.email, preset, newRole },
+  });
+
   revalidatePath("/admin/rbac");
   revalidatePath("/");
   return { success: true };
@@ -138,7 +163,7 @@ export async function addUserWithPermissions(
   role: string,
   preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "NONE"
 ) {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
 
   const cleanEmail = email.trim().toLowerCase();
   if (!isAllowedDomain(cleanEmail)) {
@@ -164,6 +189,18 @@ export async function addUserWithPermissions(
     await applyRolePreset(user.id, preset);
   }
 
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "USER_INVITE",
+    entityType: "User",
+    entityId: user.id,
+    details: { invitedEmail: cleanEmail, role, preset },
+  });
+
   revalidatePath("/admin/rbac");
   return { success: true, userId: user.id };
 }
@@ -172,11 +209,23 @@ export async function addUserWithPermissions(
  * Toggle user status (ACTIVE / SUSPENDED)
  */
 export async function toggleUserStatus(userId: string, newStatus: "ACTIVE" | "SUSPENDED") {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
 
-  await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: { status: newStatus },
+  });
+
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: newStatus === "SUSPENDED" ? "USER_SUSPEND" : "USER_ACTIVATE",
+    entityType: "User",
+    entityId: userId,
+    details: { targetEmail: updatedUser.email, newStatus },
   });
 
   revalidatePath("/admin/rbac");
@@ -187,10 +236,24 @@ export async function toggleUserStatus(userId: string, newStatus: "ACTIVE" | "SU
  * Delete a user and their permissions
  */
 export async function deleteUser(userId: string) {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
+
+  const userToDelete = await prisma.user.findUnique({ where: { id: userId } });
 
   await prisma.user.delete({
     where: { id: userId },
+  });
+
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "USER_DELETE",
+    entityType: "User",
+    entityId: userId,
+    details: { deletedEmail: userToDelete?.email },
   });
 
   revalidatePath("/admin/rbac");
@@ -204,12 +267,25 @@ export async function approveUserAccess(
   userId: string,
   preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL"
 ) {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
   await applyRolePreset(userId, preset);
-  await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: { status: "ACTIVE" },
   });
+
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "USER_APPROVE",
+    entityType: "User",
+    entityId: userId,
+    details: { targetEmail: updatedUser.email, preset },
+  });
+
   revalidatePath("/admin/rbac");
   revalidatePath("/");
   return { success: true };
@@ -219,10 +295,24 @@ export async function approveUserAccess(
  * Deny and delete a pending user access request
  */
 export async function denyAndDeleteUserRequest(userId: string) {
-  await assertRbacAdmin();
+  const admin = await assertRbacAdmin();
+  const userToDelete = await prisma.user.findUnique({ where: { id: userId } });
   await prisma.user.delete({
     where: { id: userId },
   });
+
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "USER_DENY",
+    entityType: "User",
+    entityId: userId,
+    details: { deniedEmail: userToDelete?.email },
+  });
+
   revalidatePath("/admin/rbac");
   revalidatePath("/");
   return { success: true };

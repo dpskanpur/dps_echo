@@ -13,6 +13,7 @@ import {
   Building2,
   KeyRound,
   Bell,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
@@ -186,6 +187,12 @@ export function Sidebar({
                 icon={KeyRound}
                 label={<>Admin & Settings</>}
                 active={pathname.startsWith("/admin/rbac") || pathname.startsWith("/campuses")}
+              />
+              <SidebarLink
+                href="/admin/audit-logs"
+                icon={History}
+                label={<>Audit Logs</>}
+                active={pathname.startsWith("/admin/audit-logs")}
               />
             </div>
           </div>

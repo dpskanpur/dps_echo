@@ -8,6 +8,7 @@ import { requirePermission } from "@/lib/auth";
 import { assertCampusAllowed } from "@/lib/permissions";
 import { getActiveSessionName, resolveAdmissionSession } from "@/lib/academic-session";
 import { PUBLIC_REFERENCE_TAG } from "@/lib/public-data";
+import { logAuditAction } from "@/lib/audit-log";
 
 // -------------------------------------------------------------
 // Campus isolation helper
@@ -259,6 +260,19 @@ export async function registerStudent(formData: FormData): Promise<void> {
     },
   });
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campusId,
+    academicSession: admissionSession,
+    action: "STUDENT_REGISTER",
+    entityType: "Student",
+    entityId: student.id,
+    details: { regNo: student.registrationNo, name: `${student.firstName} ${student.lastName}`.trim() },
+  });
+
   revalidatePath("/students");
   revalidatePath("/");
   redirect(`/students/${student.id}?notice=registered`);
@@ -495,6 +509,18 @@ export async function promoteStudentToAdmission(formData: FormData): Promise<voi
     },
   });
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: existingStudent.campusId,
+    action: "STUDENT_PROMOTE_ADMISSION",
+    entityType: "Student",
+    entityId: studentId,
+    details: { scholarNo, admissionNo },
+  });
+
   revalidatePath(`/students/${studentId}`);
   revalidatePath("/students");
   revalidatePath("/");
@@ -598,6 +624,19 @@ export async function createStudent(formData: FormData): Promise<void> {
     },
   });
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campusId,
+    academicSession: admissionSession,
+    action: "STUDENT_CREATE",
+    entityType: "Student",
+    entityId: student.id,
+    details: { scholarNo, admissionNo, name: `${student.firstName} ${student.lastName}`.trim() },
+  });
+
   revalidatePath("/students");
   revalidatePath("/");
   redirect(`/students/${student.id}?notice=created`);
@@ -681,6 +720,18 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
     data: { status: "TC_ISSUED" },
   });
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: student.campus.code,
+    action: "TC_ISSUE",
+    entityType: "TransferCertificate",
+    entityId: tc.id,
+    details: { tcNumber, studentId: student.id },
+  });
+
   revalidatePath("/students");
   revalidatePath("/tc");
   revalidatePath(`/students/${studentId}`);
@@ -701,6 +752,16 @@ export async function deleteStudent(formData: FormData): Promise<void> {
   await prisma.studentDocument.deleteMany({ where: { studentId } });
   await prisma.guardian.deleteMany({ where: { studentId } });
   await prisma.student.delete({ where: { id: studentId } });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    action: "STUDENT_DELETE",
+    entityType: "Student",
+    entityId: studentId,
+  });
 
   revalidatePath("/students");
   revalidatePath("/");
@@ -834,6 +895,17 @@ export async function updateStudent(formData: FormData): Promise<void> {
     }
   }
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    action: "STUDENT_UPDATE",
+    entityType: "Student",
+    entityId: studentId,
+    details: { firstName, lastName, gender, status },
+  });
+
   revalidatePath(`/students/${studentId}`);
   revalidatePath("/students");
   redirect(`/students/${studentId}?notice=updated`);
@@ -876,6 +948,18 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
     },
   });
 
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campusId,
+    action: "CAMPUS_SETTINGS_UPDATE",
+    entityType: "Campus",
+    entityId: campusId,
+    details: { activeAcademicYear, registrationFee, scholarIdPrefix },
+  });
+
   revalidatePath("/admin/rbac");
   revalidatePath("/campuses");
   revalidatePath("/students/new");
@@ -905,6 +989,17 @@ export async function updateSystemSettings(formData: FormData): Promise<void> {
       registrationIdPrefix,
       registrationFeeDefault,
     },
+  });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    action: "SYSTEM_SETTINGS_UPDATE",
+    entityType: "SystemSettings",
+    entityId: "global",
+    details: { currentAcademicYear, scholarIdPrefix, registrationFeeDefault },
   });
 
   revalidatePath("/admin/rbac");

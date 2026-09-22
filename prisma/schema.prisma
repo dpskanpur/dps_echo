@@ -55,6 +55,7 @@ model User {
   campus      Campus?          @relation(fields: [campusId], references: [id])
   permissions UserPermission[]
   guardians   Guardian[]
+  auditLogs   AuditLog[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   lastLoginAt DateTime         @default(now())
@@ -508,4 +509,32 @@ model Notification {
   @@index([status])
   @@index([category])
   @@index([createdAt])
+}
+
+// -------------------------------------------------------------
+// System Audit Trail & User Activity Logs
+// -------------------------------------------------------------
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  userId          String?  // ID of performing user (null for system/cron/public)
+  userEmail       String   // Email of performing user
+  userName        String?  // Display name of performing user
+  userRole        String?  // Role at execution (e.g. "SUPER_ADMIN", "FEES_MANAGER")
+  academicSession String   @default("2026-2027") // Academic year scope (e.g. "2025-2026")
+  campusCode      String?  // e.g. "AZD", "BAR", "KID", "SRV", or "ALL"
+  action          String   // e.g. "STUDENT_CREATE", "FEE_COLLECT", "TC_ISSUE", "RBAC_UPDATE", "AUTH_LOGIN"
+  entityType      String   // e.g. "Student", "FeePayment", "TransferCertificate", "UserPermission"
+  entityId        String?  // Primary key or reference ID of affected entity
+  details         String?  // Compact stringified summary capped at 1,000 chars
+  ipAddress       String?  // Client IP if available from request headers
+  createdAt       DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, academicSession])
+  @@index([academicSession])
+  @@index([action])
+  @@index([createdAt])
+  @@index([campusCode])
 }
