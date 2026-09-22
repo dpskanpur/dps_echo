@@ -6,6 +6,7 @@
 # Not needed in the build context
 node_modules
 .next
+.next-build
 .git
 .gitignore
 dev.log
