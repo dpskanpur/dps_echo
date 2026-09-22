@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,6 +10,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        current: "currentColor",
+        transparent: "transparent",
+        white: "#FFFFFF",
+        black: "#1C2434",
+        "black-2": "#010101",
+        body: "#64748B",
+        bodydark: "#AEB7C0",
+        bodydark1: "#DEE4EE",
+        bodydark2: "#8A99AD",
+        stroke: "#E2E8F0",
+        strokedark: "#2E3A47",
+        "form-strokedark": "#3D4D60",
+        "form-input": "#1D2A3A",
+        whiten: "#F1F5F9",
+        whiter: "#F5F7FD",
+        boxdark: "#24303F",
+        "boxdark-2": "#1A222C",
+        "meta-1": "#DC3545",
+        "meta-2": "#EFF2F7",
+        "meta-3": "#10B981",
+        "meta-4": "#313D4A",
+        "meta-5": "#2597F4",
+        "meta-6": "#FF9C55",
+        "meta-7": "#FF6766",
+        "meta-8": "#F1536E",
+        "meta-9": "#E5E7EB",
+        "meta-10": "#0FADCF",
         dps: {
           green: "#0B5345",
           "green-dark": "#073B31",
@@ -18,6 +46,24 @@ const config: Config = {
           navy: "#1A252F",
           cream: "#FBF9F4",
         },
+      },
+      spacing: {
+        4.5: "1.125rem",
+        5.5: "1.375rem",
+        6.5: "1.625rem",
+        7.5: "1.875rem",
+        11.5: "2.875rem",
+        12.5: "3.125rem",
+        13: "3.25rem",
+        15: "3.75rem",
+        18: "4.5rem",
+      },
+      boxShadow: {
+        default: "0px 8px 13px -3px rgba(0, 0, 0, 0.07)",
+        1: "0px 1px 3px rgba(0, 0, 0, 0.08)",
+        2: "0px 4px 12px rgba(0, 0, 0, 0.05)",
+        3: "0px 10px 20px rgba(0, 0, 0, 0.1)",
+        card: "0px 1px 2px rgba(0, 0, 0, 0.05)",
       },
     },
   },

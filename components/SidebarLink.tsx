@@ -52,15 +52,15 @@ export function SidebarLink({
       href={href}
       target={target}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all",
+        "group relative flex items-center gap-2.5 rounded-sm px-4 py-2.5 font-medium text-slate-300 duration-200 ease-in-out hover:bg-slate-800 hover:text-white dark:hover:bg-meta-4",
         active
-          ? "bg-[#0F9D58] text-white shadow-sm"
-          : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60",
+          ? "bg-slate-800 text-white dark:bg-meta-4 shadow-sm font-semibold border-l-4 border-dps-gold"
+          : "text-slate-300 hover:text-white",
         className
       )}
     >
       <NavIcon Icon={icon} />
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
       {trailing}
     </Link>
   );
