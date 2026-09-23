@@ -130,18 +130,27 @@ export async function registerStudent(formData: FormData): Promise<void> {
   const campus = await prisma.campus.findUnique({ where: { id: campusId } });
   const year = new Date().getFullYear();
 
-  // Count total registrations for generating unique REG ID
-  const regCount = await prisma.student.count({
-    where: { campusId, registrationNo: { not: null } },
-  });
-  const regSeq = regCount + 1;
-
   const regPrefix = campus?.registrationIdPrefix || "REG";
   const regFee = campus?.registrationFee ?? 1000;
 
-  const registrationNo = `${regPrefix}-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
-  // Temporary scholarNo for registration record until full admission promotion
-  const scholarNo = `${regPrefix}-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  // Collision-free loop for registrationNo & temporary scholarNo
+  let regSeq = (await prisma.student.count({ where: { campusId } })) + 1;
+  let registrationNo: string;
+  let scholarNo: string;
+  while (true) {
+    const candidateReg = `${regPrefix}-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+    const candidateSch = `${regPrefix}-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+    const [existReg, existSch] = await Promise.all([
+      prisma.student.findUnique({ where: { registrationNo: candidateReg }, select: { id: true } }),
+      prisma.student.findUnique({ where: { scholarNo: candidateSch }, select: { id: true } }),
+    ]);
+    if (!existReg && !existSch) {
+      registrationNo = candidateReg;
+      scholarNo = candidateSch;
+      break;
+    }
+    regSeq++;
+  }
   const admissionNo = "REGISTRATION_PENDING";
 
   const student = await prisma.student.create({
@@ -562,16 +571,30 @@ export async function createStudent(formData: FormData): Promise<void> {
   const campus = await prisma.campus.findUnique({ where: { id: campusId } });
   const year = new Date().getFullYear();
 
-  // Generate Unique Registration ID & Unique Admission ID
-  const regCount = await prisma.student.count({ where: { campusId } });
-  const regSeq = regCount + 1;
-  const registrationNo = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+  // Generate Unique Registration ID & Unique Admission ID (collision-free loop)
+  let regSeq = (await prisma.student.count({ where: { campusId } })) + 1;
+  let registrationNo: string;
+  while (true) {
+    const candidate = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+    const existing = await prisma.student.findUnique({ where: { registrationNo: candidate }, select: { id: true } });
+    if (!existing) {
+      registrationNo = candidate;
+      break;
+    }
+    regSeq++;
+  }
 
-  const admCount = await prisma.student.count({
-    where: { campusId, status: "ACTIVE" },
-  });
-  const admSeq = admCount + 1;
-  const scholarNo = `DPS-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
+  let admSeq = (await prisma.student.count({ where: { campusId } })) + 1;
+  let scholarNo: string;
+  while (true) {
+    const candidate = `DPS-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
+    const existing = await prisma.student.findUnique({ where: { scholarNo: candidate }, select: { id: true } });
+    if (!existing) {
+      scholarNo = candidate;
+      break;
+    }
+    admSeq++;
+  }
   const admissionNo = `${campus?.code || "KNP"}/${year}/${admSeq}`;
 
   const student = await prisma.student.create({

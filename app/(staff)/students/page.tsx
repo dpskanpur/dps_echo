@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { deleteStudent } from "@/lib/actions";
 import { DeleteStudentButton } from "@/components/DeleteStudentButton";
 import { BulkImportModal } from "@/components/BulkImportModal";
+import { Pagination } from "@/components/Pagination";
 import {
   Users,
   UserPlus,
@@ -34,15 +35,19 @@ export default async function StudentsPage({
     status?: string;
     q?: string;
     session?: string;
+    page?: string;
   }>;
 }) {
-  const { campus: campusId, classId, status, q, session } = await searchParams;
+  const { campus: campusId, classId, status, q, session, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
   if (!permissions.modules.students.canView && !permissions.isAdmin) {
     redirect("/?error=unauthorized_students");
   }
+
+  const currentPage = Math.max(1, parseInt(pageStr || "1", 10));
+  const pageSize = 10;
 
   const campuses = await prisma.campus.findMany({
     orderBy: { name: "asc" },
@@ -82,19 +87,26 @@ export default async function StudentsPage({
     ];
   }
 
-  const students = await prisma.student.findMany({
-    where: whereClause,
-    include: {
-      campus: true,
-      class: true,
-      section: true,
-      guardians: { where: { isPrimary: true } },
-      invoices: {
-        where: { status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] } },
+  const [students, totalCount] = await Promise.all([
+    prisma.student.findMany({
+      where: whereClause,
+      include: {
+        campus: true,
+        class: true,
+        section: true,
+        guardians: { where: { isPrimary: true } },
+        invoices: {
+          where: { status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] } },
+        },
       },
-    },
-    orderBy: [{ class: { sequence: "asc" } }, { firstName: "asc" }],
-  });
+      orderBy: [{ class: { sequence: "asc" } }, { firstName: "asc" }],
+      take: pageSize,
+      skip: (currentPage - 1) * pageSize,
+    }),
+    prisma.student.count({ where: whereClause }),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   const customColumns = prisma.directoryColumn
     ? await prisma.directoryColumn.findMany({
@@ -391,6 +403,12 @@ export default async function StudentsPage({
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              pageSize={pageSize}
+            />
           </div>
         </main>
   );

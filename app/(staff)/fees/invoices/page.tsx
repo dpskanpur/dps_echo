@@ -6,6 +6,7 @@ import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Receipt, Search, Filter, CheckCircle2, Send } from "lucide-react";
 import { sendFeeReminder } from "@/lib/notification-actions";
+import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -20,15 +21,19 @@ export default async function FeeInvoicesPage({
     notice?: string;
     queued?: string;
     sent?: string;
+    page?: string;
   }>;
 }) {
-  const { campus: campusId, status, q, notice, queued, sent } = await searchParams;
+  const { campus: campusId, status, q, notice, queued, sent, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
   if (!permissions.modules.fees.canView && !permissions.isAdmin) {
     redirect("/?error=unauthorized_fees");
   }
+
+  const currentPage = Math.max(1, parseInt(pageStr || "1", 10));
+  const pageSize = 10;
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
@@ -54,15 +59,22 @@ export default async function FeeInvoicesPage({
     ];
   }
 
-  const invoices = await prisma.feeInvoice.findMany({
-    where: whereClause,
-    include: {
-      student: { include: { campus: true, class: true } },
-      items: { include: { feeHead: true } },
-      payments: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const [invoices, totalCount] = await Promise.all([
+    prisma.feeInvoice.findMany({
+      where: whereClause,
+      include: {
+        student: { include: { campus: true, class: true } },
+        items: { include: { feeHead: true } },
+        payments: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: pageSize,
+      skip: (currentPage - 1) * pageSize,
+    }),
+    prisma.feeInvoice.count({ where: whereClause }),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   return (
         <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
@@ -243,6 +255,12 @@ export default async function FeeInvoicesPage({
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              pageSize={pageSize}
+            />
           </div>
         </main>
   );

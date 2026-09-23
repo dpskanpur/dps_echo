@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { AlertTriangle, Phone, MessageSquare, Send, CheckCircle2, Info } from "lucide-react";
 import { getProviderStatus } from "@/lib/notifications";
 import { sendFeeReminder, sendBulkFeeReminders } from "@/lib/notification-actions";
+import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -24,15 +25,19 @@ export default async function DefaultersPage({
     failed?: string;
     skipped?: string;
     invoices?: string;
+    page?: string;
   }>;
 }) {
-  const { campus: campusId, session, notice, queued, sent, failed, skipped } = await searchParams;
+  const { campus: campusId, session, notice, queued, sent, failed, skipped, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
   if (!permissions.modules.fees.canView && !permissions.isAdmin) {
     redirect("/?error=unauthorized_fees");
   }
+
+  const currentPage = Math.max(1, parseInt(pageStr || "1", 10));
+  const pageSize = 10;
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
@@ -42,26 +47,38 @@ export default async function DefaultersPage({
     ? { academicYear: { name: invoiceScope.name } }
     : {};
 
-  const defaulters = await prisma.feeInvoice.findMany({
-    where: {
-      status: { in: ["OVERDUE", "PENDING", "PARTIALLY_PAID"] },
-      balanceAmount: { gt: 0 },
-      ...(campusId && campusId !== "ALL" ? { campusId } : {}),
-      ...sessionFilter,
-    },
-    include: {
-      student: {
-        include: {
-          campus: true,
-          class: true,
-          guardians: { where: { isPrimary: true } },
+  const whereClause = {
+    status: { in: ["OVERDUE", "PENDING", "PARTIALLY_PAID"] },
+    balanceAmount: { gt: 0 },
+    ...(campusId && campusId !== "ALL" ? { campusId } : {}),
+    ...sessionFilter,
+  };
+
+  const [defaulters, totalCount, aggregateResult] = await Promise.all([
+    prisma.feeInvoice.findMany({
+      where: whereClause,
+      include: {
+        student: {
+          include: {
+            campus: true,
+            class: true,
+            guardians: { where: { isPrimary: true } },
+          },
         },
       },
-    },
-    orderBy: { dueDate: "asc" },
-  });
+      orderBy: { dueDate: "asc" },
+      take: pageSize,
+      skip: (currentPage - 1) * pageSize,
+    }),
+    prisma.feeInvoice.count({ where: whereClause }),
+    prisma.feeInvoice.aggregate({
+      where: whereClause,
+      _sum: { balanceAmount: true },
+    }),
+  ]);
 
-  const totalOverdueAmount = defaulters.reduce((acc, inv) => acc + inv.balanceAmount, 0);
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  const totalOverdueAmount = aggregateResult._sum.balanceAmount || 0;
 
   // Messaging parents is governed by the Notifications module, not by fee
   // access, so a clerk who can read the ledger cannot necessarily send.
@@ -273,6 +290,12 @@ export default async function DefaultersPage({
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              pageSize={pageSize}
+            />
           </div>
         </main>
   );
