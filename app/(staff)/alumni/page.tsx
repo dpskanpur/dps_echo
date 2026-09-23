@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { GraduationCap, Search, Building2, Eye, Calendar, Award } from "lucide-react";
+import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -12,15 +13,18 @@ export const dynamic = "force-dynamic";
 export default async function AlumniPage({
   searchParams,
 }: {
-  searchParams: Promise<{ campus?: string; q?: string }>;
+  searchParams: Promise<{ campus?: string; q?: string; page?: string }>;
 }) {
-  const { campus: campusId, q } = await searchParams;
+  const { campus: campusId, q, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
   if (!permissions.modules.alumni.canView && !permissions.isAdmin) {
     redirect("/?error=unauthorized_alumni");
   }
+
+  const currentPage = Math.max(1, parseInt(pageStr || "1", 10));
+  const pageSize = 10;
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
@@ -40,15 +44,22 @@ export default async function AlumniPage({
     ];
   }
 
-  const alumni = await prisma.student.findMany({
-    where: whereClause,
-    include: {
-      campus: true,
-      class: true,
-      guardians: true,
-    },
-    orderBy: { admissionDate: "desc" },
-  });
+  const [alumni, totalCount] = await Promise.all([
+    prisma.student.findMany({
+      where: whereClause,
+      include: {
+        campus: true,
+        class: true,
+        guardians: true,
+      },
+      orderBy: { admissionDate: "desc" },
+      take: pageSize,
+      skip: (currentPage - 1) * pageSize,
+    }),
+    prisma.student.count({ where: whereClause }),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   return (
         <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
@@ -145,6 +156,13 @@ export default async function AlumniPage({
               ))
             )}
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+          />
         </main>
   );
 }

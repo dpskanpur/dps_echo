@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { FileText, Search, Printer, CheckCircle, ShieldCheck, UserCheck, AlertCircle, Lock } from "lucide-react";
+import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -14,15 +15,18 @@ export const dynamic = "force-dynamic";
 export default async function TransferCertificatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ campus?: string; studentId?: string; tcId?: string }>;
+  searchParams: Promise<{ campus?: string; studentId?: string; tcId?: string; page?: string }>;
 }) {
-  const { campus: campusId, studentId, tcId } = await searchParams;
+  const { campus: campusId, studentId, tcId, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
   if (!permissions.modules.tc.canView && !permissions.isAdmin) {
     redirect("/?error=unauthorized_tc");
   }
+
+  const currentPage = Math.max(1, parseInt(pageStr || "1", 10));
+  const pageSize = 10;
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
@@ -50,14 +54,23 @@ export default async function TransferCertificatePage({
       })
     : null;
 
-  // List of all issued TCs
-  const issuedTCs = await prisma.transferCertificate.findMany({
-    where: campusId && campusId !== "ALL" ? { student: { campusId } } : {},
-    include: {
-      student: { include: { campus: true, class: true } },
-    },
-    orderBy: { issueDate: "desc" },
-  });
+  const tcWhere = campusId && campusId !== "ALL" ? { student: { campusId } } : {};
+
+  // List of all issued TCs with 10-item pagination
+  const [issuedTCs, totalTcCount] = await Promise.all([
+    prisma.transferCertificate.findMany({
+      where: tcWhere,
+      include: {
+        student: { include: { campus: true, class: true } },
+      },
+      orderBy: { issueDate: "desc" },
+      take: pageSize,
+      skip: (currentPage - 1) * pageSize,
+    }),
+    prisma.transferCertificate.count({ where: tcWhere }),
+  ]);
+
+  const totalTcPages = Math.ceil(totalTcCount / pageSize) || 1;
 
   // Active students eligible for TC
   const activeStudents = await prisma.student.findMany({
@@ -430,6 +443,13 @@ export default async function TransferCertificatePage({
                 ))
               )}
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalTcPages}
+              totalCount={totalTcCount}
+              pageSize={pageSize}
+            />
           </div>
         </main>
   );

@@ -36,22 +36,32 @@
   @apply rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1;
 }
 
-/* Print Specific Rules for CBSE TC and 3-Part Receipts
- *
- * Printing is opt-in rather than opt-out: everything is hidden, and only the
- * element marked .print-document (and its contents) is shown. Relying on
- * .no-print meant every new sidebar, navbar or toolbar had to remember to
- * opt out, and forgetting produced a certificate with the whole application
- * around it.
- *
- * visibility (not display) is used so that a deeply nested document can be
- * revealed while its ancestors stay hidden; the document is then lifted to
- * the page origin so it does not inherit the app shell's offset.
- */
+/* Print Specific Rules for CBSE TC and Receipts */
 @media print {
-  body {
+  html, body {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
     background: #FFFFFF !important;
     color: #000000 !important;
+  }
+
+  /* Unclip layout flex/grid containers so content prints fully */
+  div, main, section, article {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Ensure staff layout shell wrapper stays unhidden in print mode */
+  .hidden.md\:flex {
+    display: block !important;
+  }
+
+  /* Hide app shell components */
+  aside, nav, header, footer, .no-print, .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
   }
 
   body * {
@@ -61,29 +71,30 @@
   .print-document,
   .print-document * {
     visibility: visible !important;
-    /* Browsers drop background colours when printing. The certificate has
-       white-on-dark elements (the TRANSFER CERTIFICATE badge) that would
-       otherwise print as white on white. */
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Position only — the document's own borders are part of the certificate
-     (the CBSE double rule), so they are deliberately left intact. */
+  .print-document .flex,
+  .print-document [class*="flex"] {
+    display: flex !important;
+  }
+
+  .print-document .grid,
+  .print-document [class*="grid"] {
+    display: grid !important;
+  }
+
   .print-document {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
     box-shadow: none !important;
     background: #FFFFFF !important;
-  }
-
-  /* Still honoured, for toolbars sitting inside the document itself. */
-  .no-print,
-  .no-print * {
-    display: none !important;
+    z-index: 999999 !important;
   }
 
   .print-only {
@@ -95,6 +106,7 @@
   }
 
   @page {
-    margin: 12mm;
+    margin: 10mm;
+    size: portrait;
   }
 }

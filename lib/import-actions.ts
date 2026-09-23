@@ -109,19 +109,60 @@ export async function bulkImportStudents(rows: StudentImportRow[]): Promise<{
         secId = sec.id;
       }
 
-      // Generate Scholar No if not supplied
+      // Generate Unique Scholar No if not supplied or if colliding
       let scholarNo = row.scholarNo?.trim();
       const currentYear = new Date().getFullYear();
-      if (!scholarNo) {
-        const total = await prisma.student.count({ where: { campusId: campus.id } });
-        scholarNo = `DPS-${campus.code}-${currentYear}-${String(total + 1).padStart(4, "0")}`;
+
+      if (scholarNo) {
+        const existing = await prisma.student.findUnique({
+          where: { scholarNo },
+          select: { id: true },
+        });
+        if (existing) {
+          errors.push(
+            `Row #${rowNum} (${row.firstName} ${row.lastName}): Scholar No "${scholarNo}" is already assigned to an existing student in the database.`
+          );
+          continue;
+        }
+      } else {
+        let seq = (await prisma.student.count({ where: { campusId: campus.id } })) + 1;
+        while (true) {
+          const candidate = `DPS-${campus.code}-${currentYear}-${String(seq).padStart(4, "0")}`;
+          const existing = await prisma.student.findUnique({
+            where: { scholarNo: candidate },
+            select: { id: true },
+          });
+          if (!existing) {
+            scholarNo = candidate;
+            break;
+          }
+          seq++;
+        }
       }
 
-      const admissionNo = `${campus.code}/${currentYear}/${Date.now().toString().slice(-4)}`;
+      // Generate Unique Registration No
+      let registrationNo: string;
+      let regSeq = (await prisma.student.count({ where: { campusId: campus.id } })) + 1;
+      while (true) {
+        const candidate = `REG-${campus.code}-${currentYear}-${String(regSeq).padStart(4, "0")}`;
+        const existing = await prisma.student.findUnique({
+          where: { registrationNo: candidate },
+          select: { id: true },
+        });
+        if (!existing) {
+          registrationNo = candidate;
+          break;
+        }
+        regSeq++;
+      }
+
+      const admissionNo = `${campus.code}/${currentYear}/${scholarNo.split("-").pop() || Date.now().toString().slice(-4)}`;
 
       // Create Student + Guardians in Prisma
       await prisma.student.create({
         data: {
+          registrationNo,
+          registrationDate: new Date(),
           scholarNo,
           admissionNo,
           admissionDate: new Date(),
@@ -170,7 +211,13 @@ export async function bulkImportStudents(rows: StudentImportRow[]): Promise<{
 
       importedCount++;
     } catch (err: any) {
-      errors.push(`Row #${rowNum} (${row.firstName} ${row.lastName}): ${err.message}`);
+      if (err.code === "P2002") {
+        errors.push(
+          `Row #${rowNum} (${row.firstName} ${row.lastName}): Duplicate record detected (a student with matching unique Scholar/Registration ID already exists).`
+        );
+      } else {
+        errors.push(`Row #${rowNum} (${row.firstName} ${row.lastName}): ${err.message}`);
+      }
     }
   }
 
