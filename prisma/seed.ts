@@ -170,15 +170,11 @@ async function main() {
 
   console.log("📚 Created Classes and Sections across all campuses.");
 
-  // 4. Create Standard Fee Heads for Each Campus
+  // 4. Create Standard Fee Heads for Each Campus (Only 3 Heads: REG, ADM, QFS)
   const feeHeadTemplates = [
-    { code: "TUI", name: "Tuition Fee", description: "Quarterly Academic Tuition", isOptional: false, isRefundable: false },
-    { code: "DEV", name: "Development & Infrastructure", description: "Annual Campus & Lab Maintenance", isOptional: false, isRefundable: false },
-    { code: "ADM", name: "Admission & Registration Fee", description: "One-time Onboarding Fee", isOptional: false, isRefundable: false },
-    { code: "SEC", name: "Caution Money (Refundable)", description: "Security deposit upon admission", isOptional: false, isRefundable: true },
-    { code: "ACT", name: "Activity & Sports Fee", description: "Annual Co-curricular & Sports Levy", isOptional: false, isRefundable: false },
-    { code: "LAB", name: "Science & Computer Lab Fee", description: "Practical Lab Charges", isOptional: false, isRefundable: false },
-    { code: "TRN", name: "Transport Facility (Optional)", description: "Bus Route Service", isOptional: true, isRefundable: false },
+    { code: "REG", name: "Registration Fees", description: "One time registration fees.", isOptional: false, isRefundable: false },
+    { code: "ADM", name: "Admission Fees", description: "Admission fees paid after admission confirmation", isOptional: false, isRefundable: false },
+    { code: "QFS", name: "Quarterly Fees", description: "Quarterly fees", isOptional: false, isRefundable: false },
   ];
 
   const campusFeeHeads: Record<string, Record<string, any>> = {};
@@ -211,56 +207,42 @@ async function main() {
       const isSenior = cls.numericGrade >= 9;
       const isPrimary = cls.numericGrade <= 5;
 
-      // Quarterly Tuition
-      const tuitionAmt = isSenior ? 24500 : isPrimary ? 18000 : 21000;
+      // Quarterly Fees
+      const quarterlyAmt = isSenior ? 24500 : isPrimary ? 18000 : 21000;
       await prisma.feeStructure.create({
         data: {
           campusId: campus.id,
           academicYearId: ay2025.id,
           classId: cls.id,
-          feeHeadId: heads["TUI"].id,
-          amount: tuitionAmt,
+          feeHeadId: heads["QFS"].id,
+          amount: quarterlyAmt,
           frequency: "QUARTERLY",
         },
       });
 
-      // Annual Development
+      // Admission Fees
       await prisma.feeStructure.create({
         data: {
           campusId: campus.id,
           academicYearId: ay2025.id,
           classId: cls.id,
-          feeHeadId: heads["DEV"].id,
-          amount: isSenior ? 12000 : 9000,
-          frequency: "ANNUAL",
+          feeHeadId: heads["ADM"].id,
+          amount: isSenior ? 15000 : 10000,
+          frequency: "ONE_TIME",
         },
       });
 
-      // Annual Activity
+      // Registration Fees
       await prisma.feeStructure.create({
         data: {
           campusId: campus.id,
           academicYearId: ay2025.id,
           classId: cls.id,
-          feeHeadId: heads["ACT"].id,
-          amount: 4500,
-          frequency: "ANNUAL",
+          feeHeadId: heads["REG"].id,
+          amount: 1000,
+          frequency: "ONE_TIME",
         },
       });
-
-      // Lab Fee for Senior Classes
-      if (cls.numericGrade >= 9) {
-        await prisma.feeStructure.create({
-          data: {
-            campusId: campus.id,
-            academicYearId: ay2025.id,
-            classId: cls.id,
-            feeHeadId: heads["LAB"].id,
-            amount: 6000,
-            frequency: "QUARTERLY",
-          },
-        });
-      }
     }
   }
 
@@ -611,8 +593,8 @@ async function main() {
       status: "PAID",
       items: {
         create: [
-          { feeHeadId: campusFeeHeads["AZD"]["TUI"].id, amount: 24500.0 },
-          { feeHeadId: campusFeeHeads["AZD"]["DEV"].id, amount: 12000.0 },
+          { feeHeadId: campusFeeHeads["AZD"]["QFS"].id, amount: 24500.0 },
+          { feeHeadId: campusFeeHeads["AZD"]["ADM"].id, amount: 12000.0 },
         ],
       },
     },
@@ -650,7 +632,7 @@ async function main() {
       balanceAmount: 24500.0,
       status: "PENDING",
       items: {
-        create: [{ feeHeadId: campusFeeHeads["AZD"]["TUI"].id, amount: 24500.0 }],
+        create: [{ feeHeadId: campusFeeHeads["AZD"]["QFS"].id, amount: 24500.0 }],
       },
     },
   });
@@ -664,18 +646,18 @@ async function main() {
       academicYearId: ay2025.id,
       periodName: "Quarter 1 (Apr 2025 - Jun 2025)",
       dueDate: new Date("2025-04-20"),
-      grossAmount: 30000.0, // Tuition (21000) + Development (9000)
-      discountAmount: 4200.0, // 20% on Tuition (21000 * 0.2)
+      grossAmount: 30000.0, // Quarterly (21000) + Admission (9000)
+      discountAmount: 4200.0, // 20% on Quarterly (21000 * 0.2)
       fineAmount: 0.0,
       netAmount: 25800.0,
       paidAmount: 25800.0,
       balanceAmount: 0.0,
       status: "PAID",
-      notes: "Sibling Discount applied (20% off tuition)",
+      notes: "Sibling Discount applied (20% off quarterly fee)",
       items: {
         create: [
-          { feeHeadId: campusFeeHeads["AZD"]["TUI"].id, amount: 21000.0 },
-          { feeHeadId: campusFeeHeads["AZD"]["DEV"].id, amount: 9000.0 },
+          { feeHeadId: campusFeeHeads["AZD"]["QFS"].id, amount: 21000.0 },
+          { feeHeadId: campusFeeHeads["AZD"]["ADM"].id, amount: 9000.0 },
         ],
       },
     },
@@ -715,8 +697,8 @@ async function main() {
       notes: "First installment ₹10,000 paid in Cash; balance ₹20,750 overdue",
       items: {
         create: [
-          { feeHeadId: campusFeeHeads["BAR"]["TUI"].id, amount: 21000.0 },
-          { feeHeadId: campusFeeHeads["BAR"]["DEV"].id, amount: 9000.0 },
+          { feeHeadId: campusFeeHeads["BAR"]["QFS"].id, amount: 21000.0 },
+          { feeHeadId: campusFeeHeads["BAR"]["ADM"].id, amount: 9000.0 },
         ],
       },
     },
@@ -731,7 +713,7 @@ async function main() {
       academicYearId: ay2025.id,
       periodName: "Quarter 1 (Apr 2025 - Jun 2025)",
       dueDate: new Date("2025-04-20"),
-      grossAmount: 27000.0, // Tuition (18000) + Development (9000)
+      grossAmount: 27000.0,
       discountAmount: 0.0,
       fineAmount: 0.0,
       netAmount: 27000.0,
@@ -740,8 +722,8 @@ async function main() {
       status: "PAID",
       items: {
         create: [
-          { feeHeadId: campusFeeHeads["SRV"]["TUI"].id, amount: 18000.0 },
-          { feeHeadId: campusFeeHeads["SRV"]["DEV"].id, amount: 9000.0 },
+          { feeHeadId: campusFeeHeads["SRV"]["QFS"].id, amount: 18000.0 },
+          { feeHeadId: campusFeeHeads["SRV"]["ADM"].id, amount: 9000.0 },
         ],
       },
     },
