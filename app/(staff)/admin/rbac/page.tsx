@@ -587,7 +587,7 @@ export default async function AdminSettingsPage({
 
           {/* TAB 2: RBAC MATRIX */}
           {tab === "rbac" && (
-            <RbacMatrixTable initialUsers={users} currentUserId={user.id} />
+            <RbacMatrixTable initialUsers={users} currentUserId={user.id} campuses={campuses} />
           )}
 
           {/* TAB 3: DYNAMIC DIRECTORY COLUMNS */}
