@@ -189,6 +189,13 @@ model Student {
   medicalNotes    String?
   previousTcNo    String?
   
+  // Fee Concession / Discount (Admin Controlled Approval Gate)
+  isDiscountEligible  Boolean       @default(false)
+  discountPercent     Float         @default(0.0)
+  discountAmount      Float         @default(0.0)
+  discountApprovedBy  String?
+  discountReason      String?
+
   // Metadata & Timestamps
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
