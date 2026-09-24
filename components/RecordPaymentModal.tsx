@@ -11,6 +11,7 @@ interface RecordPaymentModalProps {
   studentName: string;
   balanceAmount: number;
   buttonSize?: "sm" | "md";
+  buttonText?: string;
 }
 
 export function RecordPaymentModal({
@@ -19,6 +20,7 @@ export function RecordPaymentModal({
   studentName,
   balanceAmount,
   buttonSize = "md",
+  buttonText,
 }: RecordPaymentModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -45,12 +47,12 @@ export function RecordPaymentModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition shadow-xs cursor-pointer ${
-          buttonSize === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"
+        className={`inline-flex items-center gap-1.5 bg-[#0F9D58] hover:bg-[#0d8a4d] active:scale-95 text-white font-bold rounded-xl transition shadow-xs cursor-pointer ${
+          buttonSize === "sm" ? "px-3 py-1.5 text-xs" : "px-3.5 py-2 text-xs"
         }`}
       >
         <Banknote className="w-3.5 h-3.5" />
-        <span>Collect Offline Payment</span>
+        <span>{buttonText || "Collect Payment"}</span>
       </button>
 
       {isOpen && (

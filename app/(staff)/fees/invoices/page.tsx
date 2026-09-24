@@ -149,81 +149,81 @@ export default async function FeeInvoicesPage({
           )}
 
           {/* Invoices Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    <th className="py-3 px-4">Invoice No</th>
-                    <th className="py-3 px-4">Student</th>
-                    <th className="py-3 px-4">Period</th>
-                    <th className="py-3 px-4">Gross Demand</th>
-                    <th className="py-3 px-4">Paid</th>
-                    <th className="py-3 px-4">Balance Due</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
+                  <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th className="py-3.5 px-5">Invoice No</th>
+                    <th className="py-3.5 px-5">Student</th>
+                    <th className="py-3.5 px-5">Period</th>
+                    <th className="py-3.5 px-5">Gross Demand</th>
+                    <th className="py-3.5 px-5">Paid</th>
+                    <th className="py-3.5 px-5">Balance Due</th>
+                    <th className="py-3.5 px-5">Status</th>
+                    <th className="py-3.5 px-5 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {invoices.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-slate-400">
+                      <td colSpan={8} className="py-12 text-center text-slate-400">
                         No invoices found.
                       </td>
                     </tr>
                   ) : (
                     invoices.map((inv) => (
-                      <tr key={inv.id} className="hover:bg-slate-50/80">
-                        <td className="py-3 px-4">
-                          <span className="font-mono font-bold text-slate-900 block">{inv.invoiceNo}</span>
-                          <span className="text-[10px] text-slate-400">Due: {formatDate(inv.dueDate)}</span>
+                      <tr key={inv.id} className="hover:bg-slate-50/80 transition border-b border-slate-100">
+                        <td className="py-4 px-5">
+                          <span className="font-mono font-bold text-slate-900 text-xs block">{inv.invoiceNo}</span>
+                          <span className="text-[10px] text-slate-400 font-medium block mt-0.5">Due: {formatDate(inv.dueDate)}</span>
                         </td>
 
-                        <td className="py-3 px-4">
+                        <td className="py-4 px-5">
                           <Link
                             href={`/students/${inv.studentId}`}
-                            className="font-bold text-slate-900 hover:text-emerald-800"
+                            className="font-bold text-slate-900 hover:text-emerald-800 text-sm block"
                           >
                             {inv.student.firstName} {inv.student.lastName}
                           </Link>
-                          <span className="block text-[11px] text-slate-400">
+                          <span className="block text-[10px] font-mono text-slate-500 mt-0.5">
                             {inv.student.scholarNo} • {inv.student.class.name}
                           </span>
                         </td>
 
-                        <td className="py-3 px-4 font-medium text-slate-700">{inv.periodName}</td>
+                        <td className="py-4 px-5 font-medium text-slate-700 text-xs">{inv.periodName}</td>
 
-                        <td className="py-3 px-4 font-mono font-semibold text-slate-800">
+                        <td className="py-4 px-5 font-mono font-semibold text-slate-800 text-xs">
                           {formatCurrency(inv.netAmount)}
                         </td>
 
-                        <td className="py-3 px-4 font-mono font-semibold text-emerald-700">
+                        <td className="py-4 px-5 font-mono font-semibold text-emerald-700 text-xs">
                           {formatCurrency(inv.paidAmount)}
                         </td>
 
-                        <td className="py-3 px-4 font-mono font-bold">
-                          <span className={inv.balanceAmount > 0 ? "text-amber-700" : "text-emerald-700"}>
+                        <td className="py-4 px-5 font-mono font-black text-sm">
+                          <span className={inv.balanceAmount > 0 ? "text-amber-950" : "text-emerald-700"}>
                             {formatCurrency(inv.balanceAmount)}
                           </span>
                         </td>
 
-                        <td className="py-3 px-4">
+                        <td className="py-4 px-5">
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase border ${
                               inv.status === "PAID"
-                                ? "bg-emerald-100 text-emerald-800"
+                                ? "bg-emerald-100 text-emerald-950 border-emerald-200"
                                 : inv.status === "OVERDUE"
-                                ? "bg-rose-100 text-rose-800"
-                                : "bg-amber-100 text-amber-800"
+                                ? "bg-rose-100 text-rose-950 border-rose-200"
+                                : "bg-amber-100 text-amber-950 border-amber-200"
                             }`}
                           >
                             {inv.status}
                           </span>
                         </td>
 
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-4 px-5 text-right">
                           {inv.balanceAmount > 0 ? (
-                            <div className="flex items-center justify-end gap-2.5 whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                               {(permissions.modules.fees.canUpdate || permissions.isAdmin) && (
                                 <RecordPaymentModal
                                   invoiceId={inv.id}
@@ -231,14 +231,9 @@ export default async function FeeInvoicesPage({
                                   studentName={`${inv.student.firstName} ${inv.student.lastName}`}
                                   balanceAmount={inv.balanceAmount}
                                   buttonSize="sm"
+                                  buttonText="Collect Payment"
                                 />
                               )}
-                              <Link
-                                href={`/students/${inv.studentId}?tab=fees`}
-                                className="text-slate-500 hover:text-slate-800 font-semibold text-[11px] underline underline-offset-2"
-                              >
-                                Ledger
-                              </Link>
                               {canNotify && (
                                 <form action={sendFeeReminder}>
                                   <input type="hidden" name="invoiceId" value={inv.id} />
@@ -246,15 +241,21 @@ export default async function FeeInvoicesPage({
                                   <button
                                     type="submit"
                                     title={`Remind the parent about ${inv.invoiceNo}`}
-                                    className="inline-flex items-center gap-1 bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-2.5 py-1 rounded text-[11px] transition"
+                                    className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs border border-emerald-200 px-3 py-1.5 rounded-xl transition cursor-pointer"
                                   >
-                                    <Send className="w-3 h-3" /> Remind
+                                    <Send className="w-3.5 h-3.5 text-emerald-700" /> Remind
                                   </button>
                                 </form>
                               )}
+                              <Link
+                                href={`/students/${inv.studentId}?tab=fees`}
+                                className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold text-xs border border-slate-200 bg-white hover:bg-slate-50 px-2.5 py-1.5 rounded-xl transition shadow-2xs"
+                              >
+                                Ledger
+                              </Link>
                             </div>
                           ) : (
-                            <span className="text-emerald-700 font-semibold text-[11px] whitespace-nowrap">
+                            <span className="text-emerald-800 font-bold text-xs bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl inline-block">
                               ✓ Settled
                             </span>
                           )}
