@@ -7,6 +7,8 @@ import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { promoteStudentToAdmission, updateStudent } from "@/lib/actions";
+import { StudentDiscountCard } from "@/components/StudentDiscountCard";
+import { RecordPaymentModal } from "@/components/RecordPaymentModal";
 import {
   User,
   FileText,
@@ -729,82 +731,108 @@ export default async function StudentDetailPage({
 
           {/* Tab 3: Fee Ledger & Invoices */}
           {tab === "fees" && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Fee Invoices & Payments History</h3>
-                  <p className="text-xs text-slate-500">Breakdown of quarterly demands, concessions, and collected receipts.</p>
+            <div className="space-y-6">
+              {/* Fee Discount Approval & Setting Card */}
+              <StudentDiscountCard
+                studentId={student.id}
+                studentName={`${student.firstName} ${student.lastName}`}
+                isDiscountEligible={student.isDiscountEligible}
+                discountPercent={student.discountPercent}
+                discountAmount={student.discountAmount}
+                discountApprovedBy={student.discountApprovedBy}
+                discountReason={student.discountReason}
+                isAdmin={permissions.isAdmin}
+                canManageFees={permissions.modules.fees.canUpdate || permissions.isAdmin}
+                totalGrossDemand={student.invoices.reduce((acc, inv) => acc + inv.grossAmount, 0)}
+              />
+
+              {/* Invoices List */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">Fee Invoices & Payments History</h3>
+                    <p className="text-xs text-slate-500">Breakdown of quarterly demands, concessions, and collected receipts.</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="divide-y divide-slate-100">
-                {student.invoices.map((inv) => (
-                  <div key={inv.id} className="p-4 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-slate-900">{inv.invoiceNo}</span>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                              inv.status === "PAID"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : inv.status === "OVERDUE"
-                                ? "bg-rose-100 text-rose-800"
-                                : "bg-amber-100 text-amber-800"
-                            }`}
-                          >
-                            {inv.status}
-                          </span>
+                <div className="divide-y divide-slate-100">
+                  {student.invoices.map((inv) => (
+                    <div key={inv.id} className="p-4 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-slate-900">{inv.invoiceNo}</span>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                inv.status === "PAID"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : inv.status === "OVERDUE"
+                                  ? "bg-rose-100 text-rose-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {inv.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-0.5 font-medium">{inv.periodName} • Due: {formatDate(inv.dueDate)}</p>
                         </div>
-                        <p className="text-xs text-slate-600 mt-0.5 font-medium">{inv.periodName} • Due: {formatDate(inv.dueDate)}</p>
+
+                        <div className="text-right flex items-center gap-4">
+                          <div>
+                            <span className="text-[11px] text-slate-400 block">Total Demand</span>
+                            <strong className="text-xs text-slate-800">{formatCurrency(inv.netAmount)}</strong>
+                          </div>
+                          <div>
+                            <span className="text-[11px] text-slate-400 block">Balance Due</span>
+                            <strong className={`text-xs ${inv.balanceAmount > 0 ? "text-amber-700" : "text-emerald-700"}`}>
+                              {formatCurrency(inv.balanceAmount)}
+                            </strong>
+                          </div>
+                          {inv.balanceAmount > 0 && (permissions.modules.fees.canUpdate || permissions.isAdmin) && (
+                            <RecordPaymentModal
+                              invoiceId={inv.id}
+                              invoiceNo={inv.invoiceNo}
+                              studentName={`${student.firstName} ${student.lastName}`}
+                              balanceAmount={inv.balanceAmount}
+                              buttonSize="sm"
+                            />
+                          )}
+                        </div>
                       </div>
 
-                      <div className="text-right flex items-center gap-4">
-                        <div>
-                          <span className="text-[11px] text-slate-400 block">Total Demand</span>
-                          <strong className="text-xs text-slate-800">{formatCurrency(inv.netAmount)}</strong>
-                        </div>
-                        <div>
-                          <span className="text-[11px] text-slate-400 block">Balance Due</span>
-                          <strong className={`text-xs ${inv.balanceAmount > 0 ? "text-amber-700" : "text-emerald-700"}`}>
-                            {formatCurrency(inv.balanceAmount)}
-                          </strong>
-                        </div>
+                      {/* Invoice Item Breakdown */}
+                      <div className="bg-slate-50 p-2.5 rounded-lg text-[11px] grid grid-cols-2 sm:grid-cols-4 gap-2 border border-slate-100">
+                        {inv.items.map((item) => (
+                          <div key={item.id}>
+                            <span className="text-slate-500 block">{item.feeHead.name}:</span>
+                            <span className="font-semibold text-slate-800">{formatCurrency(item.amount)}</span>
+                          </div>
+                        ))}
+                        {inv.discountAmount > 0 && (
+                          <div>
+                            <span className="text-emerald-700 block">Discount Applied:</span>
+                            <span className="font-semibold text-emerald-800">-{formatCurrency(inv.discountAmount)}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
 
-                    {/* Invoice Item Breakdown */}
-                    <div className="bg-slate-50 p-2.5 rounded-lg text-[11px] grid grid-cols-2 sm:grid-cols-4 gap-2 border border-slate-100">
-                      {inv.items.map((item) => (
-                        <div key={item.id}>
-                          <span className="text-slate-500 block">{item.feeHead.name}:</span>
-                          <span className="font-semibold text-slate-800">{formatCurrency(item.amount)}</span>
-                        </div>
-                      ))}
-                      {inv.discountAmount > 0 && (
-                        <div>
-                          <span className="text-emerald-700 block">Discount Applied:</span>
-                          <span className="font-semibold text-emerald-800">-{formatCurrency(inv.discountAmount)}</span>
+                      {/* Payments against this invoice */}
+                      {inv.payments.length > 0 && (
+                        <div className="pl-3 border-l-2 border-emerald-500 space-y-1 text-xs">
+                          {inv.payments.map((p) => (
+                            <div key={p.id} className="flex items-center justify-between text-slate-600">
+                              <span className="flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                Receipt <strong>{p.receiptNo}</strong> ({p.paymentMode}) on {formatDate(p.paymentDate)}
+                              </span>
+                              <span className="font-bold text-emerald-700">{formatCurrency(p.amountPaid)}</span>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
-
-                    {/* Payments against this invoice */}
-                    {inv.payments.length > 0 && (
-                      <div className="pl-3 border-l-2 border-emerald-500 space-y-1 text-xs">
-                        {inv.payments.map((p) => (
-                          <div key={p.id} className="flex items-center justify-between text-slate-600">
-                            <span className="flex items-center gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                              Receipt <strong>{p.receiptNo}</strong> ({p.paymentMode}) on {formatDate(p.paymentDate)}
-                            </span>
-                            <span className="font-bold text-emerald-700">{formatCurrency(p.amountPaid)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}

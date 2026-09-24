@@ -9,6 +9,7 @@ import { AlertTriangle, Phone, MessageSquare, Send, CheckCircle2, Info } from "l
 import { getProviderStatus } from "@/lib/notifications";
 import { sendFeeReminder, sendBulkFeeReminders } from "@/lib/notification-actions";
 import { Pagination } from "@/components/Pagination";
+import { RecordPaymentModal } from "@/components/RecordPaymentModal";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -261,7 +262,16 @@ export default async function DefaultersPage({
                           </td>
 
                           <td className="py-3 px-4">
-                            <div className="flex items-center justify-end gap-3 whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-2.5 whitespace-nowrap">
+                              {(permissions.modules.fees.canUpdate || permissions.isAdmin) && (
+                                <RecordPaymentModal
+                                  invoiceId={inv.id}
+                                  invoiceNo={inv.invoiceNo}
+                                  studentName={`${inv.student.firstName} ${inv.student.lastName}`}
+                                  balanceAmount={inv.balanceAmount}
+                                  buttonSize="sm"
+                                />
+                              )}
                               <Link
                                 href={`/students/${inv.studentId}?tab=fees`}
                                 className="text-slate-500 hover:text-slate-800 font-semibold text-[11px] underline underline-offset-2"
