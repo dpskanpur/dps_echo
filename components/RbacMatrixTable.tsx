@@ -31,6 +31,7 @@ import {
   deleteUser,
   approveUserAccess,
   denyAndDeleteUserRequest,
+  updateUserCampusAssignment,
 } from "@/lib/rbac-actions";
 
 interface UserWithPermissions {
@@ -53,9 +54,11 @@ interface UserWithPermissions {
 export function RbacMatrixTable({
   initialUsers,
   currentUserId,
+  campuses = [],
 }: {
   initialUsers: UserWithPermissions[];
   currentUserId: string;
+  campuses?: { id: string; name: string; code: string }[];
 }) {
   const [users, setUsers] = useState<UserWithPermissions[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,6 +71,7 @@ export function RbacMatrixTable({
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("STAFF");
   const [newPreset, setNewPreset] = useState<"FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "NONE">("FEES_SPECIALIST");
+  const [newCampusId, setNewCampusId] = useState("ALL");
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setFeedbackMessage({ text, type });
@@ -154,16 +158,35 @@ export function RbacMatrixTable({
     });
   };
 
+  // Campus scope change handler
+  const handleCampusChange = (userId: string, campusId: string) => {
+    startTransition(async () => {
+      try {
+        await updateUserCampusAssignment(userId, campusId === "ALL" ? null : campusId);
+        const selectedCampus = campuses.find((c) => c.id === campusId);
+        showToast(
+          `Updated campus scope to ${selectedCampus ? selectedCampus.name : "All Schools (Unbound)"}`
+        );
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, campusId: campusId === "ALL" ? null : campusId } : u))
+        );
+      } catch (err: any) {
+        showToast(err.message || "Failed to update campus scope", "error");
+      }
+    });
+  };
+
   // Add user submit
   const handleAddUserSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
       try {
-        await addUserWithPermissions(newEmail, newName, newRole, newPreset);
+        await addUserWithPermissions(newEmail, newName, newRole, newPreset, newCampusId);
         showToast(`User ${newEmail} added and permissions provisioned!`);
         setIsAddUserOpen(false);
         setNewEmail("");
         setNewName("");
+        setNewCampusId("ALL");
         window.location.reload();
       } catch (err: any) {
         showToast(err.message || "Failed to add user", "error");
@@ -363,7 +386,7 @@ export function RbacMatrixTable({
             <thead>
               <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
                 <th className="p-4 min-w-[220px]">Staff Member & Identity</th>
-                <th className="p-4 min-w-[150px]">Status & Preset</th>
+                <th className="p-4 min-w-[180px]">Status & Campus Scope</th>
                 {APP_MODULES.map((mod) => (
                   <th key={mod.id} className="p-4 text-center min-w-[170px] border-l border-slate-800">
                     <div>{mod.label}</div>
@@ -420,7 +443,7 @@ export function RbacMatrixTable({
                         </div>
                       </td>
 
-                      {/* Status & Preset Selector */}
+                      {/* Status & Campus Scope / Preset Selector */}
                       <td className="p-4">
                         <div className="space-y-1.5">
                           <div>
@@ -435,6 +458,24 @@ export function RbacMatrixTable({
                             >
                               {isSuspended ? "Suspended" : u.status === "PENDING" ? "Pending (0 Perms)" : "Active"}
                             </span>
+                          </div>
+
+                          {/* Campus Scope Dropdown */}
+                          <div>
+                            <select
+                              value={u.campusId || "ALL"}
+                              disabled={isSuperAdmin}
+                              onChange={(e) => handleCampusChange(u.id, e.target.value)}
+                              className="w-full text-[11px] bg-emerald-50/70 border border-emerald-200 rounded-lg px-2 py-1 text-emerald-950 font-bold hover:bg-emerald-100 focus:outline-none focus:ring-1 focus:ring-[#0F9D58] cursor-pointer disabled:opacity-50"
+                              title="Assigned Campus Scope"
+                            >
+                              <option value="ALL">🌐 All Schools (Unbound)</option>
+                              {campuses.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  🏫 {c.name} ({c.code})
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           {/* Quick Preset Dropdown */}
@@ -637,6 +678,24 @@ export function RbacMatrixTable({
                   <option value="VIEW_ALL">👁️ View-Only All Modules</option>
                   <option value="FULL_ADMIN">⭐ Full Administrator (All Modules View/Update/Delete)</option>
                   <option value="NONE">🚫 Zero Permissions (Pending Approval)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Campus Scope / School Access *
+                </label>
+                <select
+                  value={newCampusId}
+                  onChange={(e) => setNewCampusId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F9D58] focus:bg-white transition"
+                >
+                  <option value="ALL">🌐 All Schools (Unbound)</option>
+                  {campuses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      🏫 {c.name} ({c.code})
+                    </option>
+                  ))}
                 </select>
               </div>
 

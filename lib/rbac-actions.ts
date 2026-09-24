@@ -155,13 +155,14 @@ export async function applyRolePreset(
 }
 
 /**
- * Add / Invite a new staff member by @dpskanpur.com email with initial preset
+ * Add / Invite a new staff member by @dpskanpur.com email with initial preset and optional campus scope
  */
 export async function addUserWithPermissions(
   email: string,
   name: string,
   role: string,
-  preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "NONE"
+  preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "NONE",
+  campusId?: string | null
 ) {
   const admin = await assertRbacAdmin();
 
@@ -170,18 +171,22 @@ export async function addUserWithPermissions(
     throw new Error("Invalid domain. User email must end with @dpskanpur.com");
   }
 
+  const targetCampusId = !campusId || campusId === "ALL" ? null : campusId;
+
   const user = await prisma.user.upsert({
     where: { email: cleanEmail },
     update: {
       name: name.trim() || cleanEmail.split("@")[0],
       role,
       status: preset === "NONE" ? "PENDING" : "ACTIVE",
+      campusId: targetCampusId,
     },
     create: {
       email: cleanEmail,
       name: name.trim() || cleanEmail.split("@")[0],
       role,
       status: preset === "NONE" ? "PENDING" : "ACTIVE",
+      campusId: targetCampusId,
     },
   });
 
@@ -198,11 +203,45 @@ export async function addUserWithPermissions(
     action: "USER_INVITE",
     entityType: "User",
     entityId: user.id,
-    details: { invitedEmail: cleanEmail, role, preset },
+    details: { invitedEmail: cleanEmail, role, preset, campusId: targetCampusId },
   });
 
   revalidatePath("/admin/rbac");
   return { success: true, userId: user.id };
+}
+
+/**
+ * Assign / Update a user's campus scope dynamically from the RBAC console
+ */
+export async function updateUserCampusAssignment(userId: string, campusId: string | null) {
+  const admin = await assertRbacAdmin();
+
+  const targetCampusId = !campusId || campusId === "ALL" ? null : campusId;
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { campusId: targetCampusId },
+    include: { campus: true },
+  });
+
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "USER_CAMPUS_ASSIGNMENT_UPDATE",
+    entityType: "User",
+    entityId: userId,
+    details: {
+      targetEmail: updatedUser.email,
+      assignedCampus: updatedUser.campus ? updatedUser.campus.name : "All Campuses (Unbound)",
+    },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/");
+  return { success: true };
 }
 
 /**
