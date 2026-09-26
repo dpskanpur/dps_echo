@@ -40,6 +40,11 @@ model Campus {
   smsDisabledReason    String?  @default("")
   isEmailEnabled       Boolean  @default(true)
   emailDisabledReason  String?  @default("")
+  // Automated Late Fee Rules per School (Grace Days, Tier Threshold X, Up to X Days Y Amount, Beyond X Days Z Amount)
+  lateFeeGraceDays     Int      @default(5)   // Grace period after due date before late fee triggers
+  lateFeeTierDays      Int      @default(15)  // Threshold X days (e.g. 15 days)
+  lateFeeInitialAmount Float    @default(500) // Y amount for overdue <= X days (e.g. ₹500)
+  lateFeeHigherAmount  Float    @default(1000)// Z amount for overdue > X days (e.g. ₹1000)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

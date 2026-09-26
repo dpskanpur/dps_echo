@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder, getPublicKeyId, isGatewayConfigured } from "@/lib/razorpay";
 import { verifyPayToken } from "@/lib/pay-token";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { calculateLateFee } from "@/lib/fee-payments";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: reason }, { status: 503 });
     }
 
-    if (invoice.balanceAmount <= 0) {
+    let payableAmount = invoice.balanceAmount;
+
+    if (campus && new Date() > new Date(invoice.dueDate)) {
+      const calculatedLateFee = calculateLateFee(invoice.dueDate, campus);
+      if (calculatedLateFee > 0 && invoice.fineAmount !== calculatedLateFee) {
+        const netAmount = Math.max(0, invoice.grossAmount - invoice.discountAmount + calculatedLateFee);
+        const balanceAmount = Math.max(0, netAmount - invoice.paidAmount);
+
+        await prisma.feeInvoice.update({
+          where: { id: invoice.id },
+          data: {
+            fineAmount: calculatedLateFee,
+            netAmount,
+            balanceAmount,
+            status: balanceAmount > 0 ? (invoice.paidAmount > 0 ? "PARTIALLY_PAID" : "OVERDUE") : "PAID",
+          },
+        });
+        payableAmount = balanceAmount;
+      }
+    }
+
+    if (payableAmount <= 0) {
       return NextResponse.json(
         { success: false, error: "This invoice is already paid in full." },
         { status: 409 }
@@ -88,7 +110,7 @@ export async function POST(request: Request) {
     }
 
     const order = await createRazorpayOrder({
-      amountInRupees: invoice.balanceAmount,
+      amountInRupees: payableAmount,
       receipt: invoice.invoiceNo,
       notes: {
         invoiceId: invoice.id,
