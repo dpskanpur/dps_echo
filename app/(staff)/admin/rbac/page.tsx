@@ -751,169 +751,6 @@ export default async function AdminSettingsPage({
                 </form>
               ) : null}
 
-              {/* GLOBAL ONLINE REGISTRATION CONTROL PANEL */}
-              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-5 h-5 text-emerald-800" />
-                      <h2 className="text-base font-black text-slate-900">
-                        Global Online Student Registration Portal Controls
-                      </h2>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Enable or disable online student registration globally across all schools, and customize closed notices and helpline details displayed on public registration pages.
-                    </p>
-                  </div>
-                  <div
-                    className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold shrink-0 ${
-                      systemSettings.isRegistrationOpen
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                        : "bg-rose-50 border-rose-200 text-rose-800"
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        systemSettings.isRegistrationOpen ? "bg-emerald-500" : "bg-rose-500"
-                      }`}
-                    />
-                    <span>
-                      Registration Status: {systemSettings.isRegistrationOpen ? "OPEN for All Schools" : "CLOSED / PAUSED"}
-                    </span>
-                  </div>
-                </div>
-
-                <form action={updateSystemSettings} className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/80 p-5 rounded-2xl border border-slate-200">
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-slate-800">
-                        Global Online Registration Portal Access *
-                      </label>
-                      <div className="flex flex-wrap items-center gap-4 pt-1">
-                        <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="isRegistrationOpen"
-                            value="true"
-                            defaultChecked={systemSettings.isRegistrationOpen}
-                            className="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
-                          />
-                          <span className="text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-lg border border-emerald-200">
-                            ✓ ENABLED (Registration Open)
-                          </span>
-                        </label>
-                        <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="isRegistrationOpen"
-                            value="false"
-                            defaultChecked={!systemSettings.isRegistrationOpen}
-                            className="w-4 h-4 text-rose-600 focus:ring-rose-500"
-                          />
-                          <span className="text-rose-800 bg-rose-100/80 px-2.5 py-1 rounded-lg border border-rose-200">
-                            🚫 DISABLED (Registration Closed)
-                          </span>
-                        </label>
-                      </div>
-                      <p className="text-[10px] text-slate-500 mt-1">
-                        When disabled, parents visiting /public-registration will see the closed notice and helpline contact info.
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Default Registration Fee (₹)
-                      </label>
-                      <input
-                        type="number"
-                        name="registrationFeeDefault"
-                        defaultValue={systemSettings.registrationFeeDefault || 1000}
-                        required
-                        className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-800">
-                      <Lock className="w-4 h-4" />
-                      <span>Registration Closed Announcement &amp; Information Notices</span>
-                    </h3>
-
-                    <div className="space-y-4 bg-slate-50/80 p-5 rounded-2xl border border-slate-200">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Registration Closed Notice Message (Displayed when portal is disabled)
-                        </label>
-                        <textarea
-                          name="registrationClosedNotice"
-                          rows={2}
-                          defaultValue={
-                            systemSettings.registrationClosedNotice ||
-                            "Online registration is currently closed for new admissions."
-                          }
-                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Opening Schedule / When Admissions Will Reopen Details
-                        </label>
-                        <textarea
-                          name="registrationOpenDateNotice"
-                          rows={2}
-                          defaultValue={
-                            systemSettings.registrationOpenDateNotice ||
-                            "Admissions for the upcoming academic session will reopen soon. Please contact the admission office for details."
-                          }
-                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Admission Helpline Phone Number(s)
-                          </label>
-                          <input
-                            type="text"
-                            name="registrationContactPhone"
-                            defaultValue={
-                              systemSettings.registrationContactPhone || "+91 512 2580000, +91 512 2580001"
-                            }
-                            className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Admission Help Email Address
-                          </label>
-                          <input
-                            type="email"
-                            name="registrationContactEmail"
-                            defaultValue={
-                              systemSettings.registrationContactEmail || "admissions@dpskanpur.com"
-                            }
-                            className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end">
-                    <button
-                      type="submit"
-                      className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl text-xs transition shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>Save Global Registration Controls</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
             </div>
           )}
 
@@ -922,9 +759,52 @@ export default async function AdminSettingsPage({
             <RbacMatrixTable initialUsers={users} currentUserId={user.id} campuses={campuses} />
           )}
 
-          {/* TAB 3: DYNAMIC DIRECTORY COLUMNS */}
+          {/* TAB 3: ACADEMIC SESSIONS & REGISTRATION CONTROLS */}
           {tab === "sessions" && canManageSessions && (
             <div className="space-y-6 w-full">
+              {/* Compact Global Online Registration Toggle Card */}
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-emerald-800" />
+                      <h2 className="text-sm font-black text-slate-900">
+                        Global Online Student Registration Portal
+                      </h2>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Toggle online student registration portal access on or off globally across all school campuses.
+                    </p>
+                  </div>
+
+                  <form action={updateSystemSettings} className="flex items-center gap-3 shrink-0">
+                    <input
+                      type="hidden"
+                      name="isRegistrationOpen"
+                      value={systemSettings.isRegistrationOpen ? "false" : "true"}
+                    />
+                    <button
+                      type="submit"
+                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border shadow-2xs ${
+                        systemSettings.isRegistrationOpen
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                          : "bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100"
+                      }`}
+                    >
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          systemSettings.isRegistrationOpen ? "bg-emerald-600 animate-pulse" : "bg-rose-600"
+                        }`}
+                      />
+                      <span>
+                        {systemSettings.isRegistrationOpen
+                          ? "✓ Registration OPEN (Click to Close)"
+                          : "🚫 Registration CLOSED (Click to Open)"}
+                      </span>
+                    </button>
+                  </form>
+                </div>
+              </div>
               {/* Active session */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-5">
                 <div>
