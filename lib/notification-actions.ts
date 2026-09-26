@@ -10,6 +10,8 @@ import {
   dispatchPendingNotifications,
   queueFeeReminder,
   resolveContacts,
+  getChannelSettings,
+  normalizeIndianMobile,
 } from "@/lib/notifications";
 import { logAuditAction } from "@/lib/audit-log";
 import { getSMSBalance, calculateSmsCredits, SmsBalanceResult, SmsCreditEstimate } from "@/lib/sms";
@@ -86,6 +88,83 @@ export async function updateChannelSettingsAction(formData: FormData): Promise<v
 
   revalidatePath("/notifications");
   redirect("/notifications?notice=channel_settings_updated");
+}
+
+/**
+ * Sends a direct individual SMS to a specific student's parent.
+ */
+export async function sendIndividualSmsAction(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("notifications", "update");
+
+  const studentId = ((formData.get("studentId") as string) || "").trim();
+  const phone = ((formData.get("phone") as string) || "").trim();
+  const recipientName = ((formData.get("recipientName") as string) || "").trim();
+  const message = ((formData.get("message") as string) || "").trim();
+  const returnUrl = ((formData.get("returnUrl") as string) || `/students/${studentId}`).trim();
+
+  if (!studentId || !phone || !message) {
+    throw new Error("Student ID, recipient phone number, and message are required.");
+  }
+
+  const channelSettings = await getChannelSettings();
+  if (!channelSettings.isSmsEnabled) {
+    const reason = channelSettings.smsDisabledReason
+      ? `SMS channel is disabled by Admin: ${channelSettings.smsDisabledReason}`
+      : "SMS channel is currently disabled by Administrator.";
+    throw new Error(reason);
+  }
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { id: true, campusId: true, firstName: true, lastName: true, scholarNo: true },
+  });
+
+  if (!student) {
+    throw new Error("Student record not found.");
+  }
+
+  assertCampusAllowed(user, student.campusId);
+
+  const formattedMobile = normalizeIndianMobile(phone) || phone;
+  const batchKey = `INDIVIDUAL:${Date.now().toString(36)}`;
+
+  const notificationId = await enqueueNotification({
+    channel: "SMS",
+    category: "ANNOUNCEMENT",
+    recipient: formattedMobile,
+    recipientName: recipientName || `${student.firstName} ${student.lastName}'s Parent`,
+    subject: null,
+    body: message,
+    studentId: student.id,
+    campusId: student.campusId,
+    dedupeKey: `INDIVIDUAL:SMS:${batchKey}:${student.id}`,
+  });
+
+  const result = await dispatchPendingNotifications(5);
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name,
+    userRole: user.role,
+    campusCode: student.campusId,
+    action: "INDIVIDUAL_SMS_SEND",
+    entityType: "Student",
+    entityId: student.id,
+    details: {
+      scholarNo: student.scholarNo,
+      recipient: formattedMobile,
+      recipientName,
+      messageSnippet: message.slice(0, 100),
+      sent: result.sent,
+      failed: result.failed,
+      skipped: result.skipped,
+    },
+  });
+
+  revalidatePath(`/students/${studentId}`);
+  revalidatePath("/notifications");
+  redirect(`${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=individual_sms_sent&sent=${result.sent}`);
 }
 
 /** Flushes whatever is queued, on demand from the notifications console. */

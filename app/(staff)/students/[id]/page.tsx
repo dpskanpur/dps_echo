@@ -33,6 +33,8 @@ import { getLinkedSiblings } from "@/lib/promotion-actions";
 import { SiblingLinkCard } from "@/components/SiblingLinkCard";
 import { PassportPhotoUploader } from "@/components/PassportPhotoUploader";
 import { DocumentUploadSection } from "@/components/DocumentUploadSection";
+import { SendParentSmsModal } from "@/components/SendParentSmsModal";
+import { getProviderStatus } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +102,8 @@ export default async function StudentDetailPage({
   const totalPaid = student.invoices.reduce((acc, inv) => acc + inv.paidAmount, 0);
   const totalBalance = student.invoices.reduce((acc, inv) => acc + inv.balanceAmount, 0);
 
+  const providers = await getProviderStatus();
+
   return (
         <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
           {/* Back Navigation */}
@@ -117,6 +121,12 @@ export default async function StudentDetailPage({
               </span>
             </div>
           </div>
+
+          {notice === "individual_sms_sent" && (
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-medium">
+              SMS message dispatched successfully to {primaryGuardian?.name || "parent"}!
+            </div>
+          )}
 
           {/* Student Dossier Header Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs relative overflow-hidden">
@@ -188,6 +198,19 @@ export default async function StudentDetailPage({
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {/* Send SMS to Parent Modal Trigger */}
+                {(permissions.modules.notifications.canUpdate || permissions.isAdmin) && (
+                  <SendParentSmsModal
+                    studentId={student.id}
+                    studentName={`${student.firstName} ${student.lastName}`}
+                    scholarNo={student.scholarNo}
+                    parentName={primaryGuardian?.name || ""}
+                    parentPhone={primaryGuardian?.phone || student.studentMobile || ""}
+                    isSmsEnabled={providers.isSmsEnabled}
+                    smsDisabledReason={providers.smsDisabledReason}
+                  />
+                )}
+
                 <Link
                   href={isEditing ? `/students/${student.id}` : `/students/${student.id}?edit=true`}
                   className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
