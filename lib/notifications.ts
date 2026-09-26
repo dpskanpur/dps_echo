@@ -526,9 +526,9 @@ export async function getProviderStatus(campusId?: string): Promise<{
 }> {
   const channelSettings = await getChannelSettings();
 
-  let isSmsEnabled = channelSettings.isSmsEnabled;
+  let isSmsEnabled = channelSettings.isSmsEnabled ?? true;
   let smsDisabledReason = channelSettings.smsDisabledReason;
-  let isEmailEnabled = channelSettings.isEmailEnabled;
+  let isEmailEnabled = channelSettings.isEmailEnabled ?? true;
   let emailDisabledReason = channelSettings.emailDisabledReason;
 
   if (campusId && campusId !== "ALL") {
@@ -538,14 +538,20 @@ export async function getProviderStatus(campusId?: string): Promise<{
       },
     });
     if (campus) {
-      if (!campus.isSmsEnabled) {
-        isSmsEnabled = false;
-        smsDisabledReason = campus.smsDisabledReason || "Disabled";
-      }
-      if (!campus.isEmailEnabled) {
-        isEmailEnabled = false;
-        emailDisabledReason = campus.emailDisabledReason || "Disabled";
-      }
+      // Evaluate per-campus toggle state directly.
+      isSmsEnabled = (channelSettings.isSmsEnabled ?? true) && (campus.isSmsEnabled ?? true);
+      smsDisabledReason = !campus.isSmsEnabled
+        ? (campus.smsDisabledReason || "Disabled")
+        : !channelSettings.isSmsEnabled
+        ? (channelSettings.smsDisabledReason || "Disabled")
+        : "";
+
+      isEmailEnabled = (channelSettings.isEmailEnabled ?? true) && (campus.isEmailEnabled ?? true);
+      emailDisabledReason = !campus.isEmailEnabled
+        ? (campus.emailDisabledReason || "Disabled")
+        : !channelSettings.isEmailEnabled
+        ? (channelSettings.emailDisabledReason || "Disabled")
+        : "";
     }
   }
 
