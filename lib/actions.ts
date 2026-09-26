@@ -1068,9 +1068,12 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
 
   revalidatePath("/admin/rbac");
   revalidatePath("/campuses");
+  revalidatePath("/fees/defaulters");
+  revalidatePath("/fees/invoices");
   revalidatePath("/fees/razorpay");
   revalidatePath("/notifications");
   revalidatePath("/pay");
+  revalidatePath("/students");
   revalidatePath("/students/new");
   revalidateTag(PUBLIC_REFERENCE_TAG);
   redirect(`/admin/rbac?tab=system&campusId=${campusId}&notice=campus_updated`);
