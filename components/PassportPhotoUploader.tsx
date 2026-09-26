@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 
 interface PassportPhotoUploaderProps {
   value?: string | null;
-  onChange: (url: string | null) => void;
+  onChange?: (url: string | null) => void;
+  name?: string;
   studentId?: string;
   required?: boolean;
   className?: string;
@@ -15,6 +16,7 @@ interface PassportPhotoUploaderProps {
 export function PassportPhotoUploader({
   value,
   onChange,
+  name = "photoUrl",
   studentId = "temp-new",
   required = false,
   className,
@@ -58,7 +60,7 @@ export function PassportPhotoUploader({
       }
 
       setPreviewUrl(data.url);
-      onChange(data.url);
+      onChange?.(data.url);
     } catch (err: any) {
       setError(err?.message || "Failed to upload photo. Please try again.");
     } finally {
@@ -68,7 +70,7 @@ export function PassportPhotoUploader({
 
   const handleRemove = () => {
     setPreviewUrl(null);
-    onChange(null);
+    onChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -76,6 +78,7 @@ export function PassportPhotoUploader({
 
   return (
     <div className={cn("space-y-2", className)}>
+      <input type="hidden" name={name} value={previewUrl || ""} />
       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
         Passport Size Photo {required && <span className="text-red-500">*</span>}
       </label>

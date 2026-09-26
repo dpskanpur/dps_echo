@@ -4,6 +4,8 @@ import { useState, useRef, ChangeEvent } from "react";
 import { FileText, Upload, CheckCircle2, AlertCircle, Loader2, ExternalLink, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useRouter } from "next/navigation";
+
 export interface StudentDocItem {
   id?: string;
   docType: string;
@@ -25,7 +27,7 @@ const DOCUMENT_CATEGORIES = [
 interface DocumentUploadSectionProps {
   studentId?: string;
   documents: StudentDocItem[];
-  onChange: (updatedDocs: StudentDocItem[]) => void;
+  onChange?: (updatedDocs: StudentDocItem[]) => void;
   readOnly?: boolean;
 }
 
@@ -35,6 +37,7 @@ export function DocumentUploadSection({
   onChange,
   readOnly = false,
 }: DocumentUploadSectionProps) {
+  const router = useRouter();
   const [selectedType, setSelectedType] = useState(DOCUMENT_CATEGORIES[0].type);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +87,11 @@ export function DocumentUploadSection({
       };
 
       const updated = [...documents, newDoc];
-      onChange(updated);
+      if (onChange) {
+        onChange(updated);
+      } else {
+        router.refresh();
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to upload document.");
     } finally {
@@ -97,7 +104,11 @@ export function DocumentUploadSection({
 
   const handleRemove = (index: number) => {
     const updated = documents.filter((_, i) => i !== index);
-    onChange(updated);
+    if (onChange) {
+      onChange(updated);
+    } else {
+      router.refresh();
+    }
   };
 
   return (

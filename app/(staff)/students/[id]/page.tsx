@@ -244,6 +244,12 @@ export default async function StudentDetailPage({
               {/* 1. Student Personal Information */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">1. Student Personal Info</h3>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-3">
+                  <PassportPhotoUploader
+                    value={student.photoUrl}
+                    studentId={student.id}
+                  />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">First Name *</label>
@@ -910,10 +916,6 @@ export default async function StudentDetailPage({
               <DocumentUploadSection
                 studentId={student.id}
                 documents={student.documents}
-                onChange={() => {
-                  // Reload page data after upload
-                  window.location.reload();
-                }}
               />
             </div>
           )}
