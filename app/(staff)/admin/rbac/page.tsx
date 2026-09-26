@@ -512,17 +512,21 @@ export default async function AdminSettingsPage({
 
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Scholar ID Prefix
+                          Scholar ID Prefix / School Code
                         </label>
                         <input
                           type="text"
                           name="scholarIdPrefix"
-                          defaultValue={selectedCampus.scholarIdPrefix || "DPS"}
+                          defaultValue={selectedCampus.scholarIdPrefix || selectedCampus.code || "DPSAZD"}
                           required
-                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono"
                         />
                         <p className="text-[10px] text-slate-400 mt-1">
-                          Generates e.g. <span className="font-mono font-bold text-emerald-800">{selectedCampus.scholarIdPrefix || "DPS"}-{selectedCampus.code}-2026-0001</span>
+                          Generates e.g. <span className="font-mono font-bold text-emerald-800">
+                            {selectedCampus.scholarIdPrefix?.endsWith(selectedCampus.code) || selectedCampus.scholarIdPrefix?.includes(selectedCampus.code)
+                              ? `${selectedCampus.scholarIdPrefix || selectedCampus.code}-2026-0001`
+                              : `${selectedCampus.scholarIdPrefix || "DPS"}-${selectedCampus.code}-2026-0001`}
+                          </span>
                         </p>
                       </div>
 

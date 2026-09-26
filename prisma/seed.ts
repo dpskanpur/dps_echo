@@ -47,7 +47,8 @@ async function main() {
   // 2. Create Campuses
   const campusesData = [
     {
-      code: "AZD",
+      code: "DPSAZD",
+      scholarIdPrefix: "DPSAZD",
       name: "DPS Azad Nagar",
       tagline: "Service Before Self — Senior Secondary Co-educational CBSE",
       affiliation: "CBSE Affiliation No. 2130722, School Code 70154",
@@ -60,7 +61,8 @@ async function main() {
       website: "https://dpsazadnagar.com",
     },
     {
-      code: "BAR",
+      code: "DPSBAR",
+      scholarIdPrefix: "DPSBAR",
       name: "DPS Barra",
       tagline: "Empowering Minds, Shaping Tomorrow",
       affiliation: "CBSE Affiliation No. 2132332, School Code 70648",
@@ -73,7 +75,8 @@ async function main() {
       website: "https://dpsbarra.com",
     },
     {
-      code: "KID",
+      code: "DPSKID",
+      scholarIdPrefix: "DPSKID",
       name: "DPS Kidwai Nagar",
       tagline: "Junior Wing — Foundation for Lifelong Learning",
       affiliation: "Primary & Middle Wing under DPS Society",
@@ -86,7 +89,8 @@ async function main() {
       website: "https://dpskidwainagar.com",
     },
     {
-      code: "SRV",
+      code: "DPSSRV",
+      scholarIdPrefix: "DPSSRV",
       name: "DPS Servodaya Nagar",
       tagline: "Pre-Primary & Primary Excellence Hub",
       affiliation: "Junior Wing under DPS Society",

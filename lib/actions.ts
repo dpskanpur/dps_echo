@@ -131,16 +131,25 @@ export async function registerStudent(formData: FormData): Promise<void> {
   const campus = await prisma.campus.findUnique({ where: { id: campusId } });
   const year = new Date().getFullYear();
 
-  const regPrefix = campus?.registrationIdPrefix || "REG";
-  const regFee = campus?.registrationFee ?? 1000;
+  const regPrefix = (campus?.registrationIdPrefix || "REG").trim().toUpperCase();
+  const scholarPrefix = (campus?.scholarIdPrefix || campus?.code || "DPSAZD").trim().toUpperCase();
+  const campusCode = (campus?.code || "AZD").trim().toUpperCase();
+
+  const regCode = (regPrefix.endsWith(campusCode) || regPrefix.includes(campusCode))
+    ? regPrefix
+    : `${regPrefix}-${campusCode}`;
+
+  const scholarCode = (scholarPrefix.endsWith(campusCode) || scholarPrefix.includes(campusCode))
+    ? scholarPrefix
+    : `${scholarPrefix}-${campusCode}`;
 
   // Collision-free loop for registrationNo & temporary scholarNo
   let regSeq = (await prisma.student.count({ where: { campusId } })) + 1;
   let registrationNo: string;
   let scholarNo: string;
   while (true) {
-    const candidateReg = `${regPrefix}-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
-    const candidateSch = `${regPrefix}-TEMP-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+    const candidateReg = `${regCode}-${year}-${String(regSeq).padStart(4, "0")}`;
+    const candidateSch = `${scholarCode}-TEMP-${year}-${String(regSeq).padStart(4, "0")}`;
     const [existReg, existSch] = await Promise.all([
       prisma.student.findUnique({ where: { registrationNo: candidateReg }, select: { id: true } }),
       prisma.student.findUnique({ where: { scholarNo: candidateSch }, select: { id: true } }),
@@ -493,9 +502,15 @@ export async function promoteStudentToAdmission(formData: FormData): Promise<voi
   });
   const admSeq = admCount + 1;
 
-  const scholarPrefix = campus?.scholarIdPrefix || "DPS";
-  const scholarNo = `${scholarPrefix}-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
-  const admissionNo = `${campus?.code || "KNP"}/${year}/${admSeq}`;
+  const scholarPrefix = (campus?.scholarIdPrefix || campus?.code || "DPSAZD").trim().toUpperCase();
+  const campusCode = (campus?.code || "AZD").trim().toUpperCase();
+
+  const scholarCode = (scholarPrefix.endsWith(campusCode) || scholarPrefix.includes(campusCode))
+    ? scholarPrefix
+    : `${scholarPrefix}-${campusCode}`;
+
+  const scholarNo = `${scholarCode}-${year}-${String(admSeq).padStart(4, "0")}`;
+  const admissionNo = `${campusCode}/${year}/${admSeq}`;
 
   await prisma.student.update({
     where: { id: studentId },
@@ -573,11 +588,23 @@ export async function createStudent(formData: FormData): Promise<void> {
   const campus = await prisma.campus.findUnique({ where: { id: campusId } });
   const year = new Date().getFullYear();
 
+  const regPrefix = (campus?.registrationIdPrefix || "REG").trim().toUpperCase();
+  const scholarPrefix = (campus?.scholarIdPrefix || campus?.code || "DPSAZD").trim().toUpperCase();
+  const campusCode = (campus?.code || "AZD").trim().toUpperCase();
+
+  const regCode = (regPrefix.endsWith(campusCode) || regPrefix.includes(campusCode))
+    ? regPrefix
+    : `${regPrefix}-${campusCode}`;
+
+  const scholarCode = (scholarPrefix.endsWith(campusCode) || scholarPrefix.includes(campusCode))
+    ? scholarPrefix
+    : `${scholarPrefix}-${campusCode}`;
+
   // Generate Unique Registration ID & Unique Admission ID (collision-free loop)
   let regSeq = (await prisma.student.count({ where: { campusId } })) + 1;
   let registrationNo: string;
   while (true) {
-    const candidate = `REG-${campus?.code || "KNP"}-${year}-${String(regSeq).padStart(4, "0")}`;
+    const candidate = `${regCode}-${year}-${String(regSeq).padStart(4, "0")}`;
     const existing = await prisma.student.findUnique({ where: { registrationNo: candidate }, select: { id: true } });
     if (!existing) {
       registrationNo = candidate;
@@ -589,7 +616,7 @@ export async function createStudent(formData: FormData): Promise<void> {
   let admSeq = (await prisma.student.count({ where: { campusId } })) + 1;
   let scholarNo: string;
   while (true) {
-    const candidate = `DPS-${campus?.code || "KNP"}-${year}-${String(admSeq).padStart(4, "0")}`;
+    const candidate = `${scholarCode}-${year}-${String(admSeq).padStart(4, "0")}`;
     const existing = await prisma.student.findUnique({ where: { scholarNo: candidate }, select: { id: true } });
     if (!existing) {
       scholarNo = candidate;
@@ -597,7 +624,7 @@ export async function createStudent(formData: FormData): Promise<void> {
     }
     admSeq++;
   }
-  const admissionNo = `${campus?.code || "KNP"}/${year}/${admSeq}`;
+  const admissionNo = `${campusCode}/${year}/${admSeq}`;
 
   const student = await prisma.student.create({
     data: {
@@ -950,8 +977,10 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   if (!campusId) return;
 
   const registrationFee = parseFloat(formData.get("registrationFee") as string) || 1000;
-  const scholarIdPrefix = (formData.get("scholarIdPrefix") as string) || "DPS";
-  const registrationIdPrefix = (formData.get("registrationIdPrefix") as string) || "REG";
+  const scholarIdPrefix = ((formData.get("scholarIdPrefix") as string) || "DPSAZD").trim().toUpperCase();
+  const registrationIdPrefix = ((formData.get("registrationIdPrefix") as string) || "REG").trim().toUpperCase();
+  const customCode = ((formData.get("code") as string) || "").trim().toUpperCase();
+  const code = customCode || scholarIdPrefix;
   const activeAcademicYear = (formData.get("activeAcademicYear") as string) || "2026-2027";
   const phone = (formData.get("phone") as string) || "";
   const email = (formData.get("email") as string) || "";
@@ -970,6 +999,7 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   await prisma.campus.update({
     where: { id: campusId },
     data: {
+      code,
       registrationFee,
       scholarIdPrefix,
       registrationIdPrefix,
