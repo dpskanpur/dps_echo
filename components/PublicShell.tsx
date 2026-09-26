@@ -88,15 +88,30 @@ export function PublicShell({
             © {new Date().getFullYear()} Delhi Public School Kanpur
           </p>
           <nav className="flex items-center gap-4 text-[11px] font-medium text-slate-600">
-            <Link href="/public-registration" className="hover:text-emerald-800">
-              Admissions
-            </Link>
-            <Link href="/pay" className="hover:text-emerald-800">
-              Pay Fees
-            </Link>
-            <Link href="/verify-tc" className="hover:text-emerald-800">
-              Verify TC
-            </Link>
+            <a
+              href="/public-registration"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-emerald-800"
+            >
+              Admissions ↗
+            </a>
+            <a
+              href="/pay"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-emerald-800"
+            >
+              Pay Fees ↗
+            </a>
+            <a
+              href="/verify-tc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-emerald-800"
+            >
+              Verify TC ↗
+            </a>
           </nav>
         </footer>
       </div>
