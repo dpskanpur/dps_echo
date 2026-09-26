@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
 import { issueTransferCertificate } from "@/lib/actions";
 import { PrintButton } from "@/components/PrintButton";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { FileText, Search, Printer, CheckCircle, ShieldCheck, UserCheck, AlertCircle, Lock } from "lucide-react";
@@ -272,127 +272,148 @@ export default async function TransferCertificatePage({
               </div>
 
               {/* No-Dues Clearance Banner */}
-              {targetStudent.invoices.length > 0 ? (
-                <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 text-rose-900 text-xs">
-                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-bold">Pending Fee Dues Detected ({targetStudent.invoices.length} Invoices)</h3>
-                    <p className="mt-0.5 text-rose-700">
-                      Standard school policy requires fee dues to be cleared before formal TC handover. Dues are settled by the parent through the online fee portal; you may still generate the draft TC in the meantime.
-                    </p>
-                    <Link
-                      href={`/students/${targetStudent.id}?tab=fees`}
-                      className="inline-block mt-2 text-rose-700 hover:text-rose-800 font-bold text-[11px] underline underline-offset-2"
-                    >
-                      View Fee Ledger →
-                    </Link>
+              {(() => {
+                const targetStudentPendingDues = targetStudent.invoices.reduce(
+                  (acc: number, inv: any) => acc + inv.balanceAmount,
+                  0
+                );
+                const isTcBlockedForSubAdmin = targetStudentPendingDues > 0 && !permissions.isAdmin;
+
+                return (
+                  <div className="space-y-4">
+                    {targetStudentPendingDues > 0 ? (
+                      <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 text-rose-900 text-xs">
+                        <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <h3 className="font-bold text-sm">
+                            Pending Fee Dues Detected ({formatCurrency(targetStudentPendingDues)})
+                          </h3>
+                          <p className="mt-0.5 text-rose-700">
+                            {isTcBlockedForSubAdmin
+                              ? "TC Generation Blocked: Sub-Admins are not permitted to issue a Transfer Certificate until all fee dues are cleared in full by the parent or accounts office."
+                              : "Notice for Admin: Outstanding fee dues detected. Super Admins may still proceed to generate the TC if approved."}
+                          </p>
+                          <Link
+                            href={`/students/${targetStudent.id}?tab=fees`}
+                            className="inline-block mt-2 text-rose-700 hover:text-rose-900 font-bold text-xs underline underline-offset-2"
+                          >
+                            View &amp; Clear Fee Ledger →
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-emerald-900 text-xs font-semibold">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        ✓ All Accounts &amp; Library Dues Cleared. Student is eligible for immediate TC release.
+                      </div>
+                    )}
+
+                    {/* TC Form */}
+                    <form action={issueTransferCertificate} className="space-y-4">
+                      <input type="hidden" name="studentId" value={targetStudent.id} />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Reason for Leaving School *
+                          </label>
+                          <input
+                            type="text"
+                            name="reasonForLeaving"
+                            required
+                            defaultValue="Parent Job Relocation"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            General Conduct *
+                          </label>
+                          <select
+                            name="generalConduct"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          >
+                            <option value="Exemplary">Exemplary</option>
+                            <option value="Good">Good</option>
+                            <option value="Satisfactory">Satisfactory</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Promotion Status *
+                          </label>
+                          <input
+                            type="text"
+                            name="isQualifiedForPromotion"
+                            required
+                            defaultValue={`Promoted to next standard`}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Month Upto Which Fees Paid *
+                          </label>
+                          <input
+                            type="text"
+                            name="monthUptoWhichFeesPaid"
+                            required
+                            defaultValue="March 2026 (Cleared)"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Total Working Days in Session
+                          </label>
+                          <input
+                            type="number"
+                            name="totalWorkingDays"
+                            defaultValue={210}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            Days Present
+                          </label>
+                          <input
+                            type="number"
+                            name="totalDaysPresent"
+                            defaultValue={198}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="pt-3 flex justify-end gap-3">
+                        <Link
+                          href="/tc"
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold transition"
+                        >
+                          Cancel
+                        </Link>
+                        <button
+                          type="submit"
+                          disabled={isTcBlockedForSubAdmin}
+                          className={`px-5 py-2 rounded-lg text-xs font-bold transition shadow-sm ${
+                            isTcBlockedForSubAdmin
+                              ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                              : "bg-emerald-800 hover:bg-emerald-900 text-white cursor-pointer"
+                          }`}
+                        >
+                          {isTcBlockedForSubAdmin ? "TC Blocked (Fee Dues Pending)" : "Generate & Issue CBSE TC"}
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-emerald-900 text-xs font-semibold">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  ✓ All Accounts & Library Dues Cleared. Student is eligible for immediate TC release.
-                </div>
-              )}
-
-              {/* TC Form */}
-              <form action={issueTransferCertificate} className="space-y-4">
-                <input type="hidden" name="studentId" value={targetStudent.id} />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Reason for Leaving School *
-                    </label>
-                    <input
-                      type="text"
-                      name="reasonForLeaving"
-                      required
-                      defaultValue="Parent Job Relocation"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      General Conduct *
-                    </label>
-                    <select
-                      name="generalConduct"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    >
-                      <option value="Exemplary">Exemplary</option>
-                      <option value="Good">Good</option>
-                      <option value="Satisfactory">Satisfactory</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Promotion Status *
-                    </label>
-                    <input
-                      type="text"
-                      name="isQualifiedForPromotion"
-                      required
-                      defaultValue={`Promoted to next standard`}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Month Upto Which Fees Paid *
-                    </label>
-                    <input
-                      type="text"
-                      name="monthUptoWhichFeesPaid"
-                      required
-                      defaultValue="March 2026 (Cleared)"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Total Working Days in Session
-                    </label>
-                    <input
-                      type="number"
-                      name="totalWorkingDays"
-                      defaultValue={210}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Days Present
-                    </label>
-                    <input
-                      type="number"
-                      name="totalDaysPresent"
-                      defaultValue={198}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-3 flex justify-end gap-3">
-                  <Link
-                    href="/tc"
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-xs font-semibold transition"
-                  >
-                    Cancel
-                  </Link>
-                  <button
-                    type="submit"
-                    className="bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow-sm"
-                  >
-                    Generate & Issue CBSE TC
-                  </button>
-                </div>
-              </form>
+                );
+              })()}
             </div>
           )}
 

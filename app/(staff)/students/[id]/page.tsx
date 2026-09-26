@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Sparkles,
   Pencil,
+  Lock,
 } from "lucide-react";
 
 import { getLinkedSiblings } from "@/lib/promotion-actions";
@@ -186,7 +187,7 @@ export default async function StudentDetailPage({
                       <strong>{student.campus.name}</strong>
                     </span>
                     <span className="flex items-center gap-1">
-                      Class: <strong>{student.class.name} {student.section ? `(${student.section.name})` : ""}</strong>
+                      Class: <strong>{student.class?.name || "Unassigned"} {student.section ? `(${student.section.name})` : ""}</strong>
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -224,7 +225,15 @@ export default async function StudentDetailPage({
                 </Link>
 
                 {student.status === "ACTIVE" && (
-                  <>
+                  totalBalance > 0 && !permissions.isAdmin ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-400 border border-slate-200 px-3.5 py-2 rounded-lg text-xs font-bold cursor-not-allowed shrink-0"
+                      title={`TC generation locked for Sub-Admin until pending fee dues (${formatCurrency(totalBalance)}) are cleared`}
+                    >
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                      Issue TC (Dues Pending)
+                    </span>
+                  ) : (
                     <Link
                       href={`/tc?studentId=${student.id}`}
                       className="inline-flex items-center gap-1.5 bg-purple-700 hover:bg-purple-800 text-white px-3.5 py-2 rounded-lg text-xs font-bold transition shadow-xs"
@@ -232,7 +241,7 @@ export default async function StudentDetailPage({
                       <FileText className="w-3.5 h-3.5" />
                       Issue TC
                     </Link>
-                  </>
+                  )
                 )}
                 {student.transferCertificate && (
                   <Link
@@ -309,7 +318,11 @@ export default async function StudentDetailPage({
                     <input
                       type="date"
                       name="dob"
-                      defaultValue={student.dob ? new Date(student.dob).toISOString().split("T")[0] : ""}
+                      defaultValue={
+                        student.dob && !isNaN(new Date(student.dob).getTime())
+                          ? new Date(student.dob).toISOString().split("T")[0]
+                          : ""
+                      }
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-400 focus:outline-none"
                     />
                   </div>
@@ -560,7 +573,7 @@ export default async function StudentDetailPage({
                     name="sectionId"
                     className="w-full bg-slate-900 border border-emerald-700/60 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
                   >
-                    {student.class.sections?.map((sec) => (
+                    {student.class?.sections?.map((sec) => (
                       <option key={sec.id} value={sec.id}>
                         Section {sec.name} {sec.roomNo ? `(${sec.roomNo.startsWith("Room") ? sec.roomNo : `Room ${sec.roomNo}`})` : ""}
                       </option>
