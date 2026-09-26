@@ -42,6 +42,8 @@ model Campus {
   feeInvoices   FeeInvoice[]
   users         User[]
   notifications Notification[]
+  fromPromotions StudentPromotionHistory[] @relation("FromCampus")
+  toPromotions   StudentPromotionHistory[] @relation("ToCampus")
 }
 
 model User {
@@ -195,6 +197,8 @@ model Student {
   discountAmount      Float         @default(0.0)
   discountApprovedBy  String?
   discountReason      String?
+  // Sibling & Family Linkage
+  familyId        String?       // Shared Family ID e.g. "FAM-2026-0042" to link siblings across schools
 
   // Metadata & Timestamps
   createdAt       DateTime      @default(now())
@@ -211,6 +215,30 @@ model Student {
   payments            FeePayment[]
   paymentOrders       PaymentOrder[]
   notifications       Notification[]
+  promotionHistories  StudentPromotionHistory[]
+
+  @@index([familyId])
+}
+
+model StudentPromotionHistory {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fromSession   String   // e.g. "2025-2026"
+  toSession     String   // e.g. "2026-2027"
+  fromCampusId  String
+  fromCampus    Campus   @relation("FromCampus", fields: [fromCampusId], references: [id])
+  toCampusId    String
+  toCampus      Campus   @relation("ToCampus", fields: [toCampusId], references: [id])
+  fromClassName String   // e.g. "Class V"
+  toClassName   String   // e.g. "Class VI"
+  action        String   // "PROMOTED", "BRANCH_TRANSFER", "RETAINED", "GRADUATED"
+  promotedBy    String?  // Admin email
+  createdAt     DateTime @default(now())
+
+  @@index([studentId])
+  @@index([fromCampusId])
+  @@index([toCampusId])
 }
 
 model Guardian {

@@ -14,6 +14,7 @@ import {
   KeyRound,
   Bell,
   History,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
@@ -93,12 +94,20 @@ export function Sidebar({
               />
 
               {canUpdateStudents && (
-                <SidebarLink
-                  href="/students/new"
-                  icon={UserPlus}
-                  label="New Admission"
-                  active={pathname === "/students/new"}
-                />
+                <>
+                  <SidebarLink
+                    href="/students/new"
+                    icon={UserPlus}
+                    label="New Admission"
+                    active={pathname === "/students/new"}
+                  />
+                  <SidebarLink
+                    href="/students/promotion"
+                    icon={Sparkles}
+                    label="Annual Promotion & Transfers"
+                    active={pathname === "/students/promotion"}
+                  />
+                </>
               )}
 
               {canTc && (
