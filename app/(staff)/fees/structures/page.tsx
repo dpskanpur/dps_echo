@@ -289,30 +289,46 @@ export default async function FeeStructuresPage({
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
                     <th className="py-3 px-4">Class</th>
-                    <th className="py-3 px-4">Tuition (Quarterly)</th>
-                    <th className="py-3 px-4">Development (Annual)</th>
-                    <th className="py-3 px-4">Activity Fee</th>
-                    <th className="py-3 px-4">Lab / Computer</th>
+                    {feeHeads.map((head) => (
+                      <th key={head.id} className="py-3 px-4">
+                        {head.name} ({head.code})
+                      </th>
+                    ))}
                     <th className="py-3 px-4 text-right">Annual Estimated Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {classes.map((cls) => {
-                    const tuition = cls.feeStructures.find((f) => f.feeHead.code === "TUI")?.amount || 0;
-                    const dev = cls.feeStructures.find((f) => f.feeHead.code === "DEV")?.amount || 0;
-                    const act = cls.feeStructures.find((f) => f.feeHead.code === "ACT")?.amount || 0;
-                    const lab = cls.feeStructures.find((f) => f.feeHead.code === "LAB")?.amount || 0;
-
-                    const annualEstimated = tuition * 4 + dev + act + lab * 4;
+                    let annualEstimated = 0;
 
                     return (
-                      <tr key={cls.id} className="hover:bg-slate-50/80">
+                      <tr key={cls.id} className="hover:bg-slate-50/80 border-b border-slate-100">
                         <td className="py-3 px-4 font-bold text-slate-900">{cls.name}</td>
-                        <td className="py-3 px-4 font-mono">{formatCurrency(tuition)}</td>
-                        <td className="py-3 px-4 font-mono">{formatCurrency(dev)}</td>
-                        <td className="py-3 px-4 font-mono">{formatCurrency(act)}</td>
-                        <td className="py-3 px-4 font-mono">{lab > 0 ? formatCurrency(lab) : "-"}</td>
-                        <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
+                        {feeHeads.map((head) => {
+                          const fs = cls.feeStructures.find(
+                            (f) => f.feeHeadId === head.id || f.feeHead?.code === head.code
+                          );
+                          const amount = fs?.amount || 0;
+                          const freq = fs?.frequency || "QUARTERLY";
+                          const multiplier = freq === "QUARTERLY" ? 4 : freq === "SEMI_ANNUAL" ? 2 : 1;
+                          annualEstimated += amount * multiplier;
+
+                          return (
+                            <td key={head.id} className="py-3 px-4 font-mono">
+                              {amount > 0 ? (
+                                <div>
+                                  <span className="font-bold text-slate-800">{formatCurrency(amount)}</span>
+                                  <span className="block text-[10px] text-slate-400 font-medium">
+                                    {FEE_FREQUENCY_LABELS[freq] || freq}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-slate-300">-</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="py-3 px-4 text-right font-mono font-black text-emerald-800 text-sm">
                           {formatCurrency(annualEstimated)}
                         </td>
                       </tr>
