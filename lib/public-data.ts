@@ -48,3 +48,41 @@ export const getPublicClasses = unstable_cache(
   ["public-classes"],
   { revalidate: 3600, tags: [PUBLIC_REFERENCE_TAG] }
 );
+
+export const getPublicSystemSettings = unstable_cache(
+  async () => {
+    try {
+      let settings = await prisma.systemSettings.findUnique({
+        where: { id: "global" },
+      });
+      if (!settings) {
+        settings = await prisma.systemSettings.create({
+          data: { id: "global" },
+        });
+      }
+      return settings;
+    } catch (err) {
+      return {
+        id: "global",
+        currentAcademicYear: "2026-2027",
+        scholarIdPrefix: "DPS",
+        registrationIdPrefix: "REG",
+        registrationFeeDefault: 1000,
+        isSmsEnabled: true,
+        smsDisabledReason: "",
+        isEmailEnabled: true,
+        emailDisabledReason: "",
+        isOnlinePaymentEnabled: true,
+        onlinePaymentDisabledReason: "",
+        isRegistrationOpen: true,
+        registrationClosedNotice: "Online registration is currently closed for new admissions.",
+        registrationOpenDateNotice: "Admissions for the upcoming academic session will reopen soon. Please contact the admission office for details.",
+        registrationContactPhone: "+91 512 2580000, +91 512 2580001",
+        registrationContactEmail: "admissions@dpskanpur.com",
+        updatedAt: new Date(),
+      };
+    }
+  },
+  ["public-system-settings"],
+  { revalidate: 3600, tags: [PUBLIC_REFERENCE_TAG] }
+);

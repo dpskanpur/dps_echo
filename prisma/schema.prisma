@@ -471,6 +471,12 @@ model SystemSettings {
   emailDisabledReason     String?  @default("")
   isOnlinePaymentEnabled  Boolean  @default(true)
   onlinePaymentDisabledReason String? @default("")
+  // Global Online Student Registration Settings
+  isRegistrationOpen          Boolean  @default(true)
+  registrationClosedNotice    String?  @default("Online registration is currently closed for new admissions.")
+  registrationOpenDateNotice  String?  @default("Admissions for the upcoming academic session will reopen soon. Please contact the admission office for details.")
+  registrationContactPhone    String?  @default("+91 512 2580000, +91 512 2580001")
+  registrationContactEmail    String?  @default("admissions@dpskanpur.com")
   updatedAt               DateTime @updatedAt
 }
 
