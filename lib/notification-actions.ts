@@ -11,6 +11,8 @@ import {
   queueFeeReminder,
   resolveContacts,
 } from "@/lib/notifications";
+import { logAuditAction } from "@/lib/audit-log";
+import { getSMSBalance, calculateSmsCredits, SmsBalanceResult, SmsCreditEstimate } from "@/lib/sms";
 
 const UNSETTLED = {
   status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] },
@@ -26,10 +28,38 @@ function reminderKind(dueDate: Date, today: Date): "FEE_DUE" | "FEE_OVERDUE" {
   return dueDate < today ? "FEE_OVERDUE" : "FEE_DUE";
 }
 
+/** Server action to query live SMS gateway balance. */
+export async function fetchSmsBalanceAction(): Promise<SmsBalanceResult> {
+  await requirePermission("notifications", "view");
+  return await getSMSBalance();
+}
+
+/** Server action to calculate SMS character length & credits. */
+export async function fetchSmsEstimateAction(
+  message: string,
+  recipientCount: number
+): Promise<SmsCreditEstimate> {
+  return calculateSmsCredits(message, recipientCount);
+}
+
 /** Flushes whatever is queued, on demand from the notifications console. */
 export async function dispatchQueuedNotifications(): Promise<void> {
-  await requirePermission("notifications", "update");
+  const { user } = await requirePermission("notifications", "update");
   const result = await dispatchPendingNotifications(500);
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name,
+    userRole: user.role,
+    action: "NOTIFICATION_DISPATCH",
+    entityType: "Notification",
+    details: {
+      sent: result.sent,
+      failed: result.failed,
+      skipped: result.skipped,
+    },
+  });
 
   revalidatePath("/notifications");
   redirect(
@@ -136,6 +166,26 @@ export async function sendAnnouncement(formData: FormData): Promise<void> {
   }
 
   const result = await dispatchPendingNotifications(500);
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name,
+    userRole: user.role,
+    campusCode: scope.campusId || "ALL",
+    action: "ANNOUNCEMENT_SEND",
+    entityType: "Notification",
+    details: {
+      subject,
+      studentCount: students.length,
+      sendEmail,
+      sendSms,
+      queued,
+      sent: result.sent,
+      failed: result.failed,
+      skipped: result.skipped,
+    },
+  });
 
   revalidatePath("/notifications");
   redirect(

@@ -41,6 +41,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   REGISTRATION: "Registration",
 };
 
+import { SmsBalanceCard } from "@/components/SmsBalanceCard";
+import { SmsAnnouncementComposer } from "@/components/SmsAnnouncementComposer";
+import { DeliveryStatusBadge } from "@/components/DeliveryStatusBadge";
+
 export default async function NotificationsPage({
   searchParams,
 }: {
@@ -105,302 +109,217 @@ export default async function NotificationsPage({
     counts.find((c) => c.status === status)?._count._all ?? 0;
 
   const tiles = [
-    { label: "Sent", value: countFor("SENT"), icon: CheckCircle2, tone: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100" },
+    { label: "Sent / Delivered", value: countFor("SENT") + countFor("DELIVERED"), icon: CheckCircle2, tone: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100" },
     { label: "Queued", value: countFor("PENDING"), icon: Clock, tone: "text-amber-700", bg: "bg-amber-50 border-amber-100" },
-    { label: "Failed", value: countFor("FAILED"), icon: AlertTriangle, tone: "text-rose-700", bg: "bg-rose-50 border-rose-100" },
+    { label: "Failed", value: countFor("FAILED") + countFor("UNDELIVERED"), icon: AlertTriangle, tone: "text-rose-700", bg: "bg-rose-50 border-rose-100" },
     { label: "Skipped", value: countFor("SKIPPED"), icon: MinusCircle, tone: "text-slate-600", bg: "bg-slate-50 border-slate-200" },
   ];
 
   return (
-        <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-[#0F9D58]" />
-                <h1 className="text-xl font-black text-slate-900">Notifications</h1>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Fee reminders, payment receipts and announcements sent to parents by email and SMS.
-              </p>
-            </div>
-
-            {canSend && (
-              <div className="flex items-center gap-2">
-                <form action={retryFailedNotifications}>
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" /> Retry Failed
-                  </button>
-                </form>
-                <form action={dispatchQueuedNotifications}>
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5" /> Send Queued Now
-                  </button>
-                </form>
-              </div>
-            )}
+    <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-[#0F9D58]" />
+            <h1 className="text-xl font-black text-slate-900">Notifications Console</h1>
           </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Transaction SMS Gateway, DLT Template Dispatch &amp; Parent Delivery Reports.
+          </p>
+        </div>
 
-          {/* Result notice */}
-          {params.notice && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900">
-              {params.notice === "announced" && (
-                <span>
-                  Announcement queued for <strong>{params.queued || 0}</strong> recipients —{" "}
-                  {params.sent || 0} sent, {params.failed || 0} failed, {params.skipped || 0} skipped.
-                </span>
-              )}
-              {params.notice === "dispatched" && (
-                <span>
-                  Queue flushed — {params.sent || 0} sent, {params.failed || 0} failed,{" "}
-                  {params.skipped || 0} skipped.
-                </span>
-              )}
-              {params.notice === "requeued" && <span>Failed messages have been put back in the queue.</span>}
-            </div>
+        {canSend && (
+          <div className="flex items-center gap-2">
+            <form action={retryFailedNotifications}>
+              <button
+                type="submit"
+                className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Retry Failed
+              </button>
+            </form>
+            <form action={dispatchQueuedNotifications}>
+              <button
+                type="submit"
+                className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" /> Send Queued Now
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* Live SMS Gateway Balance Card */}
+      <SmsBalanceCard />
+
+      {/* Result notice */}
+      {params.notice && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-medium">
+          {params.notice === "announced" && (
+            <span>
+              Announcement queued for <strong>{params.queued || 0}</strong> recipients —{" "}
+              {params.sent || 0} sent, {params.failed || 0} failed, {params.skipped || 0} skipped.
+            </span>
           )}
-
-          {/* Provider configuration state */}
-          {(!providers.email || !providers.sms) && (
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-xs text-amber-900">
-                <strong className="block font-bold">
-                  {!providers.email && !providers.sms
-                    ? "No delivery channel is configured"
-                    : `${!providers.email ? "Email" : "SMS"} delivery is not configured`}
-                </strong>
-                <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                  Messages are still recorded here and marked <strong>Skipped</strong> instead of being
-                  lost. Set{" "}
-                  {!providers.email && (
-                    <code className="font-mono">RESEND_API_KEY + NOTIFY_EMAIL_FROM</code>
-                  )}
-                  {!providers.email && !providers.sms && " and "}
-                  {!providers.sms && <code className="font-mono">MSG91_AUTH_KEY + MSG91_SENDER_ID</code>}{" "}
-                  to start delivering, then use Retry Failed.
-                </p>
-              </div>
-            </div>
+          {params.notice === "dispatched" && (
+            <span>
+              Queue flushed — {params.sent || 0} sent, {params.failed || 0} failed,{" "}
+              {params.skipped || 0} skipped.
+            </span>
           )}
+          {params.notice === "requeued" && <span>Failed messages put back in queue.</span>}
+        </div>
+      )}
 
-          {/* Stat tiles */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {tiles.map((tile) => (
-              <div key={tile.label} className={`rounded-2xl border p-4 ${tile.bg}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    {tile.label}
-                  </span>
-                  <tile.icon className={`w-4 h-4 ${tile.tone}`} />
-                </div>
-                <div className={`text-2xl font-black mt-1 ${tile.tone}`}>{tile.value}</div>
-              </div>
+      {/* Provider configuration warning if unconfigured */}
+      {(!providers.email || !providers.sms) && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-xs text-amber-900">
+            <strong className="block font-bold">
+              {!providers.email && !providers.sms
+                ? "No delivery channel is configured"
+                : `${!providers.email ? "Email" : "SMS"} delivery is not configured`}
+            </strong>
+            <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+              Messages are recorded and marked <strong>Skipped</strong>. Set{" "}
+              {!providers.sms && <code className="font-mono">SMS_USERNAME + SMS_PASSWORD</code>}{" "}
+              in <code className="font-mono">.env</code> to deliver live SMS messages.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {tiles.map((tile) => (
+          <div key={tile.label} className={`rounded-2xl border p-4 ${tile.bg}`}>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                {tile.label}
+              </span>
+              <tile.icon className={`w-4 h-4 ${tile.tone}`} />
+            </div>
+            <div className={`text-2xl font-black mt-1 ${tile.tone}`}>{tile.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Announcement composer with Live SMS Credit Estimator */}
+      {canSend && (
+        <SmsAnnouncementComposer
+          campuses={campuses}
+          classes={classes}
+          scopeCampusId={scope.campusId}
+          lockedCampus={scope.locked}
+        />
+      )}
+
+      {/* Filters */}
+      <form method="GET" className="flex flex-wrap items-end gap-3">
+        {scope.campusId && <input type="hidden" name="campus" value={scope.campusId} />}
+        <div>
+          <label className="block text-[11px] font-bold text-slate-600 mb-1">Status</label>
+          <select
+            name="status"
+            defaultValue={params.status || "ALL"}
+            className="bg-white border border-slate-200 rounded-lg p-2 text-xs font-semibold text-slate-800"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="DELIVERED">Delivered (✓✓)</option>
+            <option value="SENT">Sent (✓)</option>
+            <option value="PENDING">Queued</option>
+            <option value="FAILED">Failed / Undelivered (✗)</option>
+            <option value="SKIPPED">Skipped</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-bold text-slate-600 mb-1">Type</label>
+          <select
+            name="category"
+            defaultValue={params.category || "ALL"}
+            className="bg-white border border-slate-200 rounded-lg p-2 text-xs font-semibold text-slate-800"
+          >
+            <option value="ALL">All Types</option>
+            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
             ))}
-          </div>
+          </select>
+        </div>
 
-          {/* Announcement composer */}
-          {canSend && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-              <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-[#0F9D58]" />
-                <h2 className="text-sm font-black text-slate-900">Send an Announcement</h2>
-              </div>
+        <button
+          type="submit"
+          className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
+        >
+          Apply Filters
+        </button>
+      </form>
 
-              <form action={sendAnnouncement} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Campus</label>
-                    <select
-                      name="campusId"
-                      defaultValue={scope.campusId || "ALL"}
-                      disabled={scope.locked}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-70"
-                    >
-                      {!scope.locked && <option value="ALL">All Campuses</option>}
-                      {campuses.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Class</label>
-                    <select
-                      name="classId"
-                      defaultValue="ALL"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    >
-                      <option value="ALL">All Classes</option>
-                      {classes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Subject *</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    required
-                    maxLength={120}
-                    placeholder="e.g. Annual Day — 14 December"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Message *</label>
-                  <textarea
-                    name="message"
-                    required
-                    rows={4}
-                    maxLength={1000}
-                    placeholder="Keep it short — this is also sent as an SMS."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                      <input type="checkbox" name="channelEmail" defaultChecked className="accent-[#0F9D58]" />
-                      <Mail className="w-3.5 h-3.5 text-slate-400" /> Email
-                    </label>
-                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                      <input type="checkbox" name="channelSms" className="accent-[#0F9D58]" />
-                      <MessageSquare className="w-3.5 h-3.5 text-slate-400" /> SMS
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-lg bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5" /> Queue &amp; Send
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Filters */}
-          <form method="GET" className="flex flex-wrap items-end gap-3">
-            {scope.campusId && <input type="hidden" name="campus" value={scope.campusId} />}
-            <div>
-              <label className="block text-[11px] font-bold text-slate-600 mb-1">Status</label>
-              <select
-                name="status"
-                defaultValue={params.status || "ALL"}
-                className="bg-white border border-slate-200 rounded-lg p-2 text-xs font-semibold text-slate-800"
-              >
-                <option value="ALL">All</option>
-                <option value="SENT">Sent</option>
-                <option value="PENDING">Queued</option>
-                <option value="FAILED">Failed</option>
-                <option value="SKIPPED">Skipped</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-slate-600 mb-1">Type</label>
-              <select
-                name="category"
-                defaultValue={params.category || "ALL"}
-                className="bg-white border border-slate-200 rounded-lg p-2 text-xs font-semibold text-slate-800"
-              >
-                <option value="ALL">All</option>
-                {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
-            >
-              Apply
-            </button>
-          </form>
-
-          {/* Log table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <table className="w-full text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr className="text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="p-3">When</th>
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Channel</th>
-                  <th className="p-3">Recipient</th>
-                  <th className="p-3">Student</th>
-                  <th className="p-3">Status</th>
+      {/* Log table with Single / Double Tick Delivery Badges */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <table className="w-full text-xs">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr className="text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <th className="p-3">When</th>
+              <th className="p-3">Type</th>
+              <th className="p-3">Channel</th>
+              <th className="p-3">Recipient</th>
+              <th className="p-3">Student</th>
+              <th className="p-3">Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {notifications.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-12 text-center text-slate-400">
+                  No notifications recorded yet.
+                </td>
+              </tr>
+            ) : (
+              notifications.map((n) => (
+                <tr key={n.id} className="hover:bg-slate-50/60">
+                  <td className="p-3 text-slate-500 whitespace-nowrap">
+                    {formatDateTime(n.createdAt)}
+                  </td>
+                  <td className="p-3 font-semibold text-slate-800">
+                    {CATEGORY_LABELS[n.category] || n.category}
+                  </td>
+                  <td className="p-3">
+                    <span className="inline-flex items-center gap-1.5 text-slate-600 font-semibold">
+                      {n.channel === "EMAIL" ? (
+                        <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      ) : (
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                      )}
+                      {n.channel}
+                    </span>
+                  </td>
+                  <td className="p-3 font-mono text-[11px] text-slate-700 max-w-[200px] truncate">
+                    {n.recipient}
+                  </td>
+                  <td className="p-3 text-slate-600 font-medium">
+                    {n.student
+                      ? `${n.student.firstName} ${n.student.lastName}`
+                      : "—"}
+                  </td>
+                  <td className="p-3">
+                    <DeliveryStatusBadge
+                      status={n.status}
+                      channel={n.channel}
+                      error={n.error}
+                    />
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {notifications.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-12 text-center text-slate-400">
-                      No notifications recorded yet.
-                    </td>
-                  </tr>
-                ) : (
-                  notifications.map((n) => (
-                    <tr key={n.id} className="hover:bg-slate-50/60">
-                      <td className="p-3 text-slate-500 whitespace-nowrap">
-                        {formatDateTime(n.createdAt)}
-                      </td>
-                      <td className="p-3 font-semibold text-slate-800">
-                        {CATEGORY_LABELS[n.category] || n.category}
-                      </td>
-                      <td className="p-3">
-                        <span className="inline-flex items-center gap-1.5 text-slate-600">
-                          {n.channel === "EMAIL" ? (
-                            <Mail className="w-3.5 h-3.5 text-slate-400" />
-                          ) : (
-                            <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                          )}
-                          {n.channel}
-                        </span>
-                      </td>
-                      <td className="p-3 font-mono text-[11px] text-slate-700 max-w-[200px] truncate">
-                        {n.recipient}
-                      </td>
-                      <td className="p-3 text-slate-600">
-                        {n.student
-                          ? `${n.student.firstName} ${n.student.lastName}`
-                          : "—"}
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-full border text-[10px] font-bold ${
-                            STATUS_STYLES[n.status] || STATUS_STYLES.SKIPPED
-                          }`}
-                          title={n.error || undefined}
-                        >
-                          {n.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </main>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </main>
   );
 }
