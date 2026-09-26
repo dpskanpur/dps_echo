@@ -124,16 +124,16 @@ export function DocumentUploadSection({
       </div>
 
       {!readOnly && (
-        <div className="bg-slate-50 dark:bg-slate-900 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="flex-1">
-              <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+        <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+            <div className="flex-1 w-full sm:max-w-md">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Select Document Category
               </label>
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-dps-gold/50"
+                className="w-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 text-slate-900 dark:text-white shadow-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               >
                 {DOCUMENT_CATEGORIES.map((cat) => (
                   <option key={cat.type} value={cat.type}>
@@ -143,30 +143,32 @@ export function DocumentUploadSection({
               </select>
             </div>
 
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-md bg-slate-900 text-white hover:bg-slate-800 dark:bg-dps-gold dark:text-slate-950 dark:hover:bg-amber-400 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-3.5 h-3.5" />
-                    Upload File
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold rounded-lg bg-slate-900 text-white hover:bg-slate-800 dark:bg-dps-gold dark:text-slate-950 dark:hover:bg-amber-400 transition-all shadow-sm disabled:opacity-50 cursor-pointer h-[38px]"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-dps-gold" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  Upload Document
+                </>
+              )}
+            </button>
           </div>
 
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Supported formats: PDF, JPEG, PNG, WEBP (Max size: 10MB per file).
+          </p>
+
           {error && (
-            <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900">
+            <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 p-2.5 rounded-lg border border-red-200 dark:border-red-900 font-medium">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
