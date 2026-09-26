@@ -17,6 +17,7 @@
     "build:check": "NEXT_DIST_DIR=.next-build prisma generate && NEXT_DIST_DIR=.next-build next build"
   },
   "dependencies": {
+    "@google-cloud/storage": "^8.2.0",
     "@prisma/client": "^5.22.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",

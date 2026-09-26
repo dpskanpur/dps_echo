@@ -78,6 +78,7 @@ export async function registerStudent(formData: FormData): Promise<void> {
   const reasonLeavingPrevious = (formData.get("reasonLeavingPrevious") as string) || null;
   const previousMarksJson = (formData.get("previousMarksJson") as string) || null;
   const siblingsJson = (formData.get("siblingsJson") as string) || null;
+  const photoUrl = (formData.get("photoUrl") as string) || null;
 
   // Father's Details
   const fatherName = (formData.get("fatherName") as string) || "";
@@ -189,6 +190,7 @@ export async function registerStudent(formData: FormData): Promise<void> {
       reasonLeavingPrevious,
       previousMarksJson,
       siblingsJson,
+      photoUrl,
       campusId,
       classId,
       status: "REGISTERED",
@@ -832,6 +834,8 @@ export async function updateStudent(formData: FormData): Promise<void> {
   const motherEmail = (formData.get("motherEmail") as string) || "";
   const motherOccupation = (formData.get("motherOccupation") as string) || "";
 
+  const photoUrl = (formData.get("photoUrl") as string) || undefined;
+
   await prisma.student.update({
     where: { id: studentId },
     data: {
@@ -848,6 +852,7 @@ export async function updateStudent(formData: FormData): Promise<void> {
       aadhaarNo,
       studentMobile,
       studentEmail,
+      ...(photoUrl ? { photoUrl } : {}),
       currentAddress,
       currentPincode,
       permanentAddress,
