@@ -15,6 +15,7 @@ import {
   Users,
   Award,
   FileCheck,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
@@ -38,6 +39,9 @@ export default async function NewAdmissionPage({
   if (!permissions.modules.students.canUpdate && !permissions.isAdmin) {
     redirect("/students?error=unauthorized");
   }
+
+  const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
+  const isRegistrationOpen = settings?.isRegistrationOpen ?? true;
 
   const campuses = await prisma.campus.findMany({
     orderBy: { name: "asc" },
@@ -69,11 +73,17 @@ export default async function NewAdmissionPage({
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <ClipboardList className="w-6 h-6 text-emerald-800" />
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900">
                   Official DPS Registration Form
                 </h1>
+                {!isRegistrationOpen && (
+                  <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-extrabold border border-slate-300 flex items-center gap-1.5 shadow-xs">
+                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Registration Closed</span>
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 mt-1">
                 Digital counterpart of official DPS Kanpur paper Registration Form. Generates unique Registration ID (`REG-AZD-2026-XXXX`).
@@ -90,6 +100,8 @@ export default async function NewAdmissionPage({
           {/* OFFICIAL DPS REGISTRATION FORM */}
           <RegistrationFormWrapper action={registerStudent}>
             <input type="hidden" name="campusId" value={selectedCampus.id} />
+
+            <fieldset disabled={!isRegistrationOpen} className={!isRegistrationOpen ? "opacity-50 pointer-events-none select-none filter grayscale-[30%] space-y-6" : "space-y-6"}>
 
             {/* SECTION 1: TARGET CLASS & ACADEMIC PLACEMENT */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
@@ -445,6 +457,7 @@ export default async function NewAdmissionPage({
                 />
               </div>
             </div>
+            </fieldset>
 
             {/* Submit Registration Button */}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
@@ -456,10 +469,24 @@ export default async function NewAdmissionPage({
               </Link>
               <button
                 type="submit"
-                className="bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-8 rounded-xl text-xs transition shadow-md flex items-center gap-2 cursor-pointer"
+                disabled={!isRegistrationOpen}
+                className={
+                  !isRegistrationOpen
+                    ? "bg-slate-300 text-slate-500 font-bold py-3.5 px-8 rounded-xl text-xs flex items-center gap-2 cursor-not-allowed"
+                    : "bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white font-bold py-3.5 px-8 rounded-xl text-xs transition shadow-md flex items-center gap-2 cursor-pointer"
+                }
               >
-                <ClipboardList className="w-4 h-4" />
-                <span>Submit Registration & Issue Unique REG ID</span>
+                {isRegistrationOpen ? (
+                  <>
+                    <ClipboardList className="w-4 h-4" />
+                    <span>Submit Registration & Issue Unique REG ID</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Registration Closed for New Session</span>
+                  </>
+                )}
               </button>
             </div>
           </RegistrationFormWrapper>
