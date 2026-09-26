@@ -186,26 +186,6 @@ export default async function NotificationsPage({
           )}
         </div>
       )}
-
-      {/* Provider configuration warning if unconfigured */}
-      {(!providers.email || !providers.sms) && (
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-xs text-amber-900">
-            <strong className="block font-bold">
-              {!providers.email && !providers.sms
-                ? "No delivery channel is configured"
-                : `${!providers.email ? "Email" : "SMS"} delivery is not configured`}
-            </strong>
-            <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-              Messages are recorded and marked <strong>Skipped</strong>. Set{" "}
-              {!providers.sms && <code className="font-mono">SMS_USERNAME + SMS_PASSWORD</code>}{" "}
-              in <code className="font-mono">.env</code> to deliver live SMS messages.
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Stat tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {tiles.map((tile) => (
