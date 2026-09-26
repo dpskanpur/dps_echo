@@ -29,6 +29,9 @@ import {
   Pencil,
 } from "lucide-react";
 
+import { getLinkedSiblings } from "@/lib/promotion-actions";
+import { SiblingLinkCard } from "@/components/SiblingLinkCard";
+
 export const dynamic = "force-dynamic";
 
 export default async function StudentDetailPage({
@@ -61,6 +64,10 @@ export default async function StudentDetailPage({
       documents: true,
       transferCertificate: true,
       discounts: true,
+      promotionHistories: {
+        include: { fromCampus: true, toCampus: true },
+        orderBy: { createdAt: "desc" },
+      },
       invoices: {
         include: {
           items: { include: { feeHead: true } },
@@ -77,6 +84,8 @@ export default async function StudentDetailPage({
   if (!student) {
     notFound();
   }
+
+  const linkedSiblings = await getLinkedSiblings(student.id);
 
   const classes = await prisma.class.findMany({
     where: { campusId: student.campusId },
@@ -687,45 +696,93 @@ export default async function StudentDetailPage({
                   )}
                 </div>
               </div>
+
+              {/* Academic Session & Inter-Branch Transfer History */}
+              {student.promotionHistories && student.promotionHistories.length > 0 && (
+                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4 md:col-span-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-emerald-700" />
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+                      Academic Session Journey & Branch Transfer History
+                    </h3>
+                  </div>
+
+                  <div className="divide-y divide-slate-100">
+                    {student.promotionHistories.map((hist) => (
+                      <div key={hist.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl">
+                            {hist.fromSession} → {hist.toSession}
+                          </span>
+                          <div>
+                            <span className="font-bold text-slate-900">
+                              {hist.fromClassName} ({hist.fromCampus.code}) → {hist.toClassName} ({hist.toCampus.code})
+                            </span>
+                            <span className="text-[10px] text-slate-400 block mt-0.5 font-mono">
+                              Processed by {hist.promotedBy || "Admin"} on {formatDate(hist.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
+                          hist.action === "BRANCH_TRANSFER" ? "bg-purple-100 text-purple-950 border border-purple-200" : "bg-emerald-100 text-emerald-950 border border-emerald-200"
+                        }`}>
+                          {hist.action === "BRANCH_TRANSFER" ? "Inter-Branch Campus Transfer" : hist.action}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Tab 2: Family & Guardians */}
           {tab === "family" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {student.guardians.map((g) => (
-                <div key={g.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded">
-                      {g.relation}
-                    </span>
-                    {g.isPrimary && (
-                      <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded">
-                        Primary Contact
+            <div className="space-y-6">
+              {/* Sibling Linkage Card */}
+              <SiblingLinkCard
+                currentStudentId={student.id}
+                familyId={student.familyId}
+                initialSiblings={linkedSiblings}
+              />
+
+              {/* Guardians List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {student.guardians.map((g) => (
+                  <div key={g.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
+                        {g.relation}
                       </span>
-                    )}
-                  </div>
-                  <h4 className="text-base font-bold text-slate-900">{g.name}</h4>
-                  <div className="space-y-2 text-xs text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="font-mono">{g.phone}</span>
+                      {g.isPrimary && (
+                        <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full border border-slate-200">
+                          Primary Contact
+                        </span>
+                      )}
                     </div>
-                    {g.email && (
+                    <h4 className="text-base font-bold text-slate-900">{g.name}</h4>
+                    <div className="space-y-2 text-xs text-slate-600">
                       <div className="flex items-center gap-2">
-                        <Mail className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{g.email}</span>
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="font-mono">{g.phone}</span>
                       </div>
-                    )}
-                    {g.occupation && (
-                      <div className="flex items-center gap-2">
-                        <User className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{g.occupation} {g.organization ? `at ${g.organization}` : ""}</span>
-                      </div>
-                    )}
+                      {g.email && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{g.email}</span>
+                        </div>
+                      )}
+                      {g.occupation && (
+                        <div className="flex items-center gap-2">
+                          <User className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{g.occupation} {g.organization ? `at ${g.organization}` : ""}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
