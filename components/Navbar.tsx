@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { CampusSwitcher } from "./CampusSwitcher";
 import { SessionSwitcher } from "./SessionSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { LiveSearchInput } from "./LiveSearchInput";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { Search, UserCheck, LogOut, Shield, UserPlus, CreditCard, QrCode } from "lucide-react";
 import Link from "next/link";
@@ -90,14 +91,11 @@ export async function Navbar({
 
       {/* Right User, Theme Switcher & Quick Search */}
       <div className="flex items-center gap-3 md:gap-4">
-        <div className="relative hidden lg:block w-56">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-body dark:text-bodydark" />
-          <input
-            type="text"
-            placeholder="Quick search student or TC..."
-            className="w-full bg-whiten dark:bg-form-input text-xs border border-stroke dark:border-strokedark rounded-sm pl-9 pr-3 py-2 text-black dark:text-white placeholder-body dark:placeholder-bodydark focus:outline-none focus:border-dps-green dark:focus:border-dps-gold"
-          />
-        </div>
+        <LiveSearchInput
+          targetPath="/students"
+          placeholder="Search student by name or ID..."
+          className="hidden lg:flex w-64"
+        />
 
         {/* Dark Mode Theme Switcher */}
         <ThemeSwitcher />

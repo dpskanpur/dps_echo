@@ -35,7 +35,11 @@ export function Sidebar({
   const canStudents = permissions?.modules?.students?.canView ?? true;
   const canFees = permissions?.modules?.fees?.canView ?? true;
   const canTc = permissions?.modules?.tc?.canView ?? true;
-  const canAlumni = permissions?.modules?.alumni?.canView ?? true;
+  
+  const userCampusCode = (permissions?.campusCode || "").toUpperCase();
+  const isJuniorCampus = userCampusCode === "DPSKID" || userCampusCode === "KID" || userCampusCode === "DPSSRV" || userCampusCode === "SRV";
+  const canAlumni = (permissions?.modules?.alumni?.canView ?? true) && (!isJuniorCampus || permissions?.isAdmin);
+
   const canRbac = (permissions?.modules?.rbac?.canView || permissions?.isAdmin) ?? false;
   const canAudit = (permissions?.modules?.audit?.canView || permissions?.modules?.rbac?.canView || permissions?.isAdmin) ?? false;
   const canNotifications = (permissions?.modules?.notifications?.canView || permissions?.isAdmin) ?? false;

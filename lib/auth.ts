@@ -67,6 +67,15 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
   const matrix = emptyMatrix();
   const isAdminUser = isSuperAdminEmail(user.email) || user.role === "SUPER_ADMIN";
 
+  let campusCode: string | null = null;
+  if (user.campusId) {
+    const campusRec = await prisma.campus.findUnique({
+      where: { id: user.campusId },
+      select: { code: true },
+    });
+    campusCode = campusRec?.code || null;
+  }
+
   // Super Admin gets full wildcard access across all modules
   if (isAdminUser) {
     (Object.keys(matrix) as AppModuleId[]).forEach((mod) => {
@@ -82,6 +91,8 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
       isViewOnlyStudents: false,
       isViewOnlyFees: false,
       roleDisplayName: "Admin",
+      campusId: user.campusId || null,
+      campusCode,
     };
   }
 
@@ -118,6 +129,8 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
     isViewOnlyStudents,
     isViewOnlyFees,
     roleDisplayName: hasAnyAccess ? (user.role || "Staff Member") : "Access Pending (No Permissions)",
+    campusId: user.campusId || null,
+    campusCode,
   };
 }
 

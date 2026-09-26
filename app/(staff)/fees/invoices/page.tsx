@@ -8,6 +8,7 @@ import { Receipt, Search, Filter, CheckCircle2, Send } from "lucide-react";
 import { sendFeeReminder } from "@/lib/notification-actions";
 import { Pagination } from "@/components/Pagination";
 import { RecordPaymentModal } from "@/components/RecordPaymentModal";
+import { LiveSearchInput } from "@/components/LiveSearchInput";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -114,17 +115,11 @@ export default async function FeeInvoicesPage({
 
           {/* Filter Bar */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center gap-4">
-            <form method="GET" className="flex-1 relative">
-              {campusId && <input type="hidden" name="campus" value={campusId} />}
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input
-                type="text"
-                name="q"
-                defaultValue={q || ""}
-                placeholder="Search invoice number, student name or scholar ID..."
-                className="w-full bg-slate-50 text-xs border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </form>
+            <LiveSearchInput
+              defaultValue={q}
+              placeholder="Search invoice number, student name or scholar ID..."
+              className="flex-1"
+            />
 
             <form method="GET" className="flex items-center gap-2">
               {campusId && <input type="hidden" name="campus" value={campusId} />}
