@@ -118,7 +118,7 @@ export default async function AdminSettingsPage({
           </div>
 
           {/* Navigation Hub Tabs */}
-          <div className="bg-slate-200/80 p-1.5 rounded-2xl flex flex-wrap items-center gap-2 max-w-3xl">
+          <div className="bg-slate-200/80 p-1.5 rounded-2xl flex flex-wrap items-center gap-2 w-full">
             <Link
               href={`/admin/rbac?tab=system&campusId=${activeCampusId}`}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
@@ -219,7 +219,7 @@ export default async function AdminSettingsPage({
 
                 <form
                   action={createCampus}
-                  className="p-6 sm:p-8 pt-0 space-y-5 max-w-5xl border-t border-slate-100"
+                  className="p-6 sm:p-8 pt-0 space-y-5 w-full border-t border-slate-100"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
                     <div>
@@ -382,7 +382,7 @@ export default async function AdminSettingsPage({
 
               {/* Campus Configuration Form */}
               {selectedCampus && (
-                <form action={updateCampusSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8 max-w-5xl">
+                <form action={updateCampusSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8 w-full">
                   <input type="hidden" name="campusId" value={selectedCampus.id} />
 
                   {/* Header Badge */}
@@ -592,7 +592,7 @@ export default async function AdminSettingsPage({
 
           {/* TAB 3: DYNAMIC DIRECTORY COLUMNS */}
           {tab === "sessions" && canManageSessions && (
-            <div className="space-y-6 max-w-3xl">
+            <div className="space-y-6 w-full">
               {/* Active session */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-5">
                 <div>
@@ -686,7 +686,7 @@ export default async function AdminSettingsPage({
           )}
 
           {tab === "columns" && (
-            <div className="space-y-6 max-w-5xl">
+            <div className="space-y-6 w-full">
               {/* Form to Add New Column */}
               <form action={createDirectoryColumn} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
