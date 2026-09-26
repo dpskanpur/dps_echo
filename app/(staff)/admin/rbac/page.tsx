@@ -93,7 +93,7 @@ export default async function AdminSettingsPage({
                     Administration & Institutional Access Hub
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Configure school-specific registration fees, custom ID formats, staff RBAC permissions, and dynamic directory columns.
+                    Configure school-specific registration fees, custom ID formats, staff RBAC permissions, online payments, and communication channels.
                   </p>
                 </div>
               </div>
@@ -111,10 +111,6 @@ export default async function AdminSettingsPage({
                     ? `Campus ${selectedCampus?.name || ""} created successfully!`
                     : notice === "campus_updated"
                     ? `Settings for ${selectedCampus?.name || "Campus"} updated successfully!`
-                    : notice === "column_added"
-                    ? "New Directory Column added to Student Registry!"
-                    : notice === "column_deleted"
-                    ? "Directory Column deleted!"
                     : "Settings saved successfully!"}
                 </span>
               </div>
@@ -132,7 +128,7 @@ export default async function AdminSettingsPage({
               }`}
             >
               <Building2 className="w-4 h-4 text-emerald-800" />
-              <span>1. Settings & Fees</span>
+              <span>1. School Configurations &amp; Services</span>
             </Link>
 
             <Link
@@ -160,18 +156,6 @@ export default async function AdminSettingsPage({
                 <span>Academic Sessions</span>
               </Link>
             )}
-
-            <Link
-              href={`/admin/rbac?tab=columns&campusId=${activeCampusId}`}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
-                tab === "columns"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Columns className="w-4 h-4 text-emerald-800" />
-              <span>3. Dynamic Directory Columns</span>
-            </Link>
           </div>
 
           {/* TAB 1: SCHOOL-SPECIFIC CONFIGURATIONS */}
@@ -456,120 +440,123 @@ export default async function AdminSettingsPage({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80">
-                      {/* Online Fee Payment Radio Group */}
-                      <div className="bg-white p-4.5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4 text-emerald-800" />
-                          <span className="text-xs font-black text-slate-900">Online Fee Payment</span>
+                      {/* Online Fee Payment Toggle */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="w-4 h-4 text-emerald-800" />
+                              <span className="text-xs font-black text-slate-900">Online Fee Payment</span>
+                            </div>
+
+                            {/* Toggle Switch */}
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                name="isOnlinePaymentEnabled"
+                                value="true"
+                                defaultChecked={selectedCampus.isOnlinePaymentEnabled === true}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
+                            </label>
+                          </div>
+                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                            Razorpay online fee payment portal for parents of {selectedCampus.name}.
+                          </p>
                         </div>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          Razorpay online fee payment portal for parents of {selectedCampus.name}.
-                        </p>
-                        <div className="space-y-2 pt-1">
-                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
-                            <input
-                              type="radio"
-                              name="isOnlinePaymentEnabled"
-                              value="true"
-                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === true}
-                              className="accent-emerald-700 w-4 h-4"
-                            />
-                            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                              <span>Enabled</span>
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-rose-50/50 transition">
-                            <input
-                              type="radio"
-                              name="isOnlinePaymentEnabled"
-                              value="false"
-                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === false}
-                              className="accent-rose-600 w-4 h-4"
-                            />
-                            <span className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-rose-500" />
-                              <span>Disabled by Admin</span>
-                            </span>
-                          </label>
+
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Route</span>
+                          <span
+                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                              selectedCampus.isOnlinePaymentEnabled
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-rose-50 text-rose-800 border-rose-200"
+                            }`}
+                          >
+                            {selectedCampus.isOnlinePaymentEnabled ? "● Enabled" : "○ Disabled by Admin"}
+                          </span>
                         </div>
                       </div>
 
-                      {/* SMS Gateway Radio Group */}
-                      <div className="bg-white p-4.5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
-                        <div className="flex items-center gap-2">
-                          <MessageSquare className="w-4 h-4 text-emerald-800" />
-                          <span className="text-xs font-black text-slate-900">SMS Gateway Channel</span>
+                      {/* SMS Gateway Channel Toggle */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <MessageSquare className="w-4 h-4 text-emerald-800" />
+                              <span className="text-xs font-black text-slate-900">SMS Gateway Channel</span>
+                            </div>
+
+                            {/* Toggle Switch */}
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                name="isSmsEnabled"
+                                value="true"
+                                defaultChecked={selectedCampus.isSmsEnabled === true}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
+                            </label>
+                          </div>
+                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                            SMS delivery for notices, fee receipts &amp; alerts for {selectedCampus.name}.
+                          </p>
                         </div>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          SMS delivery for notices, fee receipts &amp; alerts for {selectedCampus.name}.
-                        </p>
-                        <div className="space-y-2 pt-1">
-                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
-                            <input
-                              type="radio"
-                              name="isSmsEnabled"
-                              value="true"
-                              defaultChecked={selectedCampus.isSmsEnabled === true}
-                              className="accent-emerald-700 w-4 h-4"
-                            />
-                            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                              <span>Enabled</span>
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-rose-50/50 transition">
-                            <input
-                              type="radio"
-                              name="isSmsEnabled"
-                              value="false"
-                              defaultChecked={selectedCampus.isSmsEnabled === false}
-                              className="accent-rose-600 w-4 h-4"
-                            />
-                            <span className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-rose-500" />
-                              <span>Disabled by Admin</span>
-                            </span>
-                          </label>
+
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Route</span>
+                          <span
+                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                              selectedCampus.isSmsEnabled
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-rose-50 text-rose-800 border-rose-200"
+                            }`}
+                          >
+                            {selectedCampus.isSmsEnabled ? "● Enabled" : "○ Disabled by Admin"}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Email Channel Radio Group */}
-                      <div className="bg-white p-4.5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-emerald-800" />
-                          <span className="text-xs font-black text-slate-900">Email Notification Channel</span>
+                      {/* Email Notification Channel Toggle */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-emerald-800" />
+                              <span className="text-xs font-black text-slate-900">Email Notification Channel</span>
+                            </div>
+
+                            {/* Toggle Switch */}
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                name="isEmailEnabled"
+                                value="true"
+                                defaultChecked={selectedCampus.isEmailEnabled === true}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
+                            </label>
+                          </div>
+                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                            Email notifications for admissions &amp; circulars for {selectedCampus.name}.
+                          </p>
                         </div>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          Email notifications for admissions &amp; circulars for {selectedCampus.name}.
-                        </p>
-                        <div className="space-y-2 pt-1">
-                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
-                            <input
-                              type="radio"
-                              name="isEmailEnabled"
-                              value="true"
-                              defaultChecked={selectedCampus.isEmailEnabled === true}
-                              className="accent-emerald-700 w-4 h-4"
-                            />
-                            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                              <span>Enabled</span>
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-rose-50/50 transition">
-                            <input
-                              type="radio"
-                              name="isEmailEnabled"
-                              value="false"
-                              defaultChecked={selectedCampus.isEmailEnabled === false}
-                              className="accent-rose-600 w-4 h-4"
-                            />
-                            <span className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-rose-500" />
-                              <span>Disabled by Admin</span>
-                            </span>
-                          </label>
+
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Route</span>
+                          <span
+                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                              selectedCampus.isEmailEnabled
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-rose-50 text-rose-800 border-rose-200"
+                            }`}
+                          >
+                            {selectedCampus.isEmailEnabled ? "● Enabled" : "○ Disabled by Admin"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -852,149 +839,6 @@ export default async function AdminSettingsPage({
                 <p className="text-[10px] text-slate-400">
                   April to March. Consecutive years only, e.g. 2027-2028.
                 </p>
-              </div>
-            </div>
-          )}
-
-          {tab === "columns" && (
-            <div className="space-y-6 w-full">
-              {/* Form to Add New Column */}
-              <form action={createDirectoryColumn} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                  <Plus className="w-5 h-5 text-emerald-800" />
-                  <h2 className="text-base font-black text-slate-900">
-                    Add New Dynamic Column for Student Directory
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Column Header Label *
-                    </label>
-                    <input
-                      type="text"
-                      name="label"
-                      required
-                      placeholder="e.g. Bus Route / PEN No / House"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Data Field Key
-                    </label>
-                    <input
-                      type="text"
-                      name="key"
-                      placeholder="e.g. transportRoute (Auto-generated if empty)"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Field Input Type
-                    </label>
-                    <select
-                      name="type"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    >
-                      <option value="text">Short Text</option>
-                      <option value="number">Number</option>
-                      <option value="select">Dropdown Select</option>
-                      <option value="date">Date</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="submit"
-                    className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition shadow-md flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Column to Directory</span>
-                  </button>
-                </div>
-              </form>
-
-              {/* List of Configured Directory Columns */}
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-                <div className="p-5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Columns className="w-4 h-4 text-emerald-800" />
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      Configured Dynamic Columns ({directoryColumns.length})
-                    </h3>
-                  </div>
-                </div>
-
-                {directoryColumns.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-500 space-y-2">
-                    <p>No custom dynamic columns created yet.</p>
-                    <p className="text-[11px] text-slate-400">
-                      Standard columns (Name, Reg/Scholar ID, Class, Section, Guardian Phone, Status) are enabled by default.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {directoryColumns.map((col) => (
-                      <div key={col.id} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-slate-900">{col.label}</span>
-                            <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">
-                              key: {col.key}
-                            </span>
-                            <span className="text-[10px] bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200 font-bold uppercase">
-                              {col.type}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <form action={toggleDirectoryColumnVisibility}>
-                            <input type="hidden" name="columnId" value={col.id} />
-                            <input type="hidden" name="isVisible" value={col.isVisibleInDirectory ? "true" : "false"} />
-                            <button
-                              type="submit"
-                              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition cursor-pointer ${
-                                col.isVisibleInDirectory
-                                  ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                              }`}
-                            >
-                              {col.isVisibleInDirectory ? (
-                                <>
-                                  <Eye className="w-3.5 h-3.5" />
-                                  <span>Visible in Directory</span>
-                                </>
-                              ) : (
-                                <>
-                                  <EyeOff className="w-3.5 h-3.5" />
-                                  <span>Hidden</span>
-                                </>
-                              )}
-                            </button>
-                          </form>
-
-                          <form action={deleteDirectoryColumn}>
-                            <input type="hidden" name="columnId" value={col.id} />
-                            <button
-                              type="submit"
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
-                              title="Delete Column"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </form>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           )}
