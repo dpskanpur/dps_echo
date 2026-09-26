@@ -13,6 +13,37 @@ const ALLOWED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_DOC_SIZE = 10 * 1024 * 1024; // 10 MB
 
+/**
+ * Validates binary file headers (magic bytes) to ensure file authenticity
+ */
+function validateMagicBytes(buffer: Buffer, targetType: string): boolean {
+  if (buffer.length < 12) return false;
+
+  const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  const isPng = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
+  const isWebp =
+    buffer[0] === 0x52 &&
+    buffer[1] === 0x49 &&
+    buffer[2] === 0x46 &&
+    buffer[3] === 0x46 &&
+    buffer[8] === 0x57 &&
+    buffer[9] === 0x45 &&
+    buffer[10] === 0x42 &&
+    buffer[11] === 0x50;
+
+  if (targetType === "PHOTO") {
+    return isJpeg || isPng || isWebp;
+  }
+
+  const isPdf =
+    buffer[0] === 0x25 && // %
+    buffer[1] === 0x50 && // P
+    buffer[2] === 0x44 && // D
+    buffer[3] === 0x46;   // F
+
+  return isJpeg || isPng || isWebp || isPdf;
+}
+
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
@@ -27,7 +58,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
     }
 
-    // Size & Type Validation
+    // Size & Extension Validation
     if (targetType === "PHOTO") {
       if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
         return NextResponse.json(
@@ -58,6 +89,15 @@ export async function POST(req: Request) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // Security Hardening: Binary Magic-Byte Inspection
+    const isValidSignature = validateMagicBytes(buffer, targetType);
+    if (!isValidSignature) {
+      return NextResponse.json(
+        { error: "Security Error: File binary content does not match allowed format signature." },
+        { status: 400 }
+      );
+    }
 
     let publicUrl: string = "";
     let destinationPath: string = "";
@@ -133,7 +173,7 @@ export async function POST(req: Request) {
   } catch (err: any) {
     console.error("Upload API Error:", err);
     return NextResponse.json(
-      { error: err?.message || "Failed to upload file." },
+      { error: "Failed to upload file due to an internal server error." },
       { status: 500 }
     );
   }

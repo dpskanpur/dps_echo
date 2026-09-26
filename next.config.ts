@@ -1,18 +1,44 @@
 import type { NextConfig } from "next";
 
+const securityHeaders = [
+  {
+    key: "X-DNS-Prefetch-Control",
+    value: "on",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  {
+    key: "X-Frame-Options",
+    value: "DENY",
+  },
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
-
-  // `next dev` and `next build` both write to .next by default, and they
-  // disagree about asset hashes. A build run while the dev server is up
-  // leaves manifests pointing at CSS chunks the other mode never emitted,
-  // which surfaces as a page rendering with no styles at all.
-  //
-  // Docker and Cloud Build keep the default, so the image layout is
-  // unchanged; a local verification build sets NEXT_DIST_DIR=.next-build
-  // and stays out of the dev cache entirely.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
