@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ShieldAlert, ToggleLeft, ToggleRight, Save, Info } from "lucide-react";
-import { updateChannelSettingsAction } from "@/lib/notification-actions";
+import { ShieldAlert, CheckCircle2, XCircle, Settings, MessageSquare, Mail } from "lucide-react";
+import Link from "next/link";
 
 interface AdminChannelTogglePanelProps {
   isSmsEnabled: boolean;
@@ -12,122 +11,53 @@ interface AdminChannelTogglePanelProps {
 }
 
 export function AdminChannelTogglePanel({
-  isSmsEnabled: initialSmsEnabled,
-  smsDisabledReason: initialSmsReason,
-  isEmailEnabled: initialEmailEnabled,
-  emailDisabledReason: initialEmailReason,
+  isSmsEnabled,
+  smsDisabledReason,
+  isEmailEnabled,
+  emailDisabledReason,
 }: AdminChannelTogglePanelProps) {
-  const [smsEnabled, setSmsEnabled] = useState(initialSmsEnabled);
-  const [smsReason, setSmsReason] = useState(initialSmsReason);
-  const [emailEnabled, setEmailEnabled] = useState(initialEmailEnabled);
-  const [emailReason, setEmailReason] = useState(initialEmailReason);
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <div className="bg-slate-900 text-white rounded-2xl border border-slate-800 shadow-md overflow-hidden">
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-800/60 transition"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
-            <ShieldAlert className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-xs font-black tracking-wide uppercase text-slate-200">
-              Admin Channel Control &amp; Maintenance Override
-            </h3>
-            <p className="text-[11px] text-slate-400">
-              Enable/Disable SMS &amp; Email channels institution-wide with custom status reasons.
-            </p>
-          </div>
+    <div className="bg-slate-900 text-white rounded-2xl border border-slate-800 p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+          <ShieldAlert className="w-4 h-4" />
         </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-[11px] font-bold">
-            <span className={smsEnabled ? "text-emerald-400" : "text-rose-400"}>
-              SMS: {smsEnabled ? "Active" : "Disabled"}
-            </span>
-            <span className="text-slate-600">•</span>
-            <span className={emailEnabled ? "text-emerald-400" : "text-rose-400"}>
-              Email: {emailEnabled ? "Active" : "Disabled"}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-          >
-            {isOpen ? "Hide Controls" : "Configure Controls"}
-          </button>
+        <div>
+          <h3 className="text-xs font-black tracking-wide uppercase text-slate-200">
+            Communication Channel Route Status
+          </h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Real-time route operational status. Service toggles are configured under Administration Settings.
+          </p>
         </div>
       </div>
 
-      {isOpen && (
-        <form action={updateChannelSettingsAction} className="p-5 border-t border-slate-800 bg-slate-950/60 space-y-4">
-          <input type="hidden" name="isSmsEnabled" value={smsEnabled ? "true" : "false"} />
-          <input type="hidden" name="isEmailEnabled" value={emailEnabled ? "true" : "false"} />
+      <div className="flex flex-wrap items-center gap-3">
+        {/* SMS Status */}
+        <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-bold">
+          <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+          <span>SMS Route:</span>
+          <span className={isSmsEnabled ? "text-emerald-400" : "text-rose-400"}>
+            {isSmsEnabled ? "Active" : "Disabled by Admin"}
+          </span>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* SMS Channel Controls */}
-            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-bold text-white flex items-center gap-2">
-                SMS Broadcast Channel
-              </span>
-              <button
-                type="button"
-                onClick={() => setSmsEnabled(!smsEnabled)}
-                className="flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
-              >
-                {smsEnabled ? (
-                  <span className="text-emerald-400 flex items-center gap-1">
-                    <ToggleRight className="w-6 h-6 text-emerald-400" /> Enabled
-                  </span>
-                ) : (
-                  <span className="text-rose-400 flex items-center gap-1">
-                    <ToggleLeft className="w-6 h-6 text-rose-400" /> Disabled by Admin
-                  </span>
-                )}
-              </button>
-            </div>
+        {/* Email Status */}
+        <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-bold">
+          <Mail className="w-3.5 h-3.5 text-slate-400" />
+          <span>Email Route:</span>
+          <span className={isEmailEnabled ? "text-emerald-400" : "text-rose-400"}>
+            {isEmailEnabled ? "Active" : "Disabled by Admin"}
+          </span>
+        </div>
 
-            {/* Email Channel Controls */}
-            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-bold text-white flex items-center gap-2">
-                Email Broadcast Channel
-              </span>
-              <button
-                type="button"
-                onClick={() => setEmailEnabled(!emailEnabled)}
-                className="flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
-              >
-                {emailEnabled ? (
-                  <span className="text-emerald-400 flex items-center gap-1">
-                    <ToggleRight className="w-6 h-6 text-emerald-400" /> Enabled
-                  </span>
-                ) : (
-                  <span className="text-rose-400 flex items-center gap-1">
-                    <ToggleLeft className="w-6 h-6 text-rose-400" /> Disabled by Admin
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-slate-500" />
-              Toggling a channel OFF immediately blocks sub-admins from queuing or sending messages on that channel.
-            </p>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition"
-            >
-              <Save className="w-3.5 h-3.5" /> Save Channel Controls
-            </button>
-          </div>
-        </form>
-      )}
+        <Link
+          href="/admin/rbac?tab=system"
+          className="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition flex items-center gap-1.5"
+        >
+          <Settings className="w-3.5 h-3.5" /> Manage in Admin Settings
+        </Link>
+      </div>
     </div>
   );
 }

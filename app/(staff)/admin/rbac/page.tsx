@@ -176,10 +176,8 @@ export default async function AdminSettingsPage({
           {/* TAB 1: SCHOOL-SPECIFIC CONFIGURATIONS */}
           {tab === "system" && (
             <div className="space-y-6">
-              {/* Institution-Wide & School-Wise Channel & Fee Controls Panel */}
+              {/* School-Wise Services & Communication Channels Control Matrix */}
               <AdminSystemTogglesPanel
-                masterIsOnlinePaymentEnabled={paymentSettings.masterIsOnlinePaymentEnabled}
-                masterOnlinePaymentDisabledReason={paymentSettings.masterOnlinePaymentDisabledReason}
                 campuses={paymentSettings.campuses}
                 canUpdate={permissions.isAdmin || permissions.modules.rbac.canUpdate}
               />
