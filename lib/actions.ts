@@ -41,6 +41,12 @@ async function assertStudentInScope(
 
 export async function registerStudent(formData: FormData): Promise<void> {
   const { user } = await requirePermission("students", "update");
+
+  const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
+  if (settings && settings.isRegistrationOpen === false) {
+    redirect("/students/new?error=registration_closed");
+  }
+
   // Current or future session only; a past session is refused.
   const admissionSession = await resolveAdmissionSession(
     formData.get("academicYearIn") as string
