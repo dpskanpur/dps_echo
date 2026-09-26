@@ -510,7 +510,7 @@ export default async function StudentDetailPage({
 
           {/* REGISTERED APPLICANT: 1-CLICK ADMISSION PROMOTION CARD */}
           {student.status === "REGISTERED" && (
-            <div className="bg-gradient-to-r from-emerald-900 via-emerald-850 to-teal-900 text-white rounded-3xl p-6 shadow-xl border border-emerald-800 space-y-4">
+            <div className="bg-gradient-to-r from-emerald-900 via-emerald-850 to-teal-900 text-white rounded-2xl p-6 shadow-lg border border-emerald-800 space-y-5 mt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider">
@@ -526,7 +526,7 @@ export default async function StudentDetailPage({
                 </div>
               </div>
 
-              <form action={promoteStudentToAdmission} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+              <form action={promoteStudentToAdmission} className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <input type="hidden" name="studentId" value={student.id} />
 
                 <div>
@@ -539,7 +539,7 @@ export default async function StudentDetailPage({
                   >
                     {student.class.sections?.map((sec) => (
                       <option key={sec.id} value={sec.id}>
-                        Section {sec.name} {sec.roomNo ? `(Room ${sec.roomNo})` : ""}
+                        Section {sec.name} {sec.roomNo ? `(${sec.roomNo.startsWith("Room") ? sec.roomNo : `Room ${sec.roomNo}`})` : ""}
                       </option>
                     )) || <option value="">No Section</option>}
                   </select>
