@@ -960,6 +960,13 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   const tagline = (formData.get("tagline") as string) || "";
   const website = (formData.get("website") as string) || "";
 
+  const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
+  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
+  const isSmsEnabled = formData.get("isSmsEnabled") === "true";
+  const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
+  const isEmailEnabled = formData.get("isEmailEnabled") === "true";
+  const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
+
   await prisma.campus.update({
     where: { id: campusId },
     data: {
@@ -973,6 +980,12 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
       affiliation,
       tagline,
       website,
+      isOnlinePaymentEnabled,
+      onlinePaymentDisabledReason,
+      isSmsEnabled,
+      smsDisabledReason,
+      isEmailEnabled,
+      emailDisabledReason,
     },
   });
 
@@ -985,11 +998,21 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
     action: "CAMPUS_SETTINGS_UPDATE",
     entityType: "Campus",
     entityId: campusId,
-    details: { activeAcademicYear, registrationFee, scholarIdPrefix },
+    details: {
+      activeAcademicYear,
+      registrationFee,
+      scholarIdPrefix,
+      isOnlinePaymentEnabled,
+      isSmsEnabled,
+      isEmailEnabled,
+    },
   });
 
   revalidatePath("/admin/rbac");
   revalidatePath("/campuses");
+  revalidatePath("/fees/razorpay");
+  revalidatePath("/notifications");
+  revalidatePath("/pay");
   revalidatePath("/students/new");
   revalidateTag(PUBLIC_REFERENCE_TAG);
   redirect(`/admin/rbac?tab=system&campusId=${campusId}&notice=campus_updated`);
