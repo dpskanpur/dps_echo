@@ -960,11 +960,11 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   const tagline = (formData.get("tagline") as string) || "";
   const website = (formData.get("website") as string) || "";
 
-  const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
+  const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true" || formData.get("isOnlinePaymentEnabled") === "on";
   const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
-  const isSmsEnabled = formData.get("isSmsEnabled") === "true";
+  const isSmsEnabled = formData.get("isSmsEnabled") === "true" || formData.get("isSmsEnabled") === "on";
   const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
-  const isEmailEnabled = formData.get("isEmailEnabled") === "true";
+  const isEmailEnabled = formData.get("isEmailEnabled") === "true" || formData.get("isEmailEnabled") === "on";
   const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
 
   await prisma.campus.update({
@@ -1220,6 +1220,18 @@ export async function createCampus(formData: FormData): Promise<void> {
       }
     }
   }
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name || undefined,
+    userRole: user.role,
+    campusCode: campus.code,
+    action: "CAMPUS_CREATE",
+    entityType: "Campus",
+    entityId: campus.id,
+    details: { code: campus.code, name: campus.name, activeAcademicYear, registrationFee },
+  });
 
   revalidateTag(PUBLIC_REFERENCE_TAG);
   revalidatePath("/admin/rbac");

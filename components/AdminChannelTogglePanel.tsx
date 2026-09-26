@@ -1,7 +1,6 @@
 "use client";
 
-import { ShieldAlert, CheckCircle2, XCircle, Settings, MessageSquare, Mail } from "lucide-react";
-import Link from "next/link";
+import { ShieldAlert, MessageSquare, Mail } from "lucide-react";
 
 interface AdminChannelTogglePanelProps {
   isSmsEnabled: boolean;
@@ -50,13 +49,6 @@ export function AdminChannelTogglePanel({
             {isEmailEnabled ? "Active" : "Disabled by Admin"}
           </span>
         </div>
-
-        <Link
-          href="/admin/rbac?tab=system"
-          className="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition flex items-center gap-1.5"
-        >
-          <Settings className="w-3.5 h-3.5" /> Manage in Admin Settings
-        </Link>
       </div>
     </div>
   );
