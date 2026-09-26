@@ -70,85 +70,47 @@ export function AdminChannelTogglePanel({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* SMS Channel Controls */}
-            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-2">
-                  SMS Broadcast Channel
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSmsEnabled(!smsEnabled)}
-                  className="flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
-                >
-                  {smsEnabled ? (
-                    <span className="text-emerald-400 flex items-center gap-1">
-                      <ToggleRight className="w-6 h-6 text-emerald-400" /> Enabled
-                    </span>
-                  ) : (
-                    <span className="text-rose-400 flex items-center gap-1">
-                      <ToggleLeft className="w-6 h-6 text-rose-400" /> Disabled
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {!smsEnabled && (
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-rose-300">
-                    Reason for Disabling (Visible to Staff) *
-                  </label>
-                  <input
-                    type="text"
-                    name="smsDisabledReason"
-                    value={smsReason}
-                    onChange={(e) => setSmsReason(e.target.value)}
-                    required={!smsEnabled}
-                    placeholder="e.g. SMS quota refill in progress until 5:00 PM"
-                    className="w-full bg-slate-950 border border-rose-900/60 rounded-lg p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
-              )}
+            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+              <span className="text-xs font-bold text-white flex items-center gap-2">
+                SMS Broadcast Channel
+              </span>
+              <button
+                type="button"
+                onClick={() => setSmsEnabled(!smsEnabled)}
+                className="flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
+              >
+                {smsEnabled ? (
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <ToggleRight className="w-6 h-6 text-emerald-400" /> Enabled
+                  </span>
+                ) : (
+                  <span className="text-rose-400 flex items-center gap-1">
+                    <ToggleLeft className="w-6 h-6 text-rose-400" /> Disabled by Admin
+                  </span>
+                )}
+              </button>
             </div>
 
             {/* Email Channel Controls */}
-            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-2">
-                  Email Broadcast Channel
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setEmailEnabled(!emailEnabled)}
-                  className="flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
-                >
-                  {emailEnabled ? (
-                    <span className="text-emerald-400 flex items-center gap-1">
-                      <ToggleRight className="w-6 h-6 text-emerald-400" /> Enabled
-                    </span>
-                  ) : (
-                    <span className="text-rose-400 flex items-center gap-1">
-                      <ToggleLeft className="w-6 h-6 text-rose-400" /> Disabled
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {!emailEnabled && (
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-rose-300">
-                    Reason for Disabling (Visible to Staff) *
-                  </label>
-                  <input
-                    type="text"
-                    name="emailDisabledReason"
-                    value={emailReason}
-                    onChange={(e) => setEmailReason(e.target.value)}
-                    required={!emailEnabled}
-                    placeholder="e.g. SMTP server maintenance by IT desk"
-                    className="w-full bg-slate-950 border border-rose-900/60 rounded-lg p-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
-              )}
+            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+              <span className="text-xs font-bold text-white flex items-center gap-2">
+                Email Broadcast Channel
+              </span>
+              <button
+                type="button"
+                onClick={() => setEmailEnabled(!emailEnabled)}
+                className="flex items-center gap-1.5 text-xs font-bold transition focus:outline-none"
+              >
+                {emailEnabled ? (
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <ToggleRight className="w-6 h-6 text-emerald-400" /> Enabled
+                  </span>
+                ) : (
+                  <span className="text-rose-400 flex items-center gap-1">
+                    <ToggleLeft className="w-6 h-6 text-rose-400" /> Disabled by Admin
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
