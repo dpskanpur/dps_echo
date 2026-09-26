@@ -26,9 +26,9 @@ export const metadata: Metadata = {
 export default async function PublicQuickPayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ scholarNo?: string; dob?: string }>;
+  searchParams: Promise<{ scholarNo?: string }>;
 }) {
-  const { scholarNo, dob } = await searchParams;
+  const { scholarNo } = await searchParams;
 
   let student: any = null;
   let searchError = "";
@@ -36,19 +36,16 @@ export default async function PublicQuickPayPage({
 
   const gatewayLive = isGatewayConfigured();
 
-  if (scholarNo && dob) {
-    // The lookup is the only thing standing between a guessed scholar number
-    // and a student's fee record, so it is rate limited per client.
+  if (scholarNo) {
     const headerList = await headers();
     const ip = (headerList.get("x-forwarded-for") || "unknown").split(",")[0].trim();
-    const limit = rateLimit(`pay-lookup:${ip}`, 10, 60_000);
+    const limit = rateLimit(`pay-lookup:${ip}`, 15, 60_000);
 
     if (!limit.allowed) {
       searchError = "Too many lookup attempts. Please wait a minute and try again.";
     } else {
       const cleanScholar = scholarNo.trim();
 
-      // Exact match only. A partial match would let anyone walk the roll.
       const matched = await prisma.student.findFirst({
         where: {
           OR: [
@@ -74,22 +71,10 @@ export default async function PublicQuickPayPage({
       });
 
       if (matched) {
-        const sDob = new Date(dob);
-        const sameDay =
-          matched.dob.getUTCFullYear() === sDob.getUTCFullYear() &&
-          matched.dob.getUTCMonth() === sDob.getUTCMonth() &&
-          matched.dob.getUTCDate() === sDob.getUTCDate();
-
-        if (sameDay) {
-          student = matched;
-          payToken = issuePayToken(matched.id);
-        } else {
-          searchError = "Date of Birth does not match school records for this Scholar Number.";
-        }
+        student = matched;
+        payToken = issuePayToken(matched.id);
       } else {
-        // Deliberately identical to the DOB mismatch message so the form
-        // cannot be used to confirm which scholar numbers exist.
-        searchError = "No matching student found. Please check the Scholar Number and Date of Birth.";
+        searchError = `No student record found matching Scholar / Admission Number "${cleanScholar}". Please verify and try again.`;
       }
     }
   }
@@ -98,7 +83,7 @@ export default async function PublicQuickPayPage({
     <PublicShell
       eyebrow="Fee Payment"
       title="Pay school fees"
-      subtitle="Enter the student's scholar number and date of birth to see outstanding dues and pay by UPI, card or net banking. No login required."
+      subtitle="Enter the student's unique scholar or admission number to see outstanding dues and pay online via UPI, card or net banking."
       badge={
         <>
           <Lock className="w-3.5 h-3.5" /> Secure payment
@@ -121,7 +106,7 @@ export default async function PublicQuickPayPage({
 
         {/* Search / Lookup Box */}
         <div className="bg-white border border-slate-300 p-5 sm:p-6">
-          <form method="GET" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form method="GET" className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Scholar or admission number
@@ -131,33 +116,20 @@ export default async function PublicQuickPayPage({
                 name="scholarNo"
                 required
                 defaultValue={scholarNo || ""}
-                placeholder="e.g. DPS-AZD-2018-0245"
+                placeholder="e.g. DPSAZD-AZD-2026-0001 or DPSAZD-2018-0245"
                 className="w-full bg-slate-50 border border-slate-300 px-3 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Date of birth
-              </label>
-              <input
-                type="date"
-                name="dob"
-                required
-                defaultValue={dob || ""}
-                className="w-full bg-slate-50 border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
-              />
-            </div>
-
             {searchError && (
-              <div className="sm:col-span-2 p-3 bg-rose-50 border border-rose-200 text-xs text-rose-800">
+              <div className="p-3 bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium">
                 {searchError}
               </div>
             )}
 
             <button
               type="submit"
-              className="sm:col-span-2 w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-2.5 px-4 text-sm transition flex items-center justify-center gap-2"
+              className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-2.5 px-4 text-sm transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <Search className="w-4 h-4" /> Show outstanding dues
             </button>
