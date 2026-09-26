@@ -168,7 +168,7 @@ export function Sidebar({
               <SidebarLink
                 href="/fees/razorpay"
                 icon={CreditCard}
-                label="Razorpay Settings"
+                label="Razorpay"
                 active={pathname.startsWith("/fees/razorpay")}
               />
             </div>
