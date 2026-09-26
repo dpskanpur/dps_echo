@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Megaphone, Send, Mail, MessageSquare, AlertCircle, Info, Calculator, CheckCircle2 } from "lucide-react";
 import { sendAnnouncement } from "@/lib/notification-actions";
 import { calculateSmsCredits, SmsCreditEstimate } from "@/lib/sms-calculator";
@@ -36,12 +37,27 @@ export function SmsAnnouncementComposer({
   isEmailEnabled = true,
   emailDisabledReason = "",
 }: SmsAnnouncementComposerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sendEmail, setSendEmail] = useState(isEmailEnabled);
   const [sendSms, setSendSms] = useState(isSmsEnabled);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const handleCampusSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCampusId = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    if (newCampusId && newCampusId !== "ALL") {
+      params.set("campus", newCampusId);
+    } else {
+      params.delete("campus");
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   // Estimate SMS credits locally
   // Assuming estimated recipient count per class ~ 40, or 200 for campus, or 1000 for all
@@ -86,7 +102,8 @@ export function SmsAnnouncementComposer({
             <label className="block text-xs font-bold text-slate-700 mb-1">Campus</label>
             <select
               name="campusId"
-              defaultValue={scopeCampusId || "ALL"}
+              value={scopeCampusId || "ALL"}
+              onChange={handleCampusSelectChange}
               disabled={lockedCampus}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-70"
             >
