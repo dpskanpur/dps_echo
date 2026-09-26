@@ -6,9 +6,18 @@
  * page-data collection step.
  */
 
-export const FEE_FREQUENCIES = ["ONE_TIME", "ANNUAL", "QUARTERLY", "MONTHLY"] as const;
+export const FEE_FREQUENCIES = ["ANNUAL", "SEMI_ANNUAL", "QUARTERLY", "CUSTOM"] as const;
 
-export type FeeFrequency = (typeof FEE_FREQUENCIES)[number];
+export type FeeFrequency = (typeof FEE_FREQUENCIES)[number] | "ONE_TIME" | "MONTHLY";
+
+export const FEE_FREQUENCY_LABELS: Record<string, string> = {
+  ANNUAL: "Annual / One time",
+  SEMI_ANNUAL: "Semi Annual",
+  QUARTERLY: "Quarterly",
+  CUSTOM: "Custom (Part Payment)",
+  ONE_TIME: "Annual / One time",
+  MONTHLY: "Monthly",
+};
 
 export interface FeeStructureImportRow {
   className: string;

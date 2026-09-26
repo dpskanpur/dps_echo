@@ -10,7 +10,7 @@ import {
   updateFeeHead,
   deleteFeeHead,
 } from "@/lib/fee-structure-actions";
-import { FEE_FREQUENCIES } from "@/lib/fee-constants";
+import { FEE_FREQUENCIES, FEE_FREQUENCY_LABELS } from "@/lib/fee-constants";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
@@ -260,7 +260,7 @@ export default async function FeeStructuresPage({
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
                     >
                       {FEE_FREQUENCIES.map((f) => (
-                        <option key={f} value={f}>{f.replace("_", " ")}</option>
+                        <option key={f} value={f}>{FEE_FREQUENCY_LABELS[f] || f.replace("_", " ")}</option>
                       ))}
                     </select>
                   </div>
