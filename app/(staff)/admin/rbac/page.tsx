@@ -29,6 +29,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
+import { AdminServiceToggleCards } from "@/components/AdminServiceToggleCards";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
 import { getOnlinePaymentSettings } from "@/lib/fee-settings-actions";
@@ -427,152 +428,14 @@ export default async function AdminSettingsPage({
                     </div>
                   </div>
 
-                  {/* SECTION 1: SCHOOL-WISE SERVICE & CHANNEL CONTROLS (RADIO BUTTONS) */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-800">
-                        <Sliders className="w-4 h-4" />
-                        <span>1. Services &amp; Gateway Controls ({selectedCampus.code})</span>
-                      </h3>
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        School-level enable / disable controls
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80">
-                      {/* Online Fee Payment Toggle Card */}
-                      <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                          <CreditCard className="w-4 h-4 text-emerald-800" />
-                          <span className="text-xs font-black text-slate-900">Online Fee Payment</span>
-                        </div>
-
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          Razorpay online fee payment portal for parents of {selectedCampus.name}.
-                        </p>
-
-                        <div className="space-y-2.5 pt-1">
-                          {/* Option 1: Enabled */}
-                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-emerald-50/90 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                              <span className="text-xs font-bold text-emerald-950">Enabled</span>
-                            </div>
-                            <input
-                              type="radio"
-                              name="isOnlinePaymentEnabled"
-                              value="true"
-                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === true}
-                              className="accent-emerald-600 w-4 h-4 cursor-pointer"
-                            />
-                          </label>
-
-                          {/* Option 2: Disabled by Admin */}
-                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-rose-50/90 has-[:checked]:border-rose-500 has-[:checked]:text-rose-950 has-[:checked]:shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                              <span className="text-xs font-bold text-rose-950">Disabled by Admin</span>
-                            </div>
-                            <input
-                              type="radio"
-                              name="isOnlinePaymentEnabled"
-                              value="false"
-                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === false}
-                              className="accent-rose-600 w-4 h-4 cursor-pointer"
-                            />
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* SMS Gateway Channel Toggle Card */}
-                      <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                          <MessageSquare className="w-4 h-4 text-emerald-800" />
-                          <span className="text-xs font-black text-slate-900">SMS Gateway Channel</span>
-                        </div>
-
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          SMS delivery for notices, fee receipts &amp; alerts for {selectedCampus.name}.
-                        </p>
-
-                        <div className="space-y-2.5 pt-1">
-                          {/* Option 1: Enabled */}
-                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-emerald-50/90 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                              <span className="text-xs font-bold text-emerald-950">Enabled</span>
-                            </div>
-                            <input
-                              type="radio"
-                              name="isSmsEnabled"
-                              value="true"
-                              defaultChecked={selectedCampus.isSmsEnabled === true}
-                              className="accent-emerald-600 w-4 h-4 cursor-pointer"
-                            />
-                          </label>
-
-                          {/* Option 2: Disabled by Admin */}
-                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-rose-50/90 has-[:checked]:border-rose-500 has-[:checked]:text-rose-950 has-[:checked]:shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                              <span className="text-xs font-bold text-rose-950">Disabled by Admin</span>
-                            </div>
-                            <input
-                              type="radio"
-                              name="isSmsEnabled"
-                              value="false"
-                              defaultChecked={selectedCampus.isSmsEnabled === false}
-                              className="accent-rose-600 w-4 h-4 cursor-pointer"
-                            />
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Email Notification Channel Toggle Card */}
-                      <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
-                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                          <Mail className="w-4 h-4 text-emerald-800" />
-                          <span className="text-xs font-black text-slate-900">Email Notification Channel</span>
-                        </div>
-
-                        <p className="text-[11px] text-slate-500 leading-relaxed">
-                          Email notifications for admissions &amp; circulars for {selectedCampus.name}.
-                        </p>
-
-                        <div className="space-y-2.5 pt-1">
-                          {/* Option 1: Enabled */}
-                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-emerald-50/90 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                              <span className="text-xs font-bold text-emerald-950">Enabled</span>
-                            </div>
-                            <input
-                              type="radio"
-                              name="isEmailEnabled"
-                              value="true"
-                              defaultChecked={selectedCampus.isEmailEnabled === true}
-                              className="accent-emerald-600 w-4 h-4 cursor-pointer"
-                            />
-                          </label>
-
-                          {/* Option 2: Disabled by Admin */}
-                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-rose-50/90 has-[:checked]:border-rose-500 has-[:checked]:text-rose-950 has-[:checked]:shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                              <span className="text-xs font-bold text-rose-950">Disabled by Admin</span>
-                            </div>
-                            <input
-                              type="radio"
-                              name="isEmailEnabled"
-                              value="false"
-                              defaultChecked={selectedCampus.isEmailEnabled === false}
-                              className="accent-rose-600 w-4 h-4 cursor-pointer"
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* SECTION 1: SCHOOL-WISE SERVICE & CHANNEL CONTROLS (SLIDING TOGGLES) */}
+                  <AdminServiceToggleCards
+                    campusName={selectedCampus.name}
+                    campusCode={selectedCampus.code}
+                    isOnlinePaymentEnabled={selectedCampus.isOnlinePaymentEnabled}
+                    isSmsEnabled={selectedCampus.isSmsEnabled}
+                    isEmailEnabled={selectedCampus.isEmailEnabled}
+                  />
 
                   {/* SECTION 2: ADMISSION & FEE CONFIGURATION */}
                   <div className="space-y-4">
