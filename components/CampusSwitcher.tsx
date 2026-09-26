@@ -10,20 +10,27 @@ interface CampusOption {
 }
 
 /**
- * Pages whose records belong to exactly one campus. Fee structures, fee heads
- * and admissions are defined per school, so a combined view would show one
- * campus's data under a label claiming to show all of them.
+ * Pages whose records belong to strictly one campus. Fee structures, defaulters,
+ * invoices/ledgers and notifications are managed per school.
  */
-const SINGLE_CAMPUS_PATHS = ["/fees/structures", "/students/new", "/notifications"];
+const SINGLE_CAMPUS_PATHS = [
+  "/fees/defaulters",
+  "/fees/invoices",
+  "/fees/structures",
+  "/students/new",
+  "/notifications",
+];
 
 export function CampusSwitcher({ campuses }: { campuses: CampusOption[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const azadNagar =
+    campuses.find((c) => c.code === "AZD" || c.code === "DPSAZD") || campuses[0];
   const requiresOneCampus = SINGLE_CAMPUS_PATHS.some((p) => pathname.startsWith(p));
   const selectedCampusId =
-    searchParams.get("campus") ?? (requiresOneCampus ? campuses[0]?.id : null);
+    searchParams.get("campus") ?? (requiresOneCampus ? azadNagar?.id : null);
 
   const handleCampusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCampusId = e.target.value;

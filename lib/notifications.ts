@@ -516,7 +516,7 @@ export async function dispatchPendingNotifications(limit = 100): Promise<{
 }
 
 /** Which channels are actually wired up & admin status. */
-export async function getProviderStatus(): Promise<{
+export async function getProviderStatus(campusId?: string): Promise<{
   email: boolean;
   sms: boolean;
   isSmsEnabled: boolean;
@@ -525,12 +525,43 @@ export async function getProviderStatus(): Promise<{
   emailDisabledReason: string;
 }> {
   const channelSettings = await getChannelSettings();
+
+  let isSmsEnabled = channelSettings.isSmsEnabled;
+  let smsDisabledReason = channelSettings.smsDisabledReason;
+  let isEmailEnabled = channelSettings.isEmailEnabled;
+  let emailDisabledReason = channelSettings.emailDisabledReason;
+
+  if (campusId && campusId !== "ALL") {
+    const campus = await prisma.campus.findFirst({
+      where: {
+        OR: [{ id: campusId }, { code: campusId }, { scholarIdPrefix: campusId }],
+      },
+    });
+    if (campus) {
+      if (!campus.isSmsEnabled) {
+        isSmsEnabled = false;
+        smsDisabledReason = campus.smsDisabledReason || "Disabled";
+      }
+      if (!campus.isEmailEnabled) {
+        isEmailEnabled = false;
+        emailDisabledReason = campus.emailDisabledReason || "Disabled";
+      }
+    }
+  }
+
+  const hasEmailEnv = !!(process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL_FROM);
+  const hasSmsEnv = !!(
+    (process.env.SMS_USERNAME && process.env.SMS_PASSWORD) ||
+    process.env.MSG91_AUTH_KEY ||
+    process.env.SMS_GATEWAY_URL
+  );
+
   return {
-    email: !!(process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL_FROM),
-    sms: !!(process.env.SMS_USERNAME && process.env.SMS_PASSWORD),
-    isSmsEnabled: channelSettings.isSmsEnabled,
-    smsDisabledReason: channelSettings.smsDisabledReason,
-    isEmailEnabled: channelSettings.isEmailEnabled,
-    emailDisabledReason: channelSettings.emailDisabledReason,
+    email: hasEmailEnv && isEmailEnabled,
+    sms: hasSmsEnv && isSmsEnabled,
+    isSmsEnabled,
+    smsDisabledReason,
+    isEmailEnabled,
+    emailDisabledReason,
   };
 }
