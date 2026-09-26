@@ -163,16 +163,38 @@ export default async function DefaultersPage({
         </div>
       )}
 
-      {noProviders && canNotify && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 flex items-start gap-3 text-xs text-amber-950">
-          <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
-          <div>
-            <span className="font-bold">No messaging provider is configured.</span>{" "}
-            <span className="font-medium">
-              Reminders will be recorded in the notification log but not actually delivered until
-              the email (RESEND_API_KEY, NOTIFY_EMAIL_FROM) or SMS (MSG91_AUTH_KEY,
-              MSG91_SENDER_ID) credentials are set.
-            </span>
+      {canNotify && (
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+          <div className="flex items-center gap-2 text-slate-700 font-semibold">
+            <MessageSquare className="w-4 h-4 text-slate-500" />
+            <span>Messaging Dispatch Channels:</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold ${
+                providers.email
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-slate-100 border-slate-200 text-slate-600"
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${providers.email ? "bg-emerald-500" : "bg-slate-400"}`}
+              />
+              <span>Email: {providers.email ? "Enabled & Connected" : "Disabled"}</span>
+            </div>
+
+            <div
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold ${
+                providers.sms
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-slate-100 border-slate-200 text-slate-600"
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${providers.sms ? "bg-emerald-500" : "bg-slate-400"}`}
+              />
+              <span>SMS: {providers.sms ? "Enabled & Connected" : "Disabled"}</span>
+            </div>
           </div>
         </div>
       )}
