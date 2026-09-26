@@ -106,8 +106,8 @@ export default async function RazorpaySettingsPage({
 
         {canUpdate && (
           <form action={updateMasterOnlinePaymentAction} className="space-y-4 pt-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-              <div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+              <div className="flex-1">
                 <label className="block text-xs font-bold text-slate-300 mb-1">
                   Master Payment Status Toggle
                 </label>
@@ -117,31 +117,18 @@ export default async function RazorpaySettingsPage({
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="true">Enable Online Fees Institution-Wide (Active)</option>
-                  <option value="false">Disable Online Fees Institution-Wide (Disabled)</option>
+                  <option value="false">Disable Online Fees Institution-Wide (Disabled by Admin)</option>
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Master Disablement Reason (Shown to Parents)
-                </label>
-                <input
-                  type="text"
-                  name="onlinePaymentDisabledReason"
-                  defaultValue={masterOnlinePaymentDisabledReason}
-                  placeholder="e.g. Annual bank reconciliation in progress until 6:00 PM"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+              <div className="flex justify-end sm:self-end">
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm"
+                >
+                  <Save className="w-3.5 h-3.5" /> Save Master Override
+                </button>
               </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm"
-              >
-                <Save className="w-3.5 h-3.5" /> Save Master Override
-              </button>
             </div>
           </form>
         )}
@@ -210,21 +197,6 @@ export default async function RazorpaySettingsPage({
                         <option value="false">Disable Online Fees for this Campus</option>
                       </select>
                     </div>
-
-                    {!campus.isOnlinePaymentEnabled && (
-                      <div>
-                        <label className="block text-xs font-bold text-rose-700 mb-1">
-                          Disabled Reason for {campus.name} *
-                        </label>
-                        <input
-                          type="text"
-                          name="onlinePaymentDisabledReason"
-                          defaultValue={campus.onlinePaymentDisabledReason || ""}
-                          placeholder="e.g. Bank account reconciliation in progress for Barra campus"
-                          className="w-full bg-slate-50 border border-rose-300 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600"
-                        />
-                      </div>
-                    )}
 
                     <div className="pt-2 border-t border-slate-100 space-y-3">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
@@ -327,18 +299,6 @@ export default async function RazorpaySettingsPage({
                         <option value="false">Disabled for this School</option>
                       </select>
                     </div>
-
-                    {!campus.isSmsEnabled && (
-                      <div>
-                        <input
-                          type="text"
-                          name="smsDisabledReason"
-                          defaultValue={campus.smsDisabledReason || ""}
-                          placeholder={`Reason for disabling SMS at ${campus.name}`}
-                          className="w-full bg-white border border-rose-300 rounded-lg p-2 text-xs text-slate-900 focus:outline-none"
-                        />
-                      </div>
-                    )}
                   </div>
 
                   {/* Email Control */}
@@ -357,18 +317,6 @@ export default async function RazorpaySettingsPage({
                         <option value="false">Disabled for this School</option>
                       </select>
                     </div>
-
-                    {!campus.isEmailEnabled && (
-                      <div>
-                        <input
-                          type="text"
-                          name="emailDisabledReason"
-                          defaultValue={campus.emailDisabledReason || ""}
-                          placeholder={`Reason for disabling Email at ${campus.name}`}
-                          className="w-full bg-white border border-rose-300 rounded-lg p-2 text-xs text-slate-900 focus:outline-none"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
 

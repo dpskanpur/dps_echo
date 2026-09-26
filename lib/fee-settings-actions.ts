@@ -45,7 +45,7 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
   const { user } = await requirePermission("fees", "update");
 
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
-  const onlinePaymentDisabledReason = ((formData.get("onlinePaymentDisabledReason") as string) || "").trim();
+  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
 
   await prisma.systemSettings.upsert({
     where: { id: "global" },
@@ -70,7 +70,7 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
     entityId: "global",
     details: {
       isOnlinePaymentEnabled,
-      onlinePaymentDisabledReason: isOnlinePaymentEnabled ? "" : onlinePaymentDisabledReason,
+      onlinePaymentDisabledReason,
     },
   });
 
@@ -85,7 +85,7 @@ export async function updateCampusOnlinePaymentAction(formData: FormData): Promi
 
   const campusId = ((formData.get("campusId") as string) || "").trim();
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
-  const onlinePaymentDisabledReason = ((formData.get("onlinePaymentDisabledReason") as string) || "").trim();
+  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
   const razorpayKeyId = ((formData.get("razorpayKeyId") as string) || "").trim();
   const razorpayKeySecret = ((formData.get("razorpayKeySecret") as string) || "").trim();
 
@@ -97,7 +97,7 @@ export async function updateCampusOnlinePaymentAction(formData: FormData): Promi
     where: { id: campusId },
     data: {
       isOnlinePaymentEnabled,
-      onlinePaymentDisabledReason: isOnlinePaymentEnabled ? "" : onlinePaymentDisabledReason,
+      onlinePaymentDisabledReason,
       ...(razorpayKeyId ? { razorpayKeyId } : {}),
       ...(razorpayKeySecret ? { razorpayKeySecret } : {}),
     },
@@ -115,7 +115,7 @@ export async function updateCampusOnlinePaymentAction(formData: FormData): Promi
     details: {
       campusName: updated.name,
       isOnlinePaymentEnabled,
-      onlinePaymentDisabledReason: isOnlinePaymentEnabled ? "" : onlinePaymentDisabledReason,
+      onlinePaymentDisabledReason,
       hasCustomKey: !!updated.razorpayKeyId,
     },
   });
@@ -131,9 +131,9 @@ export async function updateCampusChannelAction(formData: FormData): Promise<voi
 
   const campusId = ((formData.get("campusId") as string) || "").trim();
   const isSmsEnabled = formData.get("isSmsEnabled") === "true";
-  const smsDisabledReason = ((formData.get("smsDisabledReason") as string) || "").trim();
+  const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
   const isEmailEnabled = formData.get("isEmailEnabled") === "true";
-  const emailDisabledReason = ((formData.get("emailDisabledReason") as string) || "").trim();
+  const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
 
   if (!campusId) {
     throw new Error("Campus ID is required.");
@@ -143,9 +143,9 @@ export async function updateCampusChannelAction(formData: FormData): Promise<voi
     where: { id: campusId },
     data: {
       isSmsEnabled,
-      smsDisabledReason: isSmsEnabled ? "" : smsDisabledReason,
+      smsDisabledReason,
       isEmailEnabled,
-      emailDisabledReason: isEmailEnabled ? "" : emailDisabledReason,
+      emailDisabledReason,
     },
   });
 
@@ -161,9 +161,9 @@ export async function updateCampusChannelAction(formData: FormData): Promise<voi
     details: {
       campusName: updated.name,
       isSmsEnabled,
-      smsDisabledReason: isSmsEnabled ? "" : smsDisabledReason,
+      smsDisabledReason,
       isEmailEnabled,
-      emailDisabledReason: isEmailEnabled ? "" : emailDisabledReason,
+      emailDisabledReason,
     },
   });
 
