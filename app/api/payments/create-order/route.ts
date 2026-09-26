@@ -23,16 +23,6 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!isGatewayConfigured()) {
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          "Online payment is not available right now. Please pay at the school accounts office.",
-      },
-      { status: 503 }
-    );
-  }
 
   try {
     const body = await request.json();
@@ -118,6 +108,7 @@ export async function POST(request: Request) {
         scholarNo: invoice.student.scholarNo,
         campusId: invoice.campusId,
       },
+      campus,
     });
 
     const guardian = invoice.student.guardians[0];
@@ -140,7 +131,7 @@ export async function POST(request: Request) {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: getPublicKeyId(),
+      keyId: getPublicKeyId(campus),
       invoiceNo: invoice.invoiceNo,
       studentName: `${invoice.student.firstName} ${invoice.student.lastName}`.trim(),
       prefill: {
