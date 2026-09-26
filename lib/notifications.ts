@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { httpRequest } from "@/lib/http";
+import { sendSMS } from "@/lib/sms";
 
 /**
  * Notification dispatch.
@@ -373,34 +374,34 @@ async function sendEmail(to: string, subject: string, body: string): Promise<Sen
     return { ok: false, provider: "RESEND", error: err?.message || "Network error" };
   }
 }
-
+ 
 async function sendSms(to: string, body: string): Promise<SendOutcome> {
-  const authKey = process.env.MSG91_AUTH_KEY;
-  const senderId = process.env.MSG91_SENDER_ID;
+  const username = process.env.SMS_USERNAME;
+  const password = process.env.SMS_PASSWORD;
 
-  if (!authKey || !senderId) {
-    return { ok: false, skipped: true, provider: "CONSOLE", error: "SMS provider not configured." };
+  if (!username || !password) {
+    return { ok: false, skipped: true, provider: "CONSOLE", error: "SMS gateway provider not configured." };
   }
 
   try {
-    const res = await httpRequest("https://api.msg91.com/api/v2/sendsms", {
-      method: "POST",
-      headers: { authkey: authKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sender: senderId,
-        route: "4",
-        country: "91",
-        sms: [{ message: body, to: [to.replace("+", "")] }],
-      }),
+    const isUnicode = /[^\u0000-\u007F]/.test(body);
+    const result = await sendSMS({
+      phone: to,
+      message: body,
+      isUnicode,
     });
 
-    const json: any = await res.json().catch(() => ({}));
-    if (!res.ok || json?.type === "error") {
-      return { ok: false, provider: "MSG91", error: json?.message || `HTTP ${res.status}` };
+    if (!result.success) {
+      return { ok: false, provider: "SMS_GATEWAY", error: result.error || "SMS dispatch failed" };
     }
-    return { ok: true, provider: "MSG91", providerRef: json?.message };
+
+    return {
+      ok: true,
+      provider: "SMS_GATEWAY",
+      providerRef: result.smsid,
+    };
   } catch (err: any) {
-    return { ok: false, provider: "MSG91", error: err?.message || "Network error" };
+    return { ok: false, provider: "SMS_GATEWAY", error: err?.message || "Network error sending SMS" };
   }
 }
 
@@ -458,6 +459,6 @@ export async function dispatchPendingNotifications(limit = 100): Promise<{
 export function getProviderStatus(): { email: boolean; sms: boolean } {
   return {
     email: !!(process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL_FROM),
-    sms: !!(process.env.MSG91_AUTH_KEY && process.env.MSG91_SENDER_ID),
+    sms: !!(process.env.SMS_USERNAME && process.env.SMS_PASSWORD),
   };
 }
