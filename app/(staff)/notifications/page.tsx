@@ -70,19 +70,17 @@ export default async function NotificationsPage({
 
   const canSend = permissions.modules.notifications.canUpdate || permissions.isAdmin;
 
-  // Notifications are strictly school-wise. Default to assigned campus or first campus (DPS Azad Nagar) for Super Admin.
-  const firstCampus = await prisma.campus.findFirst({ orderBy: { name: "asc" } });
+  // Notifications are strictly school-wise. Default to assigned campus or DPS Azad Nagar for Super Admin.
+  const allCampuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
+  const azadNagar = allCampuses.find((c) => c.code === "AZD" || c.code === "DPSAZD") || allCampuses[0];
   const effectiveCampusId = (params.campus && params.campus !== "ALL")
     ? params.campus
-    : user?.campusId || firstCampus?.id;
+    : user?.campusId || azadNagar?.id;
 
   const scope = resolveCampusScope(user, effectiveCampusId);
   const providers = await getProviderStatus(effectiveCampusId);
 
-  const campuses = await prisma.campus.findMany({
-    where: scope.locked ? { id: scope.campusId! } : {},
-    orderBy: { name: "asc" },
-  });
+  const campuses = allCampuses.filter((c) => (scope.locked ? c.id === scope.campusId : true));
 
   const classes = await prisma.class.findMany({
     where: scope.where,
