@@ -10,7 +10,7 @@ export interface StudentDocItem {
   title: string;
   fileName: string;
   fileUrl: string;
-  fileSize?: string;
+  fileSize?: string | null;
 }
 
 const DOCUMENT_CATEGORIES = [
