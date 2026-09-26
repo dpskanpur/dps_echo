@@ -9,13 +9,14 @@ export const SESSION_MAX_AGE_SECONDS = 2 * 24 * 60 * 60;
 export const IDLE_WARNING_MS = 10 * 60 * 1000;
 
 export const APP_MODULES = [
-  { id: "students", label: "Student Management", description: "Student Directory, Admissions, Profile Dossier" },
-  { id: "fees", label: "Fee & Finance", description: "Fee Collection Desk, Structures, Invoices, Daily Cash Register" },
-  { id: "tc", label: "Transfer Certificate (TC)", description: "No-Dues Verification, CBSE TC Issuance & Clearance" },
-  { id: "alumni", label: "Alumni Archive", description: "Graduated Students & Alumni Records" },
-  { id: "notifications", label: "Notifications", description: "Fee Reminders, Payment Receipts & Announcement Dispatch Log" },
-  { id: "sessions", label: "Academic Sessions", description: "Open, close and switch the active academic session for new records" },
-  { id: "rbac", label: "RBAC & User Access", description: "Role & Permission Management for Staff & Faculty" },
+  { id: "students", label: "Students", description: "Directory, Admissions & Student Dossiers" },
+  { id: "fees", label: "Fees", description: "Fee Collection Desk, Structures, Invoices & Defaulters" },
+  { id: "tc", label: "Certificates", description: "Transfer Certificate (TC) & Clearance" },
+  { id: "alumni", label: "Alumni", description: "Graduated Students & Alumni Records" },
+  { id: "notifications", label: "Communication", description: "SMS Gateway, Email & Announcement Dispatch Log" },
+  { id: "sessions", label: "Academic Sessions", description: "Open, close and switch active academic session" },
+  { id: "audit", label: "Audit Logs", description: "System Audit Trail, Activity History & Security Logs" },
+  { id: "rbac", label: "Settings", description: "Campus Configurations, System Settings & Access Control" },
 ] as const;
 
 export type AppModuleId = typeof APP_MODULES[number]["id"];
@@ -27,6 +28,7 @@ export const EMPTY_MODULE_MATRIX: Record<AppModuleId, ModulePermission> = {
   alumni: { module: "alumni", canView: false, canUpdate: false, canDelete: false },
   notifications: { module: "notifications", canView: false, canUpdate: false, canDelete: false },
   sessions: { module: "sessions", canView: false, canUpdate: false, canDelete: false },
+  audit: { module: "audit", canView: false, canUpdate: false, canDelete: false },
   rbac: { module: "rbac", canView: false, canUpdate: false, canDelete: false },
 };
 
