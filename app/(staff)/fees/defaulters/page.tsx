@@ -42,10 +42,22 @@ export default async function DefaultersPage({
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
-  const selectedCampus = campusId && campusId !== "ALL"
-    ? campuses.find((c) => c.id === campusId || c.code === campusId || c.scholarIdPrefix === campusId)
-    : null;
-  const targetCampusId = selectedCampus ? selectedCampus.id : campusId && campusId !== "ALL" ? campusId : null;
+  const azadNagar =
+    campuses.find((c) => c.code === "AZD" || c.code === "DPSAZD" || c.scholarIdPrefix === "DPSAZD") ||
+    campuses[0];
+  const userCampusId = (user as any)?.campusId;
+
+  // Defaulters are strictly managed per school. Default to user's assigned campus or DPS Azad Nagar.
+  const defaultCampus = userCampusId
+    ? campuses.find((c) => c.id === userCampusId) || azadNagar
+    : azadNagar;
+
+  const rawCampusId = campusId && campusId !== "ALL" ? campusId : defaultCampus.id;
+  const selectedCampus =
+    campuses.find(
+      (c) => c.id === rawCampusId || c.code === rawCampusId || c.scholarIdPrefix === rawCampusId
+    ) || defaultCampus;
+  const targetCampusId = selectedCampus.id;
 
   // Invoices reference AcademicYear, so the session filter goes via the relation.
   const invoiceScope = resolveSessionScope(session, await listAcademicSessions());
@@ -56,7 +68,7 @@ export default async function DefaultersPage({
   const whereClause = {
     status: { in: ["OVERDUE", "PENDING", "PARTIALLY_PAID"] },
     balanceAmount: { gt: 0 },
-    ...(targetCampusId ? { campusId: targetCampusId } : {}),
+    campusId: targetCampusId,
     ...sessionFilter,
   };
 
@@ -86,10 +98,9 @@ export default async function DefaultersPage({
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const totalOverdueAmount = aggregateResult._sum.balanceAmount || 0;
 
-  // Messaging parents is governed by the Notifications module, not by fee
-  // access, so a clerk who can read the ledger cannot necessarily send.
+  // Messaging parents is governed by the Notifications module and per-campus settings.
   const canNotify = permissions.isAdmin || permissions.modules.notifications.canUpdate;
-  const providers = await getProviderStatus();
+  const providers = await getProviderStatus(targetCampusId);
   const noProviders = !providers.email && !providers.sms;
 
   const filterQuery = new URLSearchParams();

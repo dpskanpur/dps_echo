@@ -4,8 +4,9 @@ import { Navbar } from "@/components/Navbar";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Receipt, Search, Filter, CheckCircle2, Send } from "lucide-react";
+import { Receipt, Search, Filter, CheckCircle2, Send, MessageSquare } from "lucide-react";
 import { sendFeeReminder } from "@/lib/notification-actions";
+import { getProviderStatus } from "@/lib/notifications";
 import { Pagination } from "@/components/Pagination";
 import { RecordPaymentModal } from "@/components/RecordPaymentModal";
 import { LiveSearchInput } from "@/components/LiveSearchInput";
@@ -39,12 +40,25 @@ export default async function FeeInvoicesPage({
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
-  const selectedCampus = campusId && campusId !== "ALL"
-    ? campuses.find((c) => c.id === campusId || c.code === campusId || c.scholarIdPrefix === campusId)
-    : null;
-  const targetCampusId = selectedCampus ? selectedCampus.id : campusId && campusId !== "ALL" ? campusId : null;
+  const azadNagar =
+    campuses.find((c) => c.code === "AZD" || c.code === "DPSAZD" || c.scholarIdPrefix === "DPSAZD") ||
+    campuses[0];
+  const userCampusId = (user as any)?.campusId;
+
+  // Invoices & Ledgers are strictly managed per school. Default to user's assigned campus or DPS Azad Nagar.
+  const defaultCampus = userCampusId
+    ? campuses.find((c) => c.id === userCampusId) || azadNagar
+    : azadNagar;
+
+  const rawCampusId = campusId && campusId !== "ALL" ? campusId : defaultCampus.id;
+  const selectedCampus =
+    campuses.find(
+      (c) => c.id === rawCampusId || c.code === rawCampusId || c.scholarIdPrefix === rawCampusId
+    ) || defaultCampus;
+  const targetCampusId = selectedCampus.id;
 
   const canNotify = permissions.isAdmin || permissions.modules.notifications.canUpdate;
+  const providers = await getProviderStatus(targetCampusId);
 
   const filterQuery = new URLSearchParams();
   if (campusId) filterQuery.set("campus", campusId);
@@ -53,7 +67,7 @@ export default async function FeeInvoicesPage({
   const returnUrl = `/fees/invoices${filterQuery.toString() ? `?${filterQuery}` : ""}`;
 
   const whereClause: any = {
-    ...(targetCampusId ? { campusId: targetCampusId } : {}),
+    campusId: targetCampusId,
     ...(status && status !== "ALL" ? { status } : {}),
   };
 
@@ -112,6 +126,42 @@ export default async function FeeInvoicesPage({
               </p>
             </div>
           </div>
+
+          {canNotify && (
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+              <div className="flex items-center gap-2 text-slate-700 font-semibold">
+                <MessageSquare className="w-4 h-4 text-slate-500" />
+                <span>Messaging Dispatch Channels ({selectedCampus.name}):</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div
+                  className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold ${
+                    providers.email
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-slate-100 border-slate-200 text-slate-600"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${providers.email ? "bg-emerald-500" : "bg-slate-400"}`}
+                  />
+                  <span>Email: {providers.email ? "Enabled & Connected" : "Disabled"}</span>
+                </div>
+
+                <div
+                  className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold ${
+                    providers.sms
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-slate-100 border-slate-200 text-slate-600"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${providers.sms ? "bg-emerald-500" : "bg-slate-400"}`}
+                  />
+                  <span>SMS: {providers.sms ? "Enabled & Connected" : "Disabled"}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Filter Bar */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center gap-4">
