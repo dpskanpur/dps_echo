@@ -43,20 +43,43 @@ export default async function AlumniPage({
   // Deliberately NOT session-filtered: academicYearIn records the session a
   // student was admitted in, so filtering alumni by the current session would
   // hide everyone who actually graduated.
+  const seniorCampusCodes = ["AZD", "DPSAZD", "BAR", "DPSBAR"];
+
+  const baseStatusCondition = [
+    { status: { in: ["ALUMNI", "GRADUATED"] } },
+    {
+      status: "TC_ISSUED",
+      class: {
+        OR: [
+          { name: { contains: "10", mode: "insensitive" } },
+          { name: { contains: "12", mode: "insensitive" } },
+          { name: { contains: "X", mode: "insensitive" } },
+          { name: { contains: "XII", mode: "insensitive" } },
+        ],
+      },
+    },
+  ];
+
   const whereClause: any = {
-    status: "ALUMNI",
-    ...(campusId && campusId !== "ALL" ? { campusId } : {}),
+    campus: campusId && campusId !== "ALL"
+      ? { id: campusId }
+      : { code: { in: seniorCampusCodes } },
+    OR: baseStatusCondition,
   };
 
   if (q) {
     const cleanQ = q.trim();
-    whereClause.OR = [
-      { firstName: { contains: cleanQ, mode: "insensitive" } },
-      { lastName: { contains: cleanQ, mode: "insensitive" } },
-      { scholarNo: { contains: cleanQ, mode: "insensitive" } },
-      { admissionNo: { contains: cleanQ, mode: "insensitive" } },
-      { class: { name: { contains: cleanQ, mode: "insensitive" } } },
-      { guardians: { some: { name: { contains: cleanQ, mode: "insensitive" } } } },
+    whereClause.AND = [
+      {
+        OR: [
+          { firstName: { contains: cleanQ, mode: "insensitive" } },
+          { lastName: { contains: cleanQ, mode: "insensitive" } },
+          { scholarNo: { contains: cleanQ, mode: "insensitive" } },
+          { admissionNo: { contains: cleanQ, mode: "insensitive" } },
+          { class: { name: { contains: cleanQ, mode: "insensitive" } } },
+          { guardians: { some: { name: { contains: cleanQ, mode: "insensitive" } } } },
+        ],
+      },
     ];
   }
 
