@@ -14,7 +14,7 @@ interface CampusOption {
  * and admissions are defined per school, so a combined view would show one
  * campus's data under a label claiming to show all of them.
  */
-const SINGLE_CAMPUS_PATHS = ["/fees/structures", "/students/new"];
+const SINGLE_CAMPUS_PATHS = ["/fees/structures", "/students/new", "/notifications"];
 
 export function CampusSwitcher({ campuses }: { campuses: CampusOption[] }) {
   const router = useRouter();
