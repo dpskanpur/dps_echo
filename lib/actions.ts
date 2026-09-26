@@ -721,11 +721,23 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
       campus: true,
       class: true,
       guardians: true,
+      invoices: {
+        where: { status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] } },
+      },
     },
   });
 
   if (!student) {
     throw new Error("Student not found");
+  }
+
+  const pendingDuesTotal = student.invoices.reduce((acc, inv) => acc + inv.balanceAmount, 0);
+  const isSuperAdmin = user.role === "SUPER_ADMIN" || user.email === "admin@dpskanpur.com";
+
+  if (pendingDuesTotal > 0 && !isSuperAdmin) {
+    throw new Error(
+      `Cannot issue Transfer Certificate: Student has ₹${pendingDuesTotal} in outstanding fee dues. All fee dues must be cleared first.`
+    );
   }
 
   const father = student.guardians.find((g) => g.relation === "FATHER")?.name || "Mr. Guardian";
