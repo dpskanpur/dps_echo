@@ -214,13 +214,23 @@ function LoginForm() {
         <div className="pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
           <span>© 2026 DPS Kanpur</span>
           <div className="flex items-center gap-3">
-            <Link href="/pay" className="hover:text-slate-700 transition">
+            <a
+              href="/pay"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-slate-700 transition"
+            >
               Quick Pay ↗
-            </Link>
+            </a>
             <span>•</span>
-            <Link href="/verify-tc" className="hover:text-slate-700 transition">
+            <a
+              href="/verify-tc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-slate-700 transition"
+            >
               Verify TC ↗
-            </Link>
+            </a>
           </div>
         </div>
       </div>
