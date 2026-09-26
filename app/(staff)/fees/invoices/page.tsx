@@ -38,6 +38,11 @@ export default async function FeeInvoicesPage({
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
+  const selectedCampus = campusId && campusId !== "ALL"
+    ? campuses.find((c) => c.id === campusId || c.code === campusId || c.scholarIdPrefix === campusId)
+    : null;
+  const targetCampusId = selectedCampus ? selectedCampus.id : campusId && campusId !== "ALL" ? campusId : null;
+
   const canNotify = permissions.isAdmin || permissions.modules.notifications.canUpdate;
 
   const filterQuery = new URLSearchParams();
@@ -47,7 +52,7 @@ export default async function FeeInvoicesPage({
   const returnUrl = `/fees/invoices${filterQuery.toString() ? `?${filterQuery}` : ""}`;
 
   const whereClause: any = {
-    ...(campusId && campusId !== "ALL" ? { campusId } : {}),
+    ...(targetCampusId ? { campusId: targetCampusId } : {}),
     ...(status && status !== "ALL" ? { status } : {}),
   };
 
@@ -60,7 +65,11 @@ export default async function FeeInvoicesPage({
     ];
   }
 
-  const [invoices, totalCount] = await Promise.all([
+  const paymentWhereClause: any = {
+    ...(targetCampusId ? { student: { campusId: targetCampusId } } : {}),
+  };
+
+  const [invoices, totalCount, recentPayments] = await Promise.all([
     prisma.feeInvoice.findMany({
       where: whereClause,
       include: {
@@ -73,6 +82,15 @@ export default async function FeeInvoicesPage({
       skip: (currentPage - 1) * pageSize,
     }),
     prisma.feeInvoice.count({ where: whereClause }),
+    prisma.feePayment.findMany({
+      where: paymentWhereClause,
+      include: {
+        student: { include: { campus: true, class: true } },
+        invoice: true,
+      },
+      orderBy: { paymentDate: "desc" },
+      take: 10,
+    }),
   ]);
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
@@ -150,11 +168,16 @@ export default async function FeeInvoicesPage({
 
           {/* Invoices Table */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 text-sm">
+                Student Fee Demands & Invoices {selectedCampus ? `(${selectedCampus.code})` : ""}
+              </h3>
+              <span className="text-xs text-slate-500 font-medium">Filtered List ({totalCount})</span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
-                    <th className="py-3.5 px-5">Invoice No</th>
                     <th className="py-3.5 px-5">Student</th>
                     <th className="py-3.5 px-5">Period</th>
                     <th className="py-3.5 px-5">Gross Demand</th>
@@ -167,18 +190,13 @@ export default async function FeeInvoicesPage({
                 <tbody className="divide-y divide-slate-100">
                   {invoices.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-400">
+                      <td colSpan={7} className="py-12 text-center text-slate-400">
                         No invoices found.
                       </td>
                     </tr>
                   ) : (
                     invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-slate-50/80 transition border-b border-slate-100">
-                        <td className="py-4 px-5">
-                          <span className="font-mono font-bold text-slate-900 text-xs block">{inv.invoiceNo}</span>
-                          <span className="text-[10px] text-slate-400 font-medium block mt-0.5">Due: {formatDate(inv.dueDate)}</span>
-                        </td>
-
                         <td className="py-4 px-5">
                           <Link
                             href={`/students/${inv.studentId}`}
@@ -187,11 +205,14 @@ export default async function FeeInvoicesPage({
                             {inv.student.firstName} {inv.student.lastName}
                           </Link>
                           <span className="block text-[10px] font-mono text-slate-500 mt-0.5">
-                            {inv.student.scholarNo} • {inv.student.class.name}
+                            {inv.student.scholarNo} • {inv.student.class.name} ({inv.student.campus.code})
                           </span>
                         </td>
 
-                        <td className="py-4 px-5 font-medium text-slate-700 text-xs">{inv.periodName}</td>
+                        <td className="py-4 px-5">
+                          <span className="font-medium text-slate-900 text-xs block">{inv.periodName}</span>
+                          <span className="text-[10px] text-slate-400 font-medium block mt-0.5">Due: {formatDate(inv.dueDate)}</span>
+                        </td>
 
                         <td className="py-4 px-5 font-mono font-semibold text-slate-800 text-xs">
                           {formatCurrency(inv.netAmount)}
@@ -272,6 +293,94 @@ export default async function FeeInvoicesPage({
               totalCount={totalCount}
               pageSize={pageSize}
             />
+          </div>
+
+          {/* Recent Fee Collection Receipts & Manual Payment Submissions */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <Receipt className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-sm">
+                    Recent Fee Collection Receipts &amp; Transactions {selectedCampus ? `(${selectedCampus.code})` : ""}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Live history of fee collection receipts (Manual Cash, UPI, Cheque, Online).
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs text-slate-500 font-medium">
+                {recentPayments.length} Recent Records
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th className="py-3 px-4">Receipt No</th>
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Period</th>
+                    <th className="py-3 px-4">Mode</th>
+                    <th className="py-3 px-4">Amount Paid</th>
+                    <th className="py-3 px-4">Collected By / Ref</th>
+                    <th className="py-3 px-4 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {recentPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-slate-400">
+                        No recent fee payment receipts found for this selection.
+                      </td>
+                    </tr>
+                  ) : (
+                    recentPayments.map((pmt) => (
+                      <tr key={pmt.id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-bold text-emerald-900 text-xs block">{pmt.receiptNo}</span>
+                          <span className="text-[10px] text-slate-400 font-medium block">{formatDate(pmt.paymentDate)}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Link href={`/students/${pmt.studentId}`} className="font-bold text-slate-900 hover:text-emerald-800">
+                            {pmt.student.firstName} {pmt.student.lastName}
+                          </Link>
+                          <span className="block text-[10px] font-mono text-slate-500">
+                            {pmt.student.scholarNo} • {pmt.student.class.name} ({pmt.student.campus.code})
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-medium text-slate-700">
+                          {pmt.invoice?.periodName || "Fee Settlement"}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                            {pmt.paymentMode}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-black text-emerald-700 text-sm">
+                          {formatCurrency(pmt.amountPaid)}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600">
+                          <span className="block text-xs font-semibold">{pmt.cashierName}</span>
+                          {pmt.transactionRef && (
+                            <span className="text-[10px] font-mono text-slate-400 block truncate max-w-[140px]">
+                              Ref: {pmt.transactionRef}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200">
+                            {pmt.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </main>
   );

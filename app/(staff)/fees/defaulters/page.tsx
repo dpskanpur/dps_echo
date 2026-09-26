@@ -42,6 +42,11 @@ export default async function DefaultersPage({
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
 
+  const selectedCampus = campusId && campusId !== "ALL"
+    ? campuses.find((c) => c.id === campusId || c.code === campusId || c.scholarIdPrefix === campusId)
+    : null;
+  const targetCampusId = selectedCampus ? selectedCampus.id : campusId && campusId !== "ALL" ? campusId : null;
+
   // Invoices reference AcademicYear, so the session filter goes via the relation.
   const invoiceScope = resolveSessionScope(session, await listAcademicSessions());
   const sessionFilter = invoiceScope.name
@@ -51,7 +56,7 @@ export default async function DefaultersPage({
   const whereClause = {
     status: { in: ["OVERDUE", "PENDING", "PARTIALLY_PAID"] },
     balanceAmount: { gt: 0 },
-    ...(campusId && campusId !== "ALL" ? { campusId } : {}),
+    ...(targetCampusId ? { campusId: targetCampusId } : {}),
     ...sessionFilter,
   };
 
@@ -203,10 +208,10 @@ export default async function DefaultersPage({
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
-                <th className="py-3.5 px-5">Student & Scholar No</th>
+                <th className="py-3.5 px-5">Student &amp; Scholar No</th>
                 <th className="py-3.5 px-5">Campus / Class</th>
                 <th className="py-3.5 px-5">Parent Contact</th>
-                <th className="py-3.5 px-5">Period / Invoice</th>
+                <th className="py-3.5 px-5">Period</th>
                 <th className="py-3.5 px-5">Due Date</th>
                 <th className="py-3.5 px-5">Overdue Balance</th>
                 <th className="py-3.5 px-5 text-right">Actions</th>
@@ -258,12 +263,9 @@ export default async function DefaultersPage({
                         </span>
                       </td>
 
-                      {/* Period / Invoice */}
+                      {/* Period */}
                       <td className="py-4 px-5">
                         <span className="font-medium text-slate-700 block text-xs">{inv.periodName}</span>
-                        <span className="text-[10px] font-mono text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md mt-1 inline-block">
-                          {inv.invoiceNo}
-                        </span>
                       </td>
 
                       {/* Due Date */}

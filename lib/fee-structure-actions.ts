@@ -69,7 +69,8 @@ export async function upsertFeeStructure(formData: FormData): Promise<void> {
   if (!Number.isFinite(amount) || amount < 0) {
     throw new Error("Amount must be a non-negative number.");
   }
-  if (!FEE_FREQUENCIES.includes(frequency as any)) {
+  const validFrequencies = [...FEE_FREQUENCIES, "ONE_TIME", "MONTHLY"];
+  if (!validFrequencies.includes(frequency as any)) {
     throw new Error(`Frequency must be one of: ${FEE_FREQUENCIES.join(", ")}.`);
   }
 
@@ -188,7 +189,8 @@ export async function importFeeStructures(
       errors.push(`Row ${line}: "${row.amount}" is not a valid amount.`);
       return;
     }
-    if (!FEE_FREQUENCIES.includes(frequency as any)) {
+    const validFreqs = [...FEE_FREQUENCIES, "ONE_TIME", "MONTHLY"];
+    if (!validFreqs.includes(frequency as any)) {
       errors.push(`Row ${line}: frequency "${frequency}" is not one of ${FEE_FREQUENCIES.join(", ")}.`);
       return;
     }
