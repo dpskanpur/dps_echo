@@ -29,11 +29,20 @@ export default async function PublicVerifyTCPage({
 
   if (token || tcNo) {
     searched = true;
+    const cleanSearch = (tcNo || token || "").trim();
+
     tcRecord = await prisma.transferCertificate.findFirst({
       where: {
         OR: [
           ...(token ? [{ verificationToken: token }] : []),
-          ...(tcNo ? [{ tcNumber: tcNo.trim() }] : []),
+          ...(cleanSearch
+            ? [
+                { tcNumber: { equals: cleanSearch, mode: "insensitive" as const } },
+                { verificationToken: { equals: cleanSearch, mode: "insensitive" as const } },
+                { student: { scholarNo: { equals: cleanSearch, mode: "insensitive" as const } } },
+                { student: { admissionNo: { equals: cleanSearch, mode: "insensitive" as const } } },
+              ]
+            : []),
         ],
       },
       include: {
@@ -48,7 +57,7 @@ export default async function PublicVerifyTCPage({
     <PublicShell
       eyebrow="Transfer Certificate Registry"
       title="Verify a Transfer Certificate"
-      subtitle="Scan the QR code on the certificate, or enter its TC number, to check it against DPS Kanpur records."
+      subtitle="Scan the QR code on the certificate, or enter its TC number or Scholar / Admission Number, to check it against DPS Kanpur records."
       badge={
         <>
           <ShieldCheck className="w-3.5 h-3.5" /> Official registry
@@ -61,20 +70,20 @@ export default async function PublicVerifyTCPage({
           <form method="GET" className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                TC number or QR security token
+                TC number, QR security token, or Scholar / Admission number
               </label>
               <input
                 type="text"
                 name="tcNo"
                 defaultValue={tcNo || token || ""}
-                placeholder="e.g. DPS/KID/TC/2026/0042 or TC-KID-2026-V8-0042-VERIFIED"
+                placeholder="e.g. DPS/KID/TC/2026/0042 or DPSAZD-AZD-2026-0001"
                 className="w-full bg-slate-50 border border-slate-300 px-3 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-2.5 px-4 text-sm transition flex items-center justify-center gap-2"
+              className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold py-2.5 px-4 text-sm transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <Search className="w-4 h-4" /> Verify certificate
             </button>
