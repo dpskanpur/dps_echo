@@ -96,7 +96,7 @@ export function AdminServiceToggleCards({
                   onlinePay ? "bg-emerald-500" : "bg-rose-500"
                 }`}
               />
-              <span>{onlinePay ? "Enabled" : "Disabled by Admin"}</span>
+              <span>{onlinePay ? "Enabled" : "Disabled"}</span>
             </span>
           </div>
         </div>
@@ -149,7 +149,7 @@ export function AdminServiceToggleCards({
               <span
                 className={`w-2 h-2 rounded-full ${sms ? "bg-emerald-500" : "bg-rose-500"}`}
               />
-              <span>{sms ? "Enabled" : "Disabled by Admin"}</span>
+              <span>{sms ? "Enabled" : "Disabled"}</span>
             </span>
           </div>
         </div>
@@ -202,7 +202,7 @@ export function AdminServiceToggleCards({
               <span
                 className={`w-2 h-2 rounded-full ${email ? "bg-emerald-500" : "bg-rose-500"}`}
               />
-              <span>{email ? "Enabled" : "Disabled by Admin"}</span>
+              <span>{email ? "Enabled" : "Disabled"}</span>
             </span>
           </div>
         </div>

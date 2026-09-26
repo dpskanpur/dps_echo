@@ -45,7 +45,7 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
   const { user } = await requirePermission("fees", "update");
 
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
-  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
+  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled";
   const returnUrl = ((formData.get("returnUrl") as string) || "/admin/rbac?tab=system").trim();
 
   await prisma.systemSettings.upsert({
@@ -66,7 +66,7 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
     await prisma.campus.updateMany({
       data: {
         isOnlinePaymentEnabled: false,
-        onlinePaymentDisabledReason: "Disabled by Admin",
+        onlinePaymentDisabledReason: "Disabled",
       },
     });
   }
@@ -98,7 +98,7 @@ export async function updateCampusOnlinePaymentAction(formData: FormData): Promi
 
   const campusId = ((formData.get("campusId") as string) || "").trim();
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
-  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
+  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled";
   const returnUrl = ((formData.get("returnUrl") as string) || "/admin/rbac?tab=system").trim();
 
   if (!campusId) {
@@ -180,9 +180,9 @@ export async function updateCampusChannelAction(formData: FormData): Promise<voi
 
   const campusId = ((formData.get("campusId") as string) || "").trim();
   const isSmsEnabled = formData.get("isSmsEnabled") === "true";
-  const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
+  const smsDisabledReason = isSmsEnabled ? "" : "Disabled";
   const isEmailEnabled = formData.get("isEmailEnabled") === "true";
-  const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
+  const emailDisabledReason = isEmailEnabled ? "" : "Disabled";
   const returnUrl = ((formData.get("returnUrl") as string) || "/admin/rbac?tab=system").trim();
 
   if (!campusId) {

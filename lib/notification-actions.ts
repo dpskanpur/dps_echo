@@ -49,9 +49,9 @@ export async function updateChannelSettingsAction(formData: FormData): Promise<v
   const { user } = await requirePermission("notifications", "update");
 
   const isSmsEnabled = formData.get("isSmsEnabled") === "true";
-  const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
+  const smsDisabledReason = isSmsEnabled ? "" : "Disabled";
   const isEmailEnabled = formData.get("isEmailEnabled") === "true";
-  const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
+  const emailDisabledReason = isEmailEnabled ? "" : "Disabled";
 
   await prisma.systemSettings.upsert({
     where: { id: "global" },
