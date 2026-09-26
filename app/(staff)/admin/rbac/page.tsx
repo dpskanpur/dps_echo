@@ -29,6 +29,8 @@ import {
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
+import { getOnlinePaymentSettings } from "@/lib/fee-settings-actions";
+import { AdminSystemTogglesPanel } from "@/components/AdminSystemTogglesPanel";
 import {
   updateCampusSettings,
   updateSystemSettings,
@@ -60,6 +62,7 @@ export default async function AdminSettingsPage({
   }
 
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
+  const paymentSettings = await getOnlinePaymentSettings();
   const academicSessions = await listAcademicSessions();
   const canManageSessions = permissions.isAdmin || permissions.modules.sessions.canUpdate;
 
@@ -173,6 +176,14 @@ export default async function AdminSettingsPage({
           {/* TAB 1: SCHOOL-SPECIFIC CONFIGURATIONS */}
           {tab === "system" && (
             <div className="space-y-6">
+              {/* Institution-Wide & School-Wise Channel & Fee Controls Panel */}
+              <AdminSystemTogglesPanel
+                masterIsOnlinePaymentEnabled={paymentSettings.masterIsOnlinePaymentEnabled}
+                masterOnlinePaymentDisabledReason={paymentSettings.masterOnlinePaymentDisabledReason}
+                campuses={paymentSettings.campuses}
+                canUpdate={permissions.isAdmin || permissions.modules.rbac.canUpdate}
+              />
+
               {/* Campus Selector Pills */}
               <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-xs space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-700">

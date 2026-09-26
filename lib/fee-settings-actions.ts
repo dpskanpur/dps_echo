@@ -46,6 +46,7 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
 
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
   const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
+  const returnUrl = ((formData.get("returnUrl") as string) || "/admin/rbac?tab=system").trim();
 
   await prisma.systemSettings.upsert({
     where: { id: "global" },
@@ -60,6 +61,16 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
     },
   });
 
+  // If disabled at master level, automatically cascade disablement to all schools
+  if (!isOnlinePaymentEnabled) {
+    await prisma.campus.updateMany({
+      data: {
+        isOnlinePaymentEnabled: false,
+        onlinePaymentDisabledReason: "Disabled by Admin",
+      },
+    });
+  }
+
   await logAuditAction({
     userId: user.id,
     userEmail: user.email,
@@ -71,23 +82,24 @@ export async function updateMasterOnlinePaymentAction(formData: FormData): Promi
     details: {
       isOnlinePaymentEnabled,
       onlinePaymentDisabledReason,
+      cascadedToCampuses: !isOnlinePaymentEnabled,
     },
   });
 
+  revalidatePath("/admin/rbac");
   revalidatePath("/fees/razorpay");
   revalidatePath("/pay");
-  redirect("/fees/razorpay?notice=master_payment_updated");
+  redirect(`${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=master_payment_updated`);
 }
 
-/** School-Wise / Campus-Wise Online Payment & Razorpay Configuration */
+/** School-Wise / Campus-Wise Online Payment Status Toggle */
 export async function updateCampusOnlinePaymentAction(formData: FormData): Promise<void> {
   const { user } = await requirePermission("fees", "update");
 
   const campusId = ((formData.get("campusId") as string) || "").trim();
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true";
   const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
-  const razorpayKeyId = ((formData.get("razorpayKeyId") as string) || "").trim();
-  const razorpayKeySecret = ((formData.get("razorpayKeySecret") as string) || "").trim();
+  const returnUrl = ((formData.get("returnUrl") as string) || "/admin/rbac?tab=system").trim();
 
   if (!campusId) {
     throw new Error("Campus ID is required.");
@@ -98,8 +110,6 @@ export async function updateCampusOnlinePaymentAction(formData: FormData): Promi
     data: {
       isOnlinePaymentEnabled,
       onlinePaymentDisabledReason,
-      ...(razorpayKeyId ? { razorpayKeyId } : {}),
-      ...(razorpayKeySecret ? { razorpayKeySecret } : {}),
     },
   });
 
@@ -116,13 +126,52 @@ export async function updateCampusOnlinePaymentAction(formData: FormData): Promi
       campusName: updated.name,
       isOnlinePaymentEnabled,
       onlinePaymentDisabledReason,
+    },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/fees/razorpay");
+  revalidatePath("/pay");
+  redirect(`${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=campus_payment_updated&campus=${encodeURIComponent(updated.name)}`);
+}
+
+/** School-Wise Razorpay API Key Credentials Only */
+export async function updateCampusCredentialsAction(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("fees", "update");
+
+  const campusId = ((formData.get("campusId") as string) || "").trim();
+  const razorpayKeyId = ((formData.get("razorpayKeyId") as string) || "").trim();
+  const razorpayKeySecret = ((formData.get("razorpayKeySecret") as string) || "").trim();
+
+  if (!campusId) {
+    throw new Error("Campus ID is required.");
+  }
+
+  const updated = await prisma.campus.update({
+    where: { id: campusId },
+    data: {
+      ...(razorpayKeyId ? { razorpayKeyId } : {}),
+      ...(razorpayKeySecret ? { razorpayKeySecret } : {}),
+    },
+  });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name,
+    userRole: user.role,
+    campusCode: updated.code,
+    action: "CAMPUS_RAZORPAY_KEYS_UPDATE",
+    entityType: "Campus",
+    entityId: updated.id,
+    details: {
+      campusName: updated.name,
       hasCustomKey: !!updated.razorpayKeyId,
     },
   });
 
   revalidatePath("/fees/razorpay");
-  revalidatePath("/pay");
-  redirect(`/fees/razorpay?notice=campus_payment_updated&campus=${encodeURIComponent(updated.name)}`);
+  redirect(`/fees/razorpay?notice=credentials_updated&campus=${encodeURIComponent(updated.name)}`);
 }
 
 /** Campus-Wise SMS & Email Toggles */
@@ -134,6 +183,7 @@ export async function updateCampusChannelAction(formData: FormData): Promise<voi
   const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
   const isEmailEnabled = formData.get("isEmailEnabled") === "true";
   const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
+  const returnUrl = ((formData.get("returnUrl") as string) || "/admin/rbac?tab=system").trim();
 
   if (!campusId) {
     throw new Error("Campus ID is required.");
@@ -168,6 +218,7 @@ export async function updateCampusChannelAction(formData: FormData): Promise<voi
   });
 
   revalidatePath("/notifications");
+  revalidatePath("/admin/rbac");
   revalidatePath("/fees/razorpay");
-  redirect(`/notifications?notice=campus_channel_updated&campus=${encodeURIComponent(updated.name)}`);
+  redirect(`${returnUrl}${returnUrl.includes("?") ? "&" : "?"}notice=campus_channel_updated&campus=${encodeURIComponent(updated.name)}`);
 }
