@@ -71,15 +71,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invoice not found." }, { status: 404 });
     }
 
-    // Check Master Overall Online Payment Switch
-    const systemSettings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
-    if (systemSettings && !systemSettings.isOnlinePaymentEnabled) {
-      const reason = systemSettings.onlinePaymentDisabledReason
-        ? `Online fee payment disabled: ${systemSettings.onlinePaymentDisabledReason}`
-        : "Online fee payment is currently disabled. Please pay at the school accounts office.";
-      return NextResponse.json({ success: false, error: reason }, { status: 503 });
-    }
-
     // Check Campus-Specific Online Payment Switch
     const campus = await prisma.campus.findUnique({ where: { id: invoice.campusId } });
     if (campus && !campus.isOnlinePaymentEnabled) {
