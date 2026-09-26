@@ -62,15 +62,39 @@ export default async function PublicRegistrationPage({
 
   // If Registration is globally closed by Super Admin in Settings
   if (!systemSettings.isRegistrationOpen) {
+    const SCHOOL_SITES = [
+      {
+        name: "DPS Azad Nagar",
+        code: "AZD",
+        url: "https://dpsazadnagar.com",
+        phone: "+91 512 2580000",
+      },
+      {
+        name: "DPS Barra",
+        code: "BAR",
+        url: "https://dpsbarra.com",
+        phone: "+91 512 2580001",
+      },
+      {
+        name: "DPS Kidwai Nagar",
+        code: "KID",
+        url: "https://dpskidwainagar.com",
+        phone: "+91 512 2580002",
+      },
+      {
+        name: "DPS Servodaya Nagar",
+        code: "SRV",
+        url: "https://dpsservodayanagar.com",
+        phone: "+91 512 2580003",
+      },
+    ];
+
     return (
       <PublicShell
         width="narrow"
         eyebrow="Admissions 2026-2027"
         title="Online Registration Closed"
-        subtitle={
-          systemSettings.registrationClosedNotice ||
-          "Online registration is currently closed for new admissions."
-        }
+        subtitle="Online student registration is currently closed for new admissions. Please visit the respective school's official website or contact campus office for inquiry."
         badge={
           <>
             <Lock className="w-3.5 h-3.5" /> Registration closed
@@ -80,53 +104,49 @@ export default async function PublicRegistrationPage({
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="bg-amber-50 border border-amber-200/90 p-5 rounded-2xl space-y-2 text-slate-800">
             <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-amber-700" />
-              <span>When Will Admissions Open?</span>
+              <Building2 className="w-4 h-4 text-amber-700" />
+              <span>Campus Admission &amp; Contact Inquiries</span>
             </h3>
             <p className="text-xs leading-relaxed text-amber-950 font-medium">
-              {systemSettings.registrationOpenDateNotice ||
-                "Admissions for the upcoming academic session will reopen soon. Please contact the admission office for further details."}
+              For offline admission forms, fee brochures, and campus visit schedules, please visit the official campus website for each school below:
             </p>
           </div>
 
-          <div className="space-y-4 pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Admission Office Contact &amp; Support
-            </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {campuses.map((c: any) => {
+              const defaultSite = SCHOOL_SITES.find(
+                (s) => s.code === c.code || c.name?.includes(s.name)
+              );
+              const websiteUrl = c.website || defaultSite?.url || "https://dpskanpur.com";
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                  <Phone className="w-4 h-4 text-emerald-700" />
-                  <span>Helpline Phone</span>
-                </div>
-                <p className="text-xs font-mono font-bold text-slate-900">
-                  {systemSettings.registrationContactPhone || selectedCampus?.phone || "+91 512 2580000"}
-                </p>
-              </div>
+              return (
+                <div
+                  key={c.id}
+                  className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 flex flex-col justify-between"
+                >
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-slate-900 text-xs flex items-center justify-between">
+                      <span>{c.name}</span>
+                      <span className="font-mono text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded">
+                        {c.code}
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500">{c.address}, {c.city || "Kanpur"}</p>
+                    <p className="text-[11px] font-mono font-medium text-slate-700">Phone: {c.phone || defaultSite?.phone}</p>
+                  </div>
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                  <Mail className="w-4 h-4 text-emerald-700" />
-                  <span>Helpline Email</span>
+                  <a
+                    href={websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold transition w-full text-center shadow-2xs"
+                  >
+                    <span>Visit School Website</span>
+                    <span>↗</span>
+                  </a>
                 </div>
-                <p className="text-xs font-mono font-bold text-slate-900">
-                  {systemSettings.registrationContactEmail || selectedCampus?.email || "admissions@dpskanpur.com"}
-                </p>
-              </div>
-            </div>
-
-            {selectedCampus && (
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                  <MapPin className="w-4 h-4 text-emerald-700" />
-                  <span>{selectedCampus.name} Campus Address</span>
-                </div>
-                <p className="text-xs text-slate-800">
-                  {selectedCampus.address}, {selectedCampus.city || "Kanpur"}
-                </p>
-              </div>
-            )}
+              );
+            })}
           </div>
         </div>
       </PublicShell>
