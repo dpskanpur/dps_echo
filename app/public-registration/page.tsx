@@ -72,9 +72,9 @@ export default async function PublicRegistrationPage({
           "Online registration is currently closed for new admissions."
         }
         badge={
-          <span className="text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-rose-600" /> Registration Closed
-          </span>
+          <>
+            <Lock className="w-3.5 h-3.5" /> Registration closed
+          </>
         }
       >
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
