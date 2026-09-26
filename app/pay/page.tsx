@@ -91,19 +91,6 @@ export default async function PublicQuickPayPage({
       }
     >
       <div className="space-y-6">
-        {!gatewayLive && (
-          <div className="p-4 bg-amber-50 border border-amber-200 flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-900">
-              <strong className="block font-semibold">Online payment is temporarily unavailable</strong>
-              <p className="text-[11px] text-amber-800 mt-0.5">
-                You can still review your dues below. Please pay at the school accounts office in the
-                meantime.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Search / Lookup Box */}
         <div className="bg-white border border-slate-300 p-5 sm:p-6">
           <form method="GET" className="space-y-4">
@@ -169,6 +156,7 @@ export default async function PublicQuickPayPage({
                 const calculatedLateFee = isOverdue ? calculateLateFee(inv.dueDate, student.campus) : 0;
                 const activeFine = Math.max(inv.fineAmount || 0, calculatedLateFee);
                 const payableBalance = Math.max(0, inv.grossAmount - inv.discountAmount + activeFine - inv.paidAmount);
+                const isCampusPaymentLive = student.campus.isOnlinePaymentEnabled !== false;
 
                 return (
                   <div key={inv.id} className="bg-slate-50 border border-slate-300 p-4 sm:p-5 space-y-4">
@@ -220,7 +208,7 @@ export default async function PublicQuickPayPage({
                       )}
                     </div>
 
-                    {gatewayLive ? (
+                    {isCampusPaymentLive ? (
                       <RazorpayCheckoutButton
                         invoiceId={inv.id}
                         payToken={payToken}
@@ -228,9 +216,8 @@ export default async function PublicQuickPayPage({
                         amountLabel={formatCurrency(payableBalance)}
                       />
                     ) : (
-                      <div className="p-3 bg-slate-100 border border-slate-300 text-[11px] text-slate-600">
-                        Online payment is unavailable right now. Please pay this invoice at the school
-                        accounts office.
+                      <div className="p-3 bg-slate-100 border border-slate-300 text-[11px] text-slate-600 font-medium">
+                        Online fee payment for {student.campus.name} is disabled by Admin. Please pay at the school accounts office.
                       </div>
                     )}
                   </div>
