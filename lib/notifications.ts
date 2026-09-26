@@ -455,16 +455,34 @@ export async function dispatchPendingNotifications(limit = 100): Promise<{
   for (const n of pending) {
     let outcome: SendOutcome;
 
+    let campusObj = null;
+    if (n.campusId) {
+      campusObj = await prisma.campus.findUnique({
+        where: { id: n.campusId },
+        select: { name: true, isSmsEnabled: true, smsDisabledReason: true, isEmailEnabled: true, emailDisabledReason: true },
+      });
+    }
+
     if (n.channel === "SMS" && !channelSettings.isSmsEnabled) {
       const reason = channelSettings.smsDisabledReason
         ? `Disabled by Admin: ${channelSettings.smsDisabledReason}`
         : "SMS channel disabled by Administrator";
       outcome = { ok: false, skipped: true, provider: "ADMIN_TOGGLE", error: reason };
+    } else if (n.channel === "SMS" && campusObj && !campusObj.isSmsEnabled) {
+      const reason = campusObj.smsDisabledReason
+        ? `Disabled for ${campusObj.name}: ${campusObj.smsDisabledReason}`
+        : `SMS channel disabled for ${campusObj.name} by Administrator`;
+      outcome = { ok: false, skipped: true, provider: "CAMPUS_TOGGLE", error: reason };
     } else if (n.channel === "EMAIL" && !channelSettings.isEmailEnabled) {
       const reason = channelSettings.emailDisabledReason
         ? `Disabled by Admin: ${channelSettings.emailDisabledReason}`
         : "Email channel disabled by Administrator";
       outcome = { ok: false, skipped: true, provider: "ADMIN_TOGGLE", error: reason };
+    } else if (n.channel === "EMAIL" && campusObj && !campusObj.isEmailEnabled) {
+      const reason = campusObj.emailDisabledReason
+        ? `Disabled for ${campusObj.name}: ${campusObj.emailDisabledReason}`
+        : `Email channel disabled for ${campusObj.name} by Administrator`;
+      outcome = { ok: false, skipped: true, provider: "CAMPUS_TOGGLE", error: reason };
     } else {
       outcome =
         n.channel === "EMAIL"
