@@ -37,7 +37,7 @@ export function AdminChannelTogglePanel({
           <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
           <span>SMS Route:</span>
           <span className={isSmsEnabled ? "text-emerald-400" : "text-rose-400"}>
-            {isSmsEnabled ? "Active" : "Disabled by Admin"}
+            {isSmsEnabled ? "Active" : "Disabled"}
           </span>
         </div>
 
@@ -46,7 +46,7 @@ export function AdminChannelTogglePanel({
           <Mail className="w-3.5 h-3.5 text-slate-400" />
           <span>Email Route:</span>
           <span className={isEmailEnabled ? "text-emerald-400" : "text-rose-400"}>
-            {isEmailEnabled ? "Active" : "Disabled by Admin"}
+            {isEmailEnabled ? "Active" : "Disabled"}
           </span>
         </div>
       </div>

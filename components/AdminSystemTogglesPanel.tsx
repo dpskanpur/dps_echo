@@ -157,7 +157,7 @@ export function AdminSystemTogglesPanel({
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-60"
                 >
                   <option value="true">Enable Online Fee Payment (Active for Parents)</option>
-                  <option value="false">Disable Online Fee Payment (Disabled by Admin)</option>
+                  <option value="false">Disable Online Fee Payment (Disabled)</option>
                 </select>
               </div>
 
@@ -199,7 +199,7 @@ export function AdminSystemTogglesPanel({
                     className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-900 focus:outline-none"
                   >
                     <option value="true">Active (Enabled)</option>
-                    <option value="false">Disabled by Admin</option>
+                    <option value="false">Disabled</option>
                   </select>
                 </div>
 
@@ -214,7 +214,7 @@ export function AdminSystemTogglesPanel({
                     className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-900 focus:outline-none"
                   >
                     <option value="true">Active (Enabled)</option>
-                    <option value="false">Disabled by Admin</option>
+                    <option value="false">Disabled</option>
                   </select>
                 </div>
               </div>

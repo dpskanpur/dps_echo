@@ -104,7 +104,7 @@ export function SendParentSmsModal({
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-900 font-medium">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block font-bold">SMS Channel Disabled by Admin</strong>
+                    <strong className="block font-bold">SMS Channel Disabled</strong>
                     <p className="text-[11px] text-rose-800 mt-0.5">
                       {smsDisabledReason || "SMS dispatches are currently paused by the administrator."}
                     </p>

@@ -448,6 +448,7 @@ export default async function AdminSettingsPage({
               ) : selectedCampus ? (
                 /* Selected School Unified Configuration Form View */
                 <form
+                  key={selectedCampus.id}
                   action={updateCampusSettings}
                   className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8 w-full"
                 >

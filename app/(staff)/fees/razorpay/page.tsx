@@ -244,7 +244,7 @@ export default async function RazorpayConsolePage({
                     }`}
                   >
                     {!isEnabled
-                      ? "Disabled by Admin"
+                      ? "Disabled"
                       : campus.razorpayKeyId
                       ? "CUSTOM KEY CONFIGURED"
                       : "DEFAULT ENVIRONMENT KEY"}
@@ -255,7 +255,7 @@ export default async function RazorpayConsolePage({
                   <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-900 font-medium flex items-center gap-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                     <span>
-                      Online fee payment for {campus.code} is <strong>Disabled by Admin</strong> in Admin Settings. API credentials are locked.
+                      Online fee payment for {campus.code} is <strong>Disabled</strong> in Admin Settings. API credentials are locked.
                     </span>
                   </div>
                 )}

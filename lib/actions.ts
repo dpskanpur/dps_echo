@@ -990,11 +990,11 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   const website = (formData.get("website") as string) || "";
 
   const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") === "true" || formData.get("isOnlinePaymentEnabled") === "on";
-  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled by Admin";
+  const onlinePaymentDisabledReason = isOnlinePaymentEnabled ? "" : "Disabled";
   const isSmsEnabled = formData.get("isSmsEnabled") === "true" || formData.get("isSmsEnabled") === "on";
-  const smsDisabledReason = isSmsEnabled ? "" : "Disabled by Admin";
+  const smsDisabledReason = isSmsEnabled ? "" : "Disabled";
   const isEmailEnabled = formData.get("isEmailEnabled") === "true" || formData.get("isEmailEnabled") === "on";
-  const emailDisabledReason = isEmailEnabled ? "" : "Disabled by Admin";
+  const emailDisabledReason = isEmailEnabled ? "" : "Disabled";
 
   await prisma.campus.update({
     where: { id: campusId },
@@ -1233,11 +1233,11 @@ export async function createCampus(formData: FormData): Promise<void> {
       activeAcademicYear,
       registrationFee,
       isOnlinePaymentEnabled,
-      onlinePaymentDisabledReason: isOnlinePaymentEnabled ? "" : "Disabled by Admin",
+      onlinePaymentDisabledReason: isOnlinePaymentEnabled ? "" : "Disabled",
       isSmsEnabled,
-      smsDisabledReason: isSmsEnabled ? "" : "Disabled by Admin",
+      smsDisabledReason: isSmsEnabled ? "" : "Disabled",
       isEmailEnabled,
-      emailDisabledReason: isEmailEnabled ? "" : "Disabled by Admin",
+      emailDisabledReason: isEmailEnabled ? "" : "Disabled",
     },
   });
 
