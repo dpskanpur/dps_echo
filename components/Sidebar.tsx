@@ -78,7 +78,7 @@ export function Sidebar({
         {canStudents && (
           <div>
             <div className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2 flex items-center justify-between">
-              <span>Student Management</span>
+              <span>Students</span>
               {!canUpdateStudents && (
                 <span className="text-[9px] text-amber-400 font-semibold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
                   view only
@@ -89,7 +89,7 @@ export function Sidebar({
               <SidebarLink
                 href="/students"
                 icon={Users}
-                label="Student Directory"
+                label="Directory"
                 active={pathname === "/students"}
               />
 
@@ -98,13 +98,13 @@ export function Sidebar({
                   <SidebarLink
                     href="/students/new"
                     icon={UserPlus}
-                    label="New Admission"
+                    label="Admissions"
                     active={pathname === "/students/new"}
                   />
                   <SidebarLink
                     href="/students/promotion"
                     icon={Sparkles}
-                    label="Annual Promotion & Transfers"
+                    label="Promotions"
                     active={pathname === "/students/promotion"}
                   />
                 </>
@@ -114,7 +114,7 @@ export function Sidebar({
                 <SidebarLink
                   href="/tc"
                   icon={FileText}
-                  label="Transfer Certificate (TC)"
+                  label="Certificates"
                   active={pathname.startsWith("/tc")}
                 />
               )}
@@ -123,7 +123,7 @@ export function Sidebar({
                 <SidebarLink
                   href="/alumni"
                   icon={GraduationCap}
-                  label="Alumni Archive"
+                  label="Alumni"
                   active={pathname.startsWith("/alumni")}
                 />
               )}
@@ -135,7 +135,7 @@ export function Sidebar({
         {canFees && (
           <div>
             <div className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2 flex items-center justify-between">
-              <span>Fee & Finance</span>
+              <span>Fees</span>
               {!canUpdateFees && (
                 <span className="text-[9px] text-amber-400 font-semibold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
                   view only
@@ -146,21 +146,21 @@ export function Sidebar({
               <SidebarLink
                 href="/fees/structures"
                 icon={Layers}
-                label="Fee Structures"
+                label="Structures"
                 active={pathname.startsWith("/fees/structures")}
               />
 
               <SidebarLink
                 href="/fees/invoices"
                 icon={Receipt}
-                label={<>Invoices & Ledger</>}
+                label="Invoices"
                 active={pathname.startsWith("/fees/invoices")}
               />
 
               <SidebarLink
                 href="/fees/defaulters"
                 icon={AlertTriangle}
-                label={<>Defaulters & Dues</>}
+                label="Defaulters"
                 active={pathname.startsWith("/fees/defaulters")}
               />
             </div>
@@ -171,7 +171,7 @@ export function Sidebar({
         {canNotifications && (
           <div>
             <h3 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2">
-              Parent Communication
+              Communication
             </h3>
             <div className="space-y-1">
               <SidebarLink
@@ -188,19 +188,19 @@ export function Sidebar({
         {canRbac && (
           <div>
             <h3 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2">
-              Administration & Access
+              Administration
             </h3>
             <div className="space-y-1">
               <SidebarLink
                 href="/admin/rbac"
                 icon={KeyRound}
-                label={<>Admin & Settings</>}
+                label="Settings"
                 active={pathname.startsWith("/admin/rbac") || pathname.startsWith("/campuses")}
               />
               <SidebarLink
                 href="/admin/audit-logs"
                 icon={History}
-                label={<>Audit Logs</>}
+                label="Audit"
                 active={pathname.startsWith("/admin/audit-logs")}
               />
             </div>
