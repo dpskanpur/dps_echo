@@ -440,123 +440,135 @@ export default async function AdminSettingsPage({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80">
-                      {/* Online Fee Payment Toggle */}
-                      <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <CreditCard className="w-4 h-4 text-emerald-800" />
-                              <span className="text-xs font-black text-slate-900">Online Fee Payment</span>
-                            </div>
-
-                            {/* Toggle Switch */}
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                name="isOnlinePaymentEnabled"
-                                value="true"
-                                defaultChecked={selectedCampus.isOnlinePaymentEnabled === true}
-                                className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
-                            </label>
-                          </div>
-                          <p className="text-[11px] text-slate-500 leading-relaxed">
-                            Razorpay online fee payment portal for parents of {selectedCampus.name}.
-                          </p>
+                      {/* Online Fee Payment Toggle Card */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                          <CreditCard className="w-4 h-4 text-emerald-800" />
+                          <span className="text-xs font-black text-slate-900">Online Fee Payment</span>
                         </div>
 
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Route</span>
-                          <span
-                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                              selectedCampus.isOnlinePaymentEnabled
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : "bg-rose-50 text-rose-800 border-rose-200"
-                            }`}
-                          >
-                            {selectedCampus.isOnlinePaymentEnabled ? "● Enabled" : "○ Disabled by Admin"}
-                          </span>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          Razorpay online fee payment portal for parents of {selectedCampus.name}.
+                        </p>
+
+                        <div className="space-y-2.5 pt-1">
+                          {/* Option 1: Enabled */}
+                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-emerald-50/90 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="text-xs font-bold text-emerald-950">Enabled</span>
+                            </div>
+                            <input
+                              type="radio"
+                              name="isOnlinePaymentEnabled"
+                              value="true"
+                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === true}
+                              className="accent-emerald-600 w-4 h-4 cursor-pointer"
+                            />
+                          </label>
+
+                          {/* Option 2: Disabled by Admin */}
+                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-rose-50/90 has-[:checked]:border-rose-500 has-[:checked]:text-rose-950 has-[:checked]:shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
+                              <span className="text-xs font-bold text-rose-950">Disabled by Admin</span>
+                            </div>
+                            <input
+                              type="radio"
+                              name="isOnlinePaymentEnabled"
+                              value="false"
+                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === false}
+                              className="accent-rose-600 w-4 h-4 cursor-pointer"
+                            />
+                          </label>
                         </div>
                       </div>
 
-                      {/* SMS Gateway Channel Toggle */}
-                      <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <MessageSquare className="w-4 h-4 text-emerald-800" />
-                              <span className="text-xs font-black text-slate-900">SMS Gateway Channel</span>
-                            </div>
-
-                            {/* Toggle Switch */}
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                name="isSmsEnabled"
-                                value="true"
-                                defaultChecked={selectedCampus.isSmsEnabled === true}
-                                className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
-                            </label>
-                          </div>
-                          <p className="text-[11px] text-slate-500 leading-relaxed">
-                            SMS delivery for notices, fee receipts &amp; alerts for {selectedCampus.name}.
-                          </p>
+                      {/* SMS Gateway Channel Toggle Card */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                          <MessageSquare className="w-4 h-4 text-emerald-800" />
+                          <span className="text-xs font-black text-slate-900">SMS Gateway Channel</span>
                         </div>
 
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Route</span>
-                          <span
-                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                              selectedCampus.isSmsEnabled
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : "bg-rose-50 text-rose-800 border-rose-200"
-                            }`}
-                          >
-                            {selectedCampus.isSmsEnabled ? "● Enabled" : "○ Disabled by Admin"}
-                          </span>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          SMS delivery for notices, fee receipts &amp; alerts for {selectedCampus.name}.
+                        </p>
+
+                        <div className="space-y-2.5 pt-1">
+                          {/* Option 1: Enabled */}
+                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-emerald-50/90 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="text-xs font-bold text-emerald-950">Enabled</span>
+                            </div>
+                            <input
+                              type="radio"
+                              name="isSmsEnabled"
+                              value="true"
+                              defaultChecked={selectedCampus.isSmsEnabled === true}
+                              className="accent-emerald-600 w-4 h-4 cursor-pointer"
+                            />
+                          </label>
+
+                          {/* Option 2: Disabled by Admin */}
+                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-rose-50/90 has-[:checked]:border-rose-500 has-[:checked]:text-rose-950 has-[:checked]:shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
+                              <span className="text-xs font-bold text-rose-950">Disabled by Admin</span>
+                            </div>
+                            <input
+                              type="radio"
+                              name="isSmsEnabled"
+                              value="false"
+                              defaultChecked={selectedCampus.isSmsEnabled === false}
+                              className="accent-rose-600 w-4 h-4 cursor-pointer"
+                            />
+                          </label>
                         </div>
                       </div>
 
-                      {/* Email Notification Channel Toggle */}
-                      <div className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-emerald-800" />
-                              <span className="text-xs font-black text-slate-900">Email Notification Channel</span>
-                            </div>
-
-                            {/* Toggle Switch */}
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                name="isEmailEnabled"
-                                value="true"
-                                defaultChecked={selectedCampus.isEmailEnabled === true}
-                                className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600" />
-                            </label>
-                          </div>
-                          <p className="text-[11px] text-slate-500 leading-relaxed">
-                            Email notifications for admissions &amp; circulars for {selectedCampus.name}.
-                          </p>
+                      {/* Email Notification Channel Toggle Card */}
+                      <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-2xs">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                          <Mail className="w-4 h-4 text-emerald-800" />
+                          <span className="text-xs font-black text-slate-900">Email Notification Channel</span>
                         </div>
 
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Route</span>
-                          <span
-                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                              selectedCampus.isEmailEnabled
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : "bg-rose-50 text-rose-800 border-rose-200"
-                            }`}
-                          >
-                            {selectedCampus.isEmailEnabled ? "● Enabled" : "○ Disabled by Admin"}
-                          </span>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          Email notifications for admissions &amp; circulars for {selectedCampus.name}.
+                        </p>
+
+                        <div className="space-y-2.5 pt-1">
+                          {/* Option 1: Enabled */}
+                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-emerald-50/90 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="text-xs font-bold text-emerald-950">Enabled</span>
+                            </div>
+                            <input
+                              type="radio"
+                              name="isEmailEnabled"
+                              value="true"
+                              defaultChecked={selectedCampus.isEmailEnabled === true}
+                              className="accent-emerald-600 w-4 h-4 cursor-pointer"
+                            />
+                          </label>
+
+                          {/* Option 2: Disabled by Admin */}
+                          <label className="relative flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/80 cursor-pointer transition has-[:checked]:bg-rose-50/90 has-[:checked]:border-rose-500 has-[:checked]:text-rose-950 has-[:checked]:shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
+                              <span className="text-xs font-bold text-rose-950">Disabled by Admin</span>
+                            </div>
+                            <input
+                              type="radio"
+                              name="isEmailEnabled"
+                              value="false"
+                              defaultChecked={selectedCampus.isEmailEnabled === false}
+                              className="accent-rose-600 w-4 h-4 cursor-pointer"
+                            />
+                          </label>
                         </div>
                       </div>
                     </div>
