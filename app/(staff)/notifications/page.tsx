@@ -77,7 +77,7 @@ export default async function NotificationsPage({
     : user?.campusId || firstCampus?.id;
 
   const scope = resolveCampusScope(user, effectiveCampusId);
-  const providers = await getProviderStatus();
+  const providers = await getProviderStatus(effectiveCampusId);
 
   const campuses = await prisma.campus.findMany({
     where: scope.locked ? { id: scope.campusId! } : {},

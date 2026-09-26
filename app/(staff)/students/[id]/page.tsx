@@ -103,7 +103,7 @@ export default async function StudentDetailPage({
   const totalPaid = student.invoices.reduce((acc, inv) => acc + inv.paidAmount, 0);
   const totalBalance = student.invoices.reduce((acc, inv) => acc + inv.balanceAmount, 0);
 
-  const providers = await getProviderStatus();
+  const providers = await getProviderStatus(student.campusId);
 
   return (
         <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">

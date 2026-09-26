@@ -527,9 +527,9 @@ export async function getProviderStatus(campusId?: string): Promise<{
   const channelSettings = await getChannelSettings();
 
   let isSmsEnabled = channelSettings.isSmsEnabled ?? true;
-  let smsDisabledReason = channelSettings.smsDisabledReason;
+  let smsDisabledReason = channelSettings.smsDisabledReason || "";
   let isEmailEnabled = channelSettings.isEmailEnabled ?? true;
-  let emailDisabledReason = channelSettings.emailDisabledReason;
+  let emailDisabledReason = channelSettings.emailDisabledReason || "";
 
   if (campusId && campusId !== "ALL") {
     const campus = await prisma.campus.findFirst({
@@ -541,30 +541,23 @@ export async function getProviderStatus(campusId?: string): Promise<{
       // Evaluate per-campus toggle state directly.
       isSmsEnabled = (channelSettings.isSmsEnabled ?? true) && (campus.isSmsEnabled ?? true);
       smsDisabledReason = !campus.isSmsEnabled
-        ? (campus.smsDisabledReason || "Disabled")
+        ? (campus.smsDisabledReason || "Disabled for this campus")
         : !channelSettings.isSmsEnabled
-        ? (channelSettings.smsDisabledReason || "Disabled")
+        ? (channelSettings.smsDisabledReason || "Disabled globally")
         : "";
 
       isEmailEnabled = (channelSettings.isEmailEnabled ?? true) && (campus.isEmailEnabled ?? true);
       emailDisabledReason = !campus.isEmailEnabled
-        ? (campus.emailDisabledReason || "Disabled")
+        ? (campus.emailDisabledReason || "Disabled for this campus")
         : !channelSettings.isEmailEnabled
-        ? (channelSettings.emailDisabledReason || "Disabled")
+        ? (channelSettings.emailDisabledReason || "Disabled globally")
         : "";
     }
   }
 
-  const hasEmailEnv = !!(process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL_FROM);
-  const hasSmsEnv = !!(
-    (process.env.SMS_USERNAME && process.env.SMS_PASSWORD) ||
-    process.env.MSG91_AUTH_KEY ||
-    process.env.SMS_GATEWAY_URL
-  );
-
   return {
-    email: hasEmailEnv && isEmailEnabled,
-    sms: hasSmsEnv && isSmsEnabled,
+    email: isEmailEnabled,
+    sms: isSmsEnabled,
     isSmsEnabled,
     smsDisabledReason,
     isEmailEnabled,
