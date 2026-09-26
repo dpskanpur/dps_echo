@@ -31,6 +31,8 @@ import {
 
 import { getLinkedSiblings } from "@/lib/promotion-actions";
 import { SiblingLinkCard } from "@/components/SiblingLinkCard";
+import { PassportPhotoUploader } from "@/components/PassportPhotoUploader";
+import { DocumentUploadSection } from "@/components/DocumentUploadSection";
 
 export const dynamic = "force-dynamic";
 
@@ -121,10 +123,18 @@ export default async function StudentDetailPage({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               {/* Left Details */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-teal-600 text-white font-black text-2xl flex items-center justify-center shadow-md shrink-0">
-                  {student.firstName[0]}
-                  {student.lastName[0]}
-                </div>
+                {student.photoUrl ? (
+                  <img
+                    src={student.photoUrl}
+                    alt={`${student.firstName} ${student.lastName}`}
+                    className="w-16 h-20 rounded-xl object-cover border border-slate-200 shadow-md shrink-0 bg-slate-100"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-teal-600 text-white font-black text-2xl flex items-center justify-center shadow-md shrink-0">
+                    {student.firstName[0]}
+                    {student.lastName[0]}
+                  </div>
+                )}
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-2xl font-black text-slate-900">
@@ -896,23 +906,15 @@ export default async function StudentDetailPage({
 
           {/* Tab 4: Document Locker */}
           {tab === "docs" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {student.documents.map((doc) => (
-                <div key={doc.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <FolderOpen className="w-5 h-5 text-emerald-800" />
-                    <span className="text-[10px] font-mono text-slate-400">{doc.fileSize || "PDF"}</span>
-                  </div>
-                  <h4 className="font-bold text-xs text-slate-900">{doc.title}</h4>
-                  <p className="text-[11px] text-slate-500 truncate">{doc.fileName}</p>
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <span className="text-slate-400">{formatDate(doc.uploadedAt)}</span>
-                    <span className="text-emerald-800 font-semibold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Verified
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+              <DocumentUploadSection
+                studentId={student.id}
+                documents={student.documents}
+                onChange={() => {
+                  // Reload page data after upload
+                  window.location.reload();
+                }}
+              />
             </div>
           )}
         </main>
