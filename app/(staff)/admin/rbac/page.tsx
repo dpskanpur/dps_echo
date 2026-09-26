@@ -219,7 +219,7 @@ export default async function AdminSettingsPage({
                     }`}
                   >
                     <Plus className="w-3.5 h-3.5 text-amber-600" />
-                    <span>+ Add New Campus</span>
+                    <span>Add New Campus</span>
                     {addCampus && (
                       <span
                         className="p-0.5 hover:bg-amber-200/80 rounded-full transition text-amber-900 ml-1 inline-flex items-center justify-center"

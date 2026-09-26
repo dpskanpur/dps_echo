@@ -6,6 +6,7 @@ import {
   updateCampusCredentialsAction,
 } from "@/lib/fee-settings-actions";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import Link from "next/link";
 import {
   CreditCard,
   Building2,
@@ -197,97 +198,151 @@ export default async function RazorpayConsolePage({
         </div>
       </div>
 
-      {/* SECTION 1: SCHOOL-WISE RAZORPAY API CREDENTIALS */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+      {/* SECTION 1: SCHOOL-WISE RAZORPAY API CREDENTIALS (TABBED WINDOW) */}
+      <div className="space-y-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-emerald-800" />
-            <h2 className="text-base font-black text-slate-900">
-              School-Wise Razorpay API Key Credentials ({campuses.length} Campuses)
-            </h2>
+            <div>
+              <h2 className="text-base font-black text-slate-900">
+                School-Wise Razorpay API Key Credentials
+              </h2>
+              <p className="text-xs text-slate-500">
+                Select a campus tab below to manage its custom Razorpay merchant credentials.
+              </p>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-            API Keys Configuration
+          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 self-start sm:self-auto">
+            {campuses.length} Campuses Configured
           </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {campuses.map((campus) => {
-            const isEnabled = campus.isOnlinePaymentEnabled;
-            const isLocked = !canUpdate || !isEnabled;
+        {/* CAMPUS TAB SWITCHER */}
+        {(() => {
+          const activeCampus =
+            campuses.find(
+              (c) =>
+                c.code === params.campus ||
+                c.id === params.campus ||
+                c.code?.toLowerCase() === params.campus?.toLowerCase()
+            ) || campuses[0];
 
-            return (
+          if (!activeCampus) return null;
+
+          const isEnabled = activeCampus.isOnlinePaymentEnabled;
+          const isLocked = !canUpdate || !isEnabled;
+
+          return (
+            <div className="space-y-6">
+              {/* Tab Navigation */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {campuses.map((c) => {
+                  const isSelected = activeCampus.id === c.id;
+                  const searchUrl = `/fees/razorpay?campus=${c.code}${
+                    params.status ? `&status=${params.status}` : ""
+                  }${params.campusFilter ? `&campusFilter=${params.campusFilter}` : ""}`;
+
+                  return (
+                    <Link
+                      key={c.id}
+                      href={searchUrl}
+                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 border shadow-xs cursor-pointer shrink-0 ${
+                        isSelected
+                          ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                          : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200"
+                      }`}
+                    >
+                      <span
+                        className={`font-mono text-[11px] px-2.5 py-0.5 rounded-lg font-black uppercase tracking-wider shrink-0 ${
+                          isSelected
+                            ? "bg-emerald-950 text-amber-300 border border-emerald-900"
+                            : "bg-slate-100 text-slate-600 border border-slate-200"
+                        }`}
+                      >
+                        {c.code}
+                      </span>
+                      <span>{c.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* ACTIVE CAMPUS CREDENTIAL CARD */}
               <div
-                key={campus.id}
-                className={`bg-white rounded-3xl border shadow-xs p-6 space-y-4 transition ${
+                className={`bg-slate-50/70 rounded-2xl border p-6 space-y-5 transition ${
                   !isEnabled ? "border-rose-200 bg-rose-50/20" : "border-slate-200"
                 }`}
               >
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 font-mono font-bold text-xs flex items-center justify-center border border-emerald-200">
-                      {campus.code}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
+                  <div className="flex items-center gap-3.5">
+                    {/* SPACIOUS LOGO BADGE */}
+                    <div className="h-9 min-w-9 px-3.5 py-1.5 rounded-xl bg-emerald-950 border border-emerald-900 text-amber-300 font-mono font-black text-xs tracking-wider uppercase shadow-xs flex items-center justify-center shrink-0">
+                      {activeCampus.code}
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-slate-900">{campus.name}</h3>
-                      <p className="text-[11px] text-slate-400">Campus Code: {campus.code}</p>
+                      <h3 className="text-base font-black text-slate-900">
+                        {activeCampus.name}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        School Code: <strong className="text-slate-700">{activeCampus.code}</strong> • Campus ID: <span className="font-mono text-[11px]">{activeCampus.id}</span>
+                      </p>
                     </div>
                   </div>
 
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto ${
                       !isEnabled
                         ? "bg-rose-100 text-rose-800 border-rose-200"
-                        : campus.razorpayKeyId
+                        : activeCampus.razorpayKeyId
                         ? "bg-emerald-100 text-emerald-800 border-emerald-200"
                         : "bg-slate-100 text-slate-700 border-slate-200"
                     }`}
                   >
                     {!isEnabled
-                      ? "Disabled"
-                      : campus.razorpayKeyId
+                      ? "Disabled by Admin"
+                      : activeCampus.razorpayKeyId
                       ? "CUSTOM KEY CONFIGURED"
                       : "DEFAULT ENVIRONMENT KEY"}
                   </span>
                 </div>
 
                 {!isEnabled && (
-                  <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-900 font-medium flex items-center gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-900 font-medium flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
                     <span>
-                      Online fee payment for {campus.code} is <strong>Disabled</strong> in Admin Settings. API credentials are locked.
+                      Online fee payment for <strong>{activeCampus.name} ({activeCampus.code})</strong> is <strong>Disabled</strong> in Admin Settings. API key credentials are locked and cannot be edited.
                     </span>
                   </div>
                 )}
 
-                <form action={updateCampusCredentialsAction} className="space-y-3">
-                  <input type="hidden" name="campusId" value={campus.id} />
+                <form action={updateCampusCredentialsAction} className="space-y-4 max-w-2xl">
+                  <input type="hidden" name="campusId" value={activeCampus.id} />
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Razorpay Key ID ({campus.code})
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Razorpay Key ID ({activeCampus.code})
                     </label>
                     <input
                       type="text"
                       name="razorpayKeyId"
-                      defaultValue={campus.razorpayKeyId || ""}
+                      defaultValue={activeCampus.razorpayKeyId || ""}
                       placeholder="rzp_live_... (Default: System Environment Variable)"
                       disabled={isLocked}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed shadow-xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Razorpay Key Secret ({campus.code})
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Razorpay Key Secret ({activeCampus.code})
                     </label>
                     <input
                       type="password"
                       name="razorpayKeySecret"
-                      defaultValue={campus.razorpayKeySecret || ""}
+                      defaultValue={activeCampus.razorpayKeySecret || ""}
                       placeholder="•••••••••••••••• (Leave blank to keep current)"
                       disabled={isLocked}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed shadow-xs"
                     />
                   </div>
 
@@ -296,21 +351,21 @@ export default async function RazorpayConsolePage({
                       <button
                         type="submit"
                         disabled={!isEnabled}
-                        className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white transition shadow-xs ${
+                        className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl text-white transition shadow-xs ${
                           isEnabled
                             ? "bg-[#0F9D58] hover:bg-emerald-700 cursor-pointer"
                             : "bg-slate-300 text-slate-500 cursor-not-allowed"
                         }`}
                       >
-                        <Save className="w-3.5 h-3.5" /> Save {campus.code} API Keys
+                        <Save className="w-4 h-4" /> Save {activeCampus.code} API Keys
                       </button>
                     </div>
                   )}
                 </form>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* SECTION 2: LIVE PAYMENT TRANSACTIONS LEDGER */}
