@@ -1083,6 +1083,19 @@ export async function updateSystemSettings(formData: FormData): Promise<void> {
   const registrationIdPrefix = (formData.get("registrationIdPrefix") as string) || "REG";
   const registrationFeeDefault = parseFloat(formData.get("registrationFeeDefault") as string) || 1000;
 
+  const isRegistrationOpenVal = formData.get("isRegistrationOpen");
+  const isRegistrationOpen = isRegistrationOpenVal === "true" || isRegistrationOpenVal === "on";
+  const registrationClosedNotice =
+    (formData.get("registrationClosedNotice") as string) ||
+    "Online registration is currently closed for new admissions.";
+  const registrationOpenDateNotice =
+    (formData.get("registrationOpenDateNotice") as string) ||
+    "Admissions for the upcoming academic session will reopen soon. Please contact the admission office for details.";
+  const registrationContactPhone =
+    (formData.get("registrationContactPhone") as string) || "+91 512 2580000, +91 512 2580001";
+  const registrationContactEmail =
+    (formData.get("registrationContactEmail") as string) || "admissions@dpskanpur.com";
+
   await prisma.systemSettings.upsert({
     where: { id: "global" },
     update: {
@@ -1090,6 +1103,11 @@ export async function updateSystemSettings(formData: FormData): Promise<void> {
       scholarIdPrefix,
       registrationIdPrefix,
       registrationFeeDefault,
+      isRegistrationOpen,
+      registrationClosedNotice,
+      registrationOpenDateNotice,
+      registrationContactPhone,
+      registrationContactEmail,
     },
     create: {
       id: "global",
@@ -1097,6 +1115,11 @@ export async function updateSystemSettings(formData: FormData): Promise<void> {
       scholarIdPrefix,
       registrationIdPrefix,
       registrationFeeDefault,
+      isRegistrationOpen,
+      registrationClosedNotice,
+      registrationOpenDateNotice,
+      registrationContactPhone,
+      registrationContactEmail,
     },
   });
 
@@ -1108,12 +1131,20 @@ export async function updateSystemSettings(formData: FormData): Promise<void> {
     action: "SYSTEM_SETTINGS_UPDATE",
     entityType: "SystemSettings",
     entityId: "global",
-    details: { currentAcademicYear, scholarIdPrefix, registrationFeeDefault },
+    details: {
+      currentAcademicYear,
+      scholarIdPrefix,
+      registrationFeeDefault,
+      isRegistrationOpen,
+      registrationClosedNotice,
+    },
   });
 
   revalidatePath("/admin/rbac");
+  revalidatePath("/public-registration");
   revalidatePath("/students");
   revalidatePath("/students/new");
+  revalidateTag(PUBLIC_REFERENCE_TAG);
   redirect("/admin/rbac?notice=settings_updated");
 }
 

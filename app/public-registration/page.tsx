@@ -1,4 +1,4 @@
-import { getPublicCampuses, getPublicClasses } from "@/lib/public-data";
+import { getPublicCampuses, getPublicClasses, getPublicSystemSettings } from "@/lib/public-data";
 import { registerStudentPublic } from "@/lib/actions";
 import {
   Building2,
@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   CreditCard,
   Lock,
+  Calendar,
+  Mail,
 } from "lucide-react";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";
@@ -36,6 +38,8 @@ export default async function PublicRegistrationPage({
 }) {
   const { campus: campusId } = await searchParams;
 
+  const systemSettings = await getPublicSystemSettings();
+
   // Cached across requests — see lib/public-data.ts
   let campuses: any[] = [];
   try {
@@ -55,6 +59,79 @@ export default async function PublicRegistrationPage({
 
   const selectedCampus =
     campuses.find((c: any) => c.id === campusId) || campuses[0];
+
+  // If Registration is globally closed by Super Admin in Settings
+  if (!systemSettings.isRegistrationOpen) {
+    return (
+      <PublicShell
+        width="narrow"
+        eyebrow="Admissions 2026-2027"
+        title="Online Registration Closed"
+        subtitle={
+          systemSettings.registrationClosedNotice ||
+          "Online registration is currently closed for new admissions."
+        }
+        badge={
+          <span className="text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-rose-600" /> Registration Closed
+          </span>
+        }
+      >
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+          <div className="bg-amber-50 border border-amber-200/90 p-5 rounded-2xl space-y-2 text-slate-800">
+            <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-amber-700" />
+              <span>When Will Admissions Open?</span>
+            </h3>
+            <p className="text-xs leading-relaxed text-amber-950 font-medium">
+              {systemSettings.registrationOpenDateNotice ||
+                "Admissions for the upcoming academic session will reopen soon. Please contact the admission office for further details."}
+            </p>
+          </div>
+
+          <div className="space-y-4 pt-2 border-t border-slate-100">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Admission Office Contact &amp; Support
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                  <Phone className="w-4 h-4 text-emerald-700" />
+                  <span>Helpline Phone</span>
+                </div>
+                <p className="text-xs font-mono font-bold text-slate-900">
+                  {systemSettings.registrationContactPhone || selectedCampus?.phone || "+91 512 2580000"}
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                  <Mail className="w-4 h-4 text-emerald-700" />
+                  <span>Helpline Email</span>
+                </div>
+                <p className="text-xs font-mono font-bold text-slate-900">
+                  {systemSettings.registrationContactEmail || selectedCampus?.email || "admissions@dpskanpur.com"}
+                </p>
+              </div>
+            </div>
+
+            {selectedCampus && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                  <MapPin className="w-4 h-4 text-emerald-700" />
+                  <span>{selectedCampus.name} Campus Address</span>
+                </div>
+                <p className="text-xs text-slate-800">
+                  {selectedCampus.address}, {selectedCampus.city || "Kanpur"}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </PublicShell>
+    );
+  }
 
   // Public page: on an unconfigured database this must read as "not open yet"
   // rather than crashing in front of a parent.
