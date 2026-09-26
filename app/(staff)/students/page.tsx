@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { deleteStudent } from "@/lib/actions";
 import { DeleteStudentButton } from "@/components/DeleteStudentButton";
 import { BulkImportModal } from "@/components/BulkImportModal";
+import { LiveSearchInput } from "@/components/LiveSearchInput";
 import { Pagination } from "@/components/Pagination";
 import {
   Users,
@@ -152,18 +153,12 @@ export default async function StudentsPage({
 
           {/* Filter Bar */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center gap-4">
-            {/* Search */}
-            <form method="GET" className="flex-1 min-w-[240px] relative">
-              {campusId && <input type="hidden" name="campus" value={campusId} />}
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input
-                type="text"
-                name="q"
-                defaultValue={q || ""}
-                placeholder="Search by student name, registration ID or scholar no..."
-                className="w-full bg-slate-50 text-xs border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-              />
-            </form>
+            {/* Live Search */}
+            <LiveSearchInput
+              defaultValue={q}
+              placeholder="Search by student name, registration ID or scholar no..."
+              className="flex-1 min-w-[240px]"
+            />
 
             {/* Class Filter */}
             <div className="flex items-center gap-2">

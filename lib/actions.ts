@@ -766,10 +766,17 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
     },
   });
 
-  // Mark student status as TC_ISSUED
+  // Mark student status as ALUMNI (Class 10/12 from Azad Nagar or Barra) or TC_ISSUED
+  const cCode = (student.campus.code || "").toUpperCase();
+  const isAlumniEligibleCampus = cCode === "AZD" || cCode === "DPSAZD" || cCode === "BAR" || cCode === "DPSBAR";
+  const className = (student.class.name || "").toUpperCase();
+  const isPassoutGrade = /\b(10|X|12|XII)\b/i.test(className) || className.includes("10") || className.includes("12");
+
+  const studentStatus = isAlumniEligibleCampus && isPassoutGrade ? "ALUMNI" : "TC_ISSUED";
+
   await prisma.student.update({
     where: { id: studentId },
-    data: { status: "TC_ISSUED" },
+    data: { status: studentStatus },
   });
 
   await logAuditAction({

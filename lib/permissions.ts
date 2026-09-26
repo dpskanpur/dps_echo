@@ -58,6 +58,8 @@ export interface UserPermissions {
   isViewOnlyStudents: boolean;
   isViewOnlyFees: boolean;
   roleDisplayName: string;
+  campusId?: string | null;
+  campusCode?: string | null;
 }
 
 /**

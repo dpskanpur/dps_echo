@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { GraduationCap, Search, Building2, Eye, Calendar, Award } from "lucide-react";
+import { LiveSearchInput } from "@/components/LiveSearchInput";
 import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
@@ -18,6 +19,17 @@ export default async function AlumniPage({
   const { campus: campusId, q, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
+
+  const userCampusCode = (permissions.campusCode || "").toUpperCase();
+  const isJuniorCampusUser =
+    userCampusCode === "DPSKID" ||
+    userCampusCode === "KID" ||
+    userCampusCode === "DPSSRV" ||
+    userCampusCode === "SRV";
+
+  if (isJuniorCampusUser && !permissions.isAdmin) {
+    redirect("/students?notice=junior_campus_no_alumni");
+  }
 
   if (!permissions.modules.alumni.canView && !permissions.isAdmin) {
     redirect("/?error=unauthorized_alumni");
@@ -37,10 +49,14 @@ export default async function AlumniPage({
   };
 
   if (q) {
+    const cleanQ = q.trim();
     whereClause.OR = [
-      { firstName: { contains: q, mode: "insensitive" } },
-      { lastName: { contains: q, mode: "insensitive" } },
-      { scholarNo: { contains: q, mode: "insensitive" } },
+      { firstName: { contains: cleanQ, mode: "insensitive" } },
+      { lastName: { contains: cleanQ, mode: "insensitive" } },
+      { scholarNo: { contains: cleanQ, mode: "insensitive" } },
+      { admissionNo: { contains: cleanQ, mode: "insensitive" } },
+      { class: { name: { contains: cleanQ, mode: "insensitive" } } },
+      { guardians: { some: { name: { contains: cleanQ, mode: "insensitive" } } } },
     ];
   }
 
@@ -69,31 +85,25 @@ export default async function AlumniPage({
               <div className="flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-emerald-800" />
                 <h1 className="text-xl font-black text-slate-900">
-                  Alumni & Historical Records Vault
+                  Alumni &amp; Historical Records Vault
                 </h1>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Permanent institutional repository for graduated batches and passed-out students of DPS Kanpur.
+                Permanent institutional repository for Class 10 &amp; 12 passed-out graduates of DPS Azad Nagar &amp; DPS Barra.
               </p>
             </div>
             <span className="text-xs font-bold bg-purple-100 text-purple-900 px-3 py-1.5 rounded-lg border border-purple-200">
-              Total Alumni Records: {alumni.length}
+              Total Alumni Records: {totalCount}
             </span>
           </div>
 
           {/* Search Filter */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center gap-4">
-            <form method="GET" className="flex-1 relative">
-              {campusId && <input type="hidden" name="campus" value={campusId} />}
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input
-                type="text"
-                name="q"
-                defaultValue={q || ""}
-                placeholder="Search alumni by name, scholar ID or year..."
-                className="w-full bg-slate-50 text-xs border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </form>
+            <LiveSearchInput
+              defaultValue={q}
+              placeholder="Search alumni by name, scholar ID or class..."
+              className="flex-1"
+            />
           </div>
 
           {/* Alumni Cards Grid */}
