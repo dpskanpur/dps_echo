@@ -39,7 +39,7 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
   }
 
   const permissions = await getUserPermissions(currentUser);
-  if (!permissions.isAdmin && !permissions.modules.rbac.canView) {
+  if (!permissions.isAdmin && !permissions.modules.audit?.canView && !permissions.modules.rbac.canView) {
     redirect("/?error=unauthorized_audit_logs");
   }
 

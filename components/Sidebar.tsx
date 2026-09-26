@@ -37,6 +37,7 @@ export function Sidebar({
   const canTc = permissions?.modules?.tc?.canView ?? true;
   const canAlumni = permissions?.modules?.alumni?.canView ?? true;
   const canRbac = (permissions?.modules?.rbac?.canView || permissions?.isAdmin) ?? false;
+  const canAudit = (permissions?.modules?.audit?.canView || permissions?.modules?.rbac?.canView || permissions?.isAdmin) ?? false;
   const canNotifications = (permissions?.modules?.notifications?.canView || permissions?.isAdmin) ?? false;
 
   const canUpdateStudents = permissions?.modules?.students?.canUpdate ?? false;
@@ -193,24 +194,28 @@ export function Sidebar({
         )}
 
         {/* Administration & Access */}
-        {canRbac && (
+        {(canRbac || canAudit) && (
           <div>
             <h3 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2">
               Administration
             </h3>
             <div className="space-y-1">
-              <SidebarLink
-                href="/admin/rbac"
-                icon={KeyRound}
-                label="Settings"
-                active={pathname.startsWith("/admin/rbac") || pathname.startsWith("/campuses")}
-              />
-              <SidebarLink
-                href="/admin/audit-logs"
-                icon={History}
-                label="Audit"
-                active={pathname.startsWith("/admin/audit-logs")}
-              />
+              {canRbac && (
+                <SidebarLink
+                  href="/admin/rbac"
+                  icon={KeyRound}
+                  label="Settings"
+                  active={pathname.startsWith("/admin/rbac") || pathname.startsWith("/campuses")}
+                />
+              )}
+              {canAudit && (
+                <SidebarLink
+                  href="/admin/audit-logs"
+                  icon={History}
+                  label="Audit"
+                  active={pathname.startsWith("/admin/audit-logs")}
+                />
+              )}
             </div>
           </div>
         )}

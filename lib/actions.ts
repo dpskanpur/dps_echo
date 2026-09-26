@@ -1167,6 +1167,10 @@ export async function createCampus(formData: FormData): Promise<void> {
   const registrationFeeRaw = (formData.get("registrationFee") as string) || "1000";
   const createClasses = formData.get("createClasses") === "on";
 
+  const isOnlinePaymentEnabled = formData.get("isOnlinePaymentEnabled") !== "false";
+  const isSmsEnabled = formData.get("isSmsEnabled") !== "false";
+  const isEmailEnabled = formData.get("isEmailEnabled") !== "false";
+
   if (!code || !name || !address || !phone || !email) {
     throw new Error("Campus code, name, address, phone and email are all required.");
   }
@@ -1198,6 +1202,12 @@ export async function createCampus(formData: FormData): Promise<void> {
       affiliation,
       activeAcademicYear,
       registrationFee,
+      isOnlinePaymentEnabled,
+      onlinePaymentDisabledReason: isOnlinePaymentEnabled ? "" : "Disabled by Admin",
+      isSmsEnabled,
+      smsDisabledReason: isSmsEnabled ? "" : "Disabled by Admin",
+      isEmailEnabled,
+      emailDisabledReason: isEmailEnabled ? "" : "Disabled by Admin",
     },
   });
 
