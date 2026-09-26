@@ -84,7 +84,7 @@ export default async function DefaultersPage({
   // Messaging parents is governed by the Notifications module, not by fee
   // access, so a clerk who can read the ledger cannot necessarily send.
   const canNotify = permissions.isAdmin || permissions.modules.notifications.canUpdate;
-  const providers = getProviderStatus();
+  const providers = await getProviderStatus();
   const noProviders = !providers.email && !providers.sms;
 
   const filterQuery = new URLSearchParams();

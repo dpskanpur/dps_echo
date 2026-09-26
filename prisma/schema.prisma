@@ -452,6 +452,10 @@ model SystemSettings {
   scholarIdPrefix         String   @default("DPS")
   registrationIdPrefix   String   @default("REG")
   registrationFeeDefault  Float    @default(1000)
+  isSmsEnabled            Boolean  @default(true)
+  smsDisabledReason       String?  @default("")
+  isEmailEnabled          Boolean  @default(true)
+  emailDisabledReason     String?  @default("")
   updatedAt               DateTime @updatedAt
 }
 

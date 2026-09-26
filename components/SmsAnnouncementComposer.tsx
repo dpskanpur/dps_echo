@@ -20,6 +20,10 @@ interface SmsAnnouncementComposerProps {
   classes: ClassOption[];
   scopeCampusId?: string | null;
   lockedCampus?: boolean;
+  isSmsEnabled?: boolean;
+  smsDisabledReason?: string;
+  isEmailEnabled?: boolean;
+  emailDisabledReason?: string;
 }
 
 export function SmsAnnouncementComposer({
@@ -27,11 +31,15 @@ export function SmsAnnouncementComposer({
   classes,
   scopeCampusId,
   lockedCampus = false,
+  isSmsEnabled = true,
+  smsDisabledReason = "",
+  isEmailEnabled = true,
+  emailDisabledReason = "",
 }: SmsAnnouncementComposerProps) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [sendEmail, setSendEmail] = useState(true);
-  const [sendSms, setSendSms] = useState(true);
+  const [sendEmail, setSendEmail] = useState(isEmailEnabled);
+  const [sendSms, setSendSms] = useState(isSmsEnabled);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -151,33 +159,68 @@ export function SmsAnnouncementComposer({
           />
         </div>
 
+        {(!isSmsEnabled || !isEmailEnabled) && (
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-xs">
+            {!isSmsEnabled && (
+              <div className="flex items-center gap-2 text-rose-800 font-bold">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>
+                  SMS Channel Disabled by Admin:{" "}
+                  <span className="font-semibold underline">{smsDisabledReason || "Maintenance in progress"}</span>
+                </span>
+              </div>
+            )}
+            {!isEmailEnabled && (
+              <div className="flex items-center gap-2 text-rose-800 font-bold">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>
+                  Email Channel Disabled by Admin:{" "}
+                  <span className="font-semibold underline">{emailDisabledReason || "Maintenance in progress"}</span>
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+            <label
+              className={`flex items-center gap-2 text-xs font-semibold ${
+                !isEmailEnabled ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"
+              }`}
+            >
               <input
                 type="checkbox"
                 name="channelEmail"
-                checked={sendEmail}
+                checked={sendEmail && isEmailEnabled}
+                disabled={!isEmailEnabled}
                 onChange={(e) => setSendEmail(e.target.checked)}
                 className="accent-[#0F9D58]"
               />
               <Mail className="w-3.5 h-3.5 text-slate-400" /> Email Channel
+              {!isEmailEnabled && <span className="text-[10px] text-rose-600 font-bold">(Disabled)</span>}
             </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+            <label
+              className={`flex items-center gap-2 text-xs font-semibold ${
+                !isSmsEnabled ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"
+              }`}
+            >
               <input
                 type="checkbox"
                 name="channelSms"
-                checked={sendSms}
+                checked={sendSms && isSmsEnabled}
+                disabled={!isSmsEnabled}
                 onChange={(e) => setSendSms(e.target.checked)}
                 className="accent-[#0F9D58]"
               />
               <MessageSquare className="w-3.5 h-3.5 text-slate-400" /> SMS Channel
+              {!isSmsEnabled && <span className="text-[10px] text-rose-600 font-bold">(Disabled)</span>}
             </label>
           </div>
 
           <button
             type="submit"
-            disabled={isPending || (!sendEmail && !sendSms)}
+            disabled={isPending || ((!sendEmail || !isEmailEnabled) && (!sendSms || !isSmsEnabled))}
             className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-lg bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" /> {isPending ? "Queuing..." : "Queue & Dispatch"}

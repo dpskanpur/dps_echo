@@ -44,6 +44,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 import { SmsBalanceCard } from "@/components/SmsBalanceCard";
 import { SmsAnnouncementComposer } from "@/components/SmsAnnouncementComposer";
 import { DeliveryStatusBadge } from "@/components/DeliveryStatusBadge";
+import { AdminChannelTogglePanel } from "@/components/AdminChannelTogglePanel";
 
 export default async function NotificationsPage({
   searchParams,
@@ -69,7 +70,7 @@ export default async function NotificationsPage({
 
   const canSend = permissions.modules.notifications.canUpdate || permissions.isAdmin;
   const scope = resolveCampusScope(user, params.campus);
-  const providers = getProviderStatus();
+  const providers = await getProviderStatus();
 
   const campuses = await prisma.campus.findMany({
     where: scope.locked ? { id: scope.campusId! } : {},
@@ -151,6 +152,16 @@ export default async function NotificationsPage({
         )}
       </div>
 
+      {/* Admin Channel Controls Toggle Panel (Super Admin & Admin only) */}
+      {permissions.isAdmin && (
+        <AdminChannelTogglePanel
+          isSmsEnabled={providers.isSmsEnabled}
+          smsDisabledReason={providers.smsDisabledReason}
+          isEmailEnabled={providers.isEmailEnabled}
+          emailDisabledReason={providers.emailDisabledReason}
+        />
+      )}
+
       {/* Live SMS Gateway Balance Card */}
       <SmsBalanceCard />
 
@@ -170,6 +181,9 @@ export default async function NotificationsPage({
             </span>
           )}
           {params.notice === "requeued" && <span>Failed messages put back in queue.</span>}
+          {params.notice === "channel_settings_updated" && (
+            <span>Institution-wide notification channel settings updated successfully.</span>
+          )}
         </div>
       )}
 
@@ -214,6 +228,10 @@ export default async function NotificationsPage({
           classes={classes}
           scopeCampusId={scope.campusId}
           lockedCampus={scope.locked}
+          isSmsEnabled={providers.isSmsEnabled}
+          smsDisabledReason={providers.smsDisabledReason}
+          isEmailEnabled={providers.isEmailEnabled}
+          emailDisabledReason={providers.emailDisabledReason}
         />
       )}
 

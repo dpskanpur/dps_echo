@@ -405,6 +405,32 @@ async function sendSms(to: string, body: string): Promise<SendOutcome> {
   }
 }
 
+export async function getChannelSettings() {
+  try {
+    let settings = await prisma.systemSettings.findUnique({
+      where: { id: "global" },
+    });
+    if (!settings) {
+      settings = await prisma.systemSettings.create({
+        data: { id: "global" },
+      });
+    }
+    return {
+      isSmsEnabled: settings.isSmsEnabled ?? true,
+      smsDisabledReason: settings.smsDisabledReason || "",
+      isEmailEnabled: settings.isEmailEnabled ?? true,
+      emailDisabledReason: settings.emailDisabledReason || "",
+    };
+  } catch (err) {
+    return {
+      isSmsEnabled: true,
+      smsDisabledReason: "",
+      isEmailEnabled: true,
+      emailDisabledReason: "",
+    };
+  }
+}
+
 /**
  * Sends queued messages. Safe to call repeatedly: only PENDING rows are
  * claimed, and each row records its own outcome.
@@ -414,6 +440,8 @@ export async function dispatchPendingNotifications(limit = 100): Promise<{
   failed: number;
   skipped: number;
 }> {
+  const channelSettings = await getChannelSettings();
+
   const pending = await prisma.notification.findMany({
     where: { status: "PENDING", attempts: { lt: 3 } },
     orderBy: { createdAt: "asc" },
@@ -425,14 +453,28 @@ export async function dispatchPendingNotifications(limit = 100): Promise<{
   let skipped = 0;
 
   for (const n of pending) {
-    const outcome =
-      n.channel === "EMAIL"
-        ? await sendEmail(n.recipient, n.subject || "DPS Kanpur", n.body)
-        : await sendSms(n.recipient, n.body);
+    let outcome: SendOutcome;
+
+    if (n.channel === "SMS" && !channelSettings.isSmsEnabled) {
+      const reason = channelSettings.smsDisabledReason
+        ? `Disabled by Admin: ${channelSettings.smsDisabledReason}`
+        : "SMS channel disabled by Administrator";
+      outcome = { ok: false, skipped: true, provider: "ADMIN_TOGGLE", error: reason };
+    } else if (n.channel === "EMAIL" && !channelSettings.isEmailEnabled) {
+      const reason = channelSettings.emailDisabledReason
+        ? `Disabled by Admin: ${channelSettings.emailDisabledReason}`
+        : "Email channel disabled by Administrator";
+      outcome = { ok: false, skipped: true, provider: "ADMIN_TOGGLE", error: reason };
+    } else {
+      outcome =
+        n.channel === "EMAIL"
+          ? await sendEmail(n.recipient, n.subject || "DPS Kanpur", n.body)
+          : await sendSms(n.recipient, n.body);
+    }
 
     if (outcome.skipped) {
       skipped++;
-      console.warn(`[notifications] ${n.channel} not configured — ${n.category} to ${n.recipient}`);
+      console.warn(`[notifications] ${n.channel} skipped — ${n.error || "Not configured"} (${n.category} to ${n.recipient})`);
     } else if (outcome.ok) {
       sent++;
     } else {
@@ -455,10 +497,22 @@ export async function dispatchPendingNotifications(limit = 100): Promise<{
   return { sent, failed, skipped };
 }
 
-/** Which channels are actually wired up, for the admin console banner. */
-export function getProviderStatus(): { email: boolean; sms: boolean } {
+/** Which channels are actually wired up & admin status. */
+export async function getProviderStatus(): Promise<{
+  email: boolean;
+  sms: boolean;
+  isSmsEnabled: boolean;
+  smsDisabledReason: string;
+  isEmailEnabled: boolean;
+  emailDisabledReason: string;
+}> {
+  const channelSettings = await getChannelSettings();
   return {
     email: !!(process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL_FROM),
     sms: !!(process.env.SMS_USERNAME && process.env.SMS_PASSWORD),
+    isSmsEnabled: channelSettings.isSmsEnabled,
+    smsDisabledReason: channelSettings.smsDisabledReason,
+    isEmailEnabled: channelSettings.isEmailEnabled,
+    emailDisabledReason: channelSettings.emailDisabledReason,
   };
 }

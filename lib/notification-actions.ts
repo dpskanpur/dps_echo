@@ -42,6 +42,52 @@ export async function fetchSmsEstimateAction(
   return calculateSmsCredits(message, recipientCount);
 }
 
+/** Server action for Admins to toggle SMS/Email channels & update disabled reasons */
+export async function updateChannelSettingsAction(formData: FormData): Promise<void> {
+  const { user } = await requirePermission("notifications", "update");
+
+  const isSmsEnabled = formData.get("isSmsEnabled") === "true";
+  const smsDisabledReason = ((formData.get("smsDisabledReason") as string) || "").trim();
+  const isEmailEnabled = formData.get("isEmailEnabled") === "true";
+  const emailDisabledReason = ((formData.get("emailDisabledReason") as string) || "").trim();
+
+  await prisma.systemSettings.upsert({
+    where: { id: "global" },
+    create: {
+      id: "global",
+      isSmsEnabled,
+      smsDisabledReason,
+      isEmailEnabled,
+      emailDisabledReason,
+    },
+    update: {
+      isSmsEnabled,
+      smsDisabledReason,
+      isEmailEnabled,
+      emailDisabledReason,
+    },
+  });
+
+  await logAuditAction({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name,
+    userRole: user.role,
+    action: "CHANNEL_SETTINGS_UPDATE",
+    entityType: "SystemSettings",
+    entityId: "global",
+    details: {
+      isSmsEnabled,
+      smsDisabledReason: isSmsEnabled ? "" : smsDisabledReason,
+      isEmailEnabled,
+      emailDisabledReason: isEmailEnabled ? "" : emailDisabledReason,
+    },
+  });
+
+  revalidatePath("/notifications");
+  redirect("/notifications?notice=channel_settings_updated");
+}
+
 /** Flushes whatever is queued, on demand from the notifications console. */
 export async function dispatchQueuedNotifications(): Promise<void> {
   const { user } = await requirePermission("notifications", "update");
