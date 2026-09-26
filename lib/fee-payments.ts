@@ -133,3 +133,44 @@ export async function createReceiptForPayment(
 
   throw new Error("Could not allocate a unique receipt number. Please retry.");
 }
+
+/**
+ * Calculates late fee for an invoice based on campus late fee rules.
+ *
+ * Rules:
+ * - If today <= dueDate + graceDays: Late Fee = 0
+ * - If daysOverdue > graceDays AND daysOverdue <= tierDays (X days): Late Fee = initialAmount (Y)
+ * - If daysOverdue > tierDays (X days): Late Fee = higherAmount (Z)
+ */
+export function calculateLateFee(
+  dueDate: Date | string,
+  campus: {
+    lateFeeGraceDays?: number | null;
+    lateFeeTierDays?: number | null;
+    lateFeeInitialAmount?: number | null;
+    lateFeeHigherAmount?: number | null;
+  }
+): number {
+  const today = new Date();
+  const due = new Date(dueDate);
+  today.setHours(0, 0, 0, 0);
+  due.setHours(0, 0, 0, 0);
+
+  const diffTime = today.getTime() - due.getTime();
+  const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  const graceDays = campus.lateFeeGraceDays ?? 5;
+  const tierDays = campus.lateFeeTierDays ?? 15;
+  const initialAmount = campus.lateFeeInitialAmount ?? 500;
+  const higherAmount = campus.lateFeeHigherAmount ?? 1000;
+
+  if (daysOverdue <= graceDays) {
+    return 0;
+  }
+
+  if (daysOverdue <= tierDays) {
+    return initialAmount;
+  }
+
+  return higherAmount;
+}

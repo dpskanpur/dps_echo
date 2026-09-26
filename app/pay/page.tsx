@@ -6,6 +6,7 @@ import { isGatewayConfigured } from "@/lib/razorpay";
 import { rateLimit } from "@/lib/rate-limit";
 import { RazorpayCheckoutButton } from "@/components/RazorpayCheckoutButton";
 import { CheckCircle2, Search, Receipt, Lock, Building2, AlertTriangle } from "lucide-react";
+import { calculateLateFee } from "@/lib/fee-payments";
 import { PublicShell } from "@/components/PublicShell";
 
 import type { Metadata } from "next";
@@ -191,65 +192,78 @@ export default async function PublicQuickPayPage({
                 </p>
               </div>
             ) : (
-              student.invoices.map((inv: any) => (
-                <div key={inv.id} className="bg-slate-50 border border-slate-300 p-4 sm:p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-mono text-xs font-bold text-slate-900 block">
-                        {inv.invoiceNo}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-600">{inv.periodName}</span>
-                      <span className="block text-[11px] text-slate-500 mt-0.5">
-                        Due {formatDate(inv.dueDate)}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs text-slate-400 block">Payable Amount</span>
-                      <span className="text-xl font-black text-emerald-800">
-                        {formatCurrency(inv.balanceAmount)}
-                      </span>
-                    </div>
-                  </div>
+              student.invoices.map((inv: any) => {
+                const isOverdue = new Date() > new Date(inv.dueDate);
+                const calculatedLateFee = isOverdue ? calculateLateFee(inv.dueDate, student.campus) : 0;
+                const activeFine = Math.max(inv.fineAmount || 0, calculatedLateFee);
+                const payableBalance = Math.max(0, inv.grossAmount - inv.discountAmount + activeFine - inv.paidAmount);
 
-                  {/* Head-wise fee breakdown */}
-                  <div className="bg-white p-3 border border-slate-300/80 text-xs divide-y divide-slate-100">
-                    {inv.items.map((item: any) => (
-                      <div key={item.id} className="py-1.5 flex items-center justify-between">
-                        <span className="text-slate-600">{item.feeHead.name}</span>
-                        <span className="font-mono font-bold text-slate-800">
-                          {formatCurrency(item.amount)}
+                return (
+                  <div key={inv.id} className="bg-slate-50 border border-slate-300 p-4 sm:p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-mono text-xs font-bold text-slate-900 block">
+                          {inv.invoiceNo}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-600">{inv.periodName}</span>
+                        <span className="block text-[11px] text-slate-500 mt-0.5">
+                          Due {formatDate(inv.dueDate)}
                         </span>
                       </div>
-                    ))}
-                    {inv.discountAmount > 0 && (
-                      <div className="py-1.5 flex items-center justify-between text-emerald-700 font-semibold">
-                        <span>Concession / Sibling Discount</span>
-                        <span>-{formatCurrency(inv.discountAmount)}</span>
+                      <div className="text-right">
+                        <span className="text-xs text-slate-400 block">Payable Amount</span>
+                        <span className="text-xl font-black text-emerald-800">
+                          {formatCurrency(payableBalance)}
+                        </span>
                       </div>
-                    )}
-                    {inv.paidAmount > 0 && (
-                      <div className="py-1.5 flex items-center justify-between text-slate-600 font-semibold">
-                        <span>Already Paid</span>
-                        <span>-{formatCurrency(inv.paidAmount)}</span>
+                    </div>
+
+                    {/* Head-wise fee breakdown */}
+                    <div className="bg-white p-3 border border-slate-300/80 text-xs divide-y divide-slate-100">
+                      {inv.items.map((item: any) => (
+                        <div key={item.id} className="py-1.5 flex items-center justify-between">
+                          <span className="text-slate-600">{item.feeHead.name}</span>
+                          <span className="font-mono font-bold text-slate-800">
+                            {formatCurrency(item.amount)}
+                          </span>
+                        </div>
+                      ))}
+                      {inv.discountAmount > 0 && (
+                        <div className="py-1.5 flex items-center justify-between text-emerald-700 font-semibold">
+                          <span>Concession / Sibling Discount</span>
+                          <span>-{formatCurrency(inv.discountAmount)}</span>
+                        </div>
+                      )}
+                      {activeFine > 0 && (
+                        <div className="py-1.5 flex items-center justify-between text-rose-700 font-bold">
+                          <span>Automated Late Fee ({student.campus.code} Rules)</span>
+                          <span>+{formatCurrency(activeFine)}</span>
+                        </div>
+                      )}
+                      {inv.paidAmount > 0 && (
+                        <div className="py-1.5 flex items-center justify-between text-slate-600 font-semibold">
+                          <span>Already Paid</span>
+                          <span>-{formatCurrency(inv.paidAmount)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {gatewayLive ? (
+                      <RazorpayCheckoutButton
+                        invoiceId={inv.id}
+                        payToken={payToken}
+                        invoiceNo={inv.invoiceNo}
+                        amountLabel={formatCurrency(payableBalance)}
+                      />
+                    ) : (
+                      <div className="p-3 bg-slate-100 border border-slate-300 text-[11px] text-slate-600">
+                        Online payment is unavailable right now. Please pay this invoice at the school
+                        accounts office.
                       </div>
                     )}
                   </div>
-
-                  {gatewayLive ? (
-                    <RazorpayCheckoutButton
-                      invoiceId={inv.id}
-                      payToken={payToken}
-                      invoiceNo={inv.invoiceNo}
-                      amountLabel={formatCurrency(inv.balanceAmount)}
-                    />
-                  ) : (
-                    <div className="p-3 bg-slate-100 border border-slate-300 text-[11px] text-slate-600">
-                      Online payment is unavailable right now. Please pay this invoice at the school
-                      accounts office.
-                    </div>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
 
             {/* Payment History */}

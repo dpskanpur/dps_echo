@@ -28,6 +28,7 @@ import {
   IndianRupee,
   CreditCard,
   MessageSquare,
+  Clock,
 } from "lucide-react";
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { AdminServiceToggleCards } from "@/components/AdminServiceToggleCards";
@@ -651,6 +652,84 @@ export default async function AdminSettingsPage({
                           placeholder="https://dpsazadnagar.com"
                           className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono"
                         />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 4: AUTOMATED SCHOOL LATE FEE & FINE RULES */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-800">
+                      <Clock className="w-4 h-4" />
+                      <span>4. Automated School Late Fee &amp; Fine Rules</span>
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 bg-slate-50/70 p-5 rounded-2xl border border-slate-100">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Due Date Grace Period (Days)
+                        </label>
+                        <input
+                          type="number"
+                          name="lateFeeGraceDays"
+                          defaultValue={selectedCampus.lateFeeGraceDays ?? 5}
+                          min={0}
+                          required
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Grace period after due date before late fees start.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Tier Threshold (X Days)
+                        </label>
+                        <input
+                          type="number"
+                          name="lateFeeTierDays"
+                          defaultValue={selectedCampus.lateFeeTierDays ?? 15}
+                          min={1}
+                          required
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Overdue day threshold X for tier 1 vs tier 2.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Up to X Days Late Fee (₹ Y)
+                        </label>
+                        <input
+                          type="number"
+                          name="lateFeeInitialAmount"
+                          defaultValue={selectedCampus.lateFeeInitialAmount ?? 500}
+                          min={0}
+                          required
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Late fee amount for overdue ≤ X days.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Beyond X Days Late Fee (₹ Z)
+                        </label>
+                        <input
+                          type="number"
+                          name="lateFeeHigherAmount"
+                          defaultValue={selectedCampus.lateFeeHigherAmount ?? 1000}
+                          min={0}
+                          required
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Late fee amount for overdue &gt; X days.
+                        </p>
                       </div>
                     </div>
                   </div>

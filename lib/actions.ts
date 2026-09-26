@@ -996,6 +996,11 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
   const isEmailEnabled = formData.get("isEmailEnabled") === "true" || formData.get("isEmailEnabled") === "on";
   const emailDisabledReason = isEmailEnabled ? "" : "Disabled";
 
+  const lateFeeGraceDays = Math.max(0, parseInt((formData.get("lateFeeGraceDays") as string) || "5", 10));
+  const lateFeeTierDays = Math.max(1, parseInt((formData.get("lateFeeTierDays") as string) || "15", 10));
+  const lateFeeInitialAmount = Math.max(0, parseFloat((formData.get("lateFeeInitialAmount") as string) || "500"));
+  const lateFeeHigherAmount = Math.max(0, parseFloat((formData.get("lateFeeHigherAmount") as string) || "1000"));
+
   await prisma.campus.update({
     where: { id: campusId },
     data: {
@@ -1016,6 +1021,10 @@ export async function updateCampusSettings(formData: FormData): Promise<void> {
       smsDisabledReason,
       isEmailEnabled,
       emailDisabledReason,
+      lateFeeGraceDays,
+      lateFeeTierDays,
+      lateFeeInitialAmount,
+      lateFeeHigherAmount,
     },
   });
 
