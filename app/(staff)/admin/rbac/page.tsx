@@ -25,12 +25,13 @@ import {
   Globe,
   Award,
   IndianRupee,
+  CreditCard,
+  MessageSquare,
 } from "lucide-react";
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
 import { getOnlinePaymentSettings } from "@/lib/fee-settings-actions";
-import { AdminSystemTogglesPanel } from "@/components/AdminSystemTogglesPanel";
 import {
   updateCampusSettings,
   updateSystemSettings,
@@ -46,9 +47,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ campus?: string; campusId?: string; tab?: string; notice?: string; name?: string }>;
+  searchParams: Promise<{ campus?: string; campusId?: string; tab?: string; notice?: string; name?: string; addCampus?: string }>;
 }) {
-  const { campus: paramCampus, campusId: queryCampusId, tab = "system", notice, name: noticeName } = await searchParams;
+  const { campus: paramCampus, campusId: queryCampusId, tab = "system", notice, name: noticeName, addCampus } = await searchParams;
   const user = await getCurrentUser();
 
   if (!user) {
@@ -176,228 +177,252 @@ export default async function AdminSettingsPage({
           {/* TAB 1: SCHOOL-SPECIFIC CONFIGURATIONS */}
           {tab === "system" && (
             <div className="space-y-6">
-              {/* School-Wise Services & Communication Channels Control Matrix */}
-              <AdminSystemTogglesPanel
-                campuses={paymentSettings.campuses}
-                canUpdate={permissions.isAdmin || permissions.modules.rbac.canUpdate}
-              />
-
-              {/* Campus Selector Pills */}
+              {/* Single Consolidated School Tabs Selector */}
               <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                  <Building2 className="w-4 h-4 text-emerald-800" />
-                  <span>Select Campus to Configure:</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <Building2 className="w-4 h-4 text-emerald-800" />
+                    <span>School Campuses &amp; Service Management</span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    Select a school to configure info, fees, online payment &amp; channel settings
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {campuses.map((c) => (
-                    <Link
-                      key={c.id}
-                      href={`/admin/rbac?tab=system&campusId=${c.id}`}
-                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 border ${
-                        c.id === selectedCampus?.id
-                          ? "bg-emerald-900 text-white border-emerald-900 shadow-md"
-                          : "bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200"
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${c.id === selectedCampus?.id ? "bg-amber-300" : "bg-emerald-600"}`} />
-                      <span>{c.name}</span>
-                      <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${c.id === selectedCampus?.id ? "bg-emerald-800 text-emerald-100" : "bg-slate-200 text-slate-600"}`}>
-                        {c.code}
-                      </span>
-                    </Link>
-                  ))}
+                  {campuses.map((c) => {
+                    const isSelected = c.id === selectedCampus?.id && !addCampus;
+                    const allActive = c.isOnlinePaymentEnabled && c.isSmsEnabled && c.isEmailEnabled;
+
+                    return (
+                      <Link
+                        key={c.id}
+                        href={`/admin/rbac?tab=system&campusId=${c.id}`}
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2.5 border ${
+                          isSelected
+                            ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200"
+                        }`}
+                      >
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                            allActive ? "bg-emerald-400" : "bg-amber-400"
+                          }`}
+                        />
+                        <span className="truncate">{c.name}</span>
+                        <span
+                          className={`font-mono text-[10px] px-1.5 py-0.5 rounded shrink-0 ${
+                            isSelected
+                              ? "bg-slate-800 text-amber-300 font-bold"
+                              : "bg-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {c.code}
+                        </span>
+                      </Link>
+                    );
+                  })}
+
+                  <Link
+                    href={`/admin/rbac?tab=system&addCampus=true`}
+                    className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 border border-dashed cursor-pointer ${
+                      addCampus
+                        ? "bg-amber-50 text-amber-900 border-amber-400 font-black shadow-xs"
+                        : "bg-white text-slate-600 hover:bg-slate-50 border-slate-300"
+                    }`}
+                  >
+                    <Plus className="w-3.5 h-3.5 text-amber-600" />
+                    <span>+ Add New Campus</span>
+                  </Link>
                 </div>
               </div>
 
-              {/* Create Campus — rendered outside the selectedCampus guard so
-                  it is reachable on an empty database */}
-              <details
-                className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden group"
-                open={campuses.length === 0}
-              >
-                <summary className="p-5 cursor-pointer flex items-center gap-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition list-none">
-                  <Plus className="w-4 h-4 text-emerald-800" />
-                  <span>Add a New Campus</span>
-                  {campuses.length === 0 && (
-                    <span className="ml-auto text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
-                      No campuses yet — start here
-                    </span>
-                  )}
-                </summary>
-
-                <form
-                  action={createCampus}
-                  className="p-6 sm:p-8 pt-0 space-y-5 w-full border-t border-slate-100"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+              {/* Add Campus Form View */}
+              {(addCampus || campuses.length === 0) ? (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-6">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold border border-amber-200">
+                      <Plus className="w-5 h-5 text-amber-600" />
+                    </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Campus Code *
-                      </label>
-                      <input
-                        type="text"
-                        name="code"
-                        required
-                        maxLength={6}
-                        placeholder="AZD"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1">
-                        2–6 letters. Used in IDs: DPS-<strong>AZD</strong>-2026-0001
+                      <h2 className="text-base font-black text-slate-900">Add a New School Campus</h2>
+                      <p className="text-xs text-slate-500">
+                        Create a new institutional campus entry with default classes and initial settings.
                       </p>
                     </div>
+                  </div>
 
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Campus Name *
-                      </label>
+                  <form action={createCampus} className="space-y-5 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Campus Code *
+                        </label>
+                        <input
+                          type="text"
+                          name="code"
+                          required
+                          maxLength={6}
+                          placeholder="AZD"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          2–6 letters. Used in IDs: DPS-<strong>AZD</strong>-2026-0001
+                        </p>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Campus Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          placeholder="DPS Azad Nagar"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Address *</label>
                       <input
                         type="text"
-                        name="name"
+                        name="address"
                         required
-                        placeholder="DPS Azad Nagar"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Address *</label>
-                    <input
-                      type="text"
-                      name="address"
-                      required
-                      placeholder="Azad Nagar, Kanpur"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
-                      <input
-                        type="text"
-                        name="city"
-                        defaultValue="Kanpur"
+                        placeholder="Azad Nagar, Kanpur"
                         className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">State</label>
-                      <input
-                        type="text"
-                        name="state"
-                        defaultValue="Uttar Pradesh"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Pincode</label>
-                      <input
-                        type="text"
-                        name="pincode"
-                        defaultValue="208002"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Phone *</label>
-                      <input
-                        type="text"
-                        name="phone"
-                        required
-                        placeholder="+91 512 000 0000"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
+                        <input
+                          type="text"
+                          name="city"
+                          defaultValue="Kanpur"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">State</label>
+                        <input
+                          type="text"
+                          name="state"
+                          defaultValue="Uttar Pradesh"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Pincode</label>
+                        <input
+                          type="text"
+                          name="pincode"
+                          defaultValue="208002"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Email *</label>
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        placeholder="azadnagar@dpskanpur.com"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        CBSE Affiliation
-                      </label>
-                      <input
-                        type="text"
-                        name="affiliation"
-                        placeholder="CBSE Affiliation No. 2130722"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Phone *</label>
+                        <input
+                          type="text"
+                          name="phone"
+                          required
+                          placeholder="+91 512 000 0000"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+                        <input
+                          type="email"
+                          name="email"
+                          required
+                          placeholder="azadnagar@dpskanpur.com"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Academic Year
-                      </label>
-                      <input
-                        type="text"
-                        name="activeAcademicYear"
-                        defaultValue="2026-2027"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                      />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          CBSE Affiliation
+                        </label>
+                        <input
+                          type="text"
+                          name="affiliation"
+                          placeholder="CBSE Affiliation No. 2130722"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Academic Year
+                        </label>
+                        <input
+                          type="text"
+                          name="activeAcademicYear"
+                          defaultValue="2026-2027"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Registration Fee (₹)
+                        </label>
+                        <input
+                          type="number"
+                          name="registrationFee"
+                          defaultValue={1000}
+                          min={0}
+                          step={50}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Registration Fee (₹)
-                      </label>
+
+                    <label className="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl cursor-pointer">
                       <input
-                        type="number"
-                        name="registrationFee"
-                        defaultValue={1000}
-                        min={0}
-                        step={50}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                        type="checkbox"
+                        name="createClasses"
+                        defaultChecked
+                        className="accent-[#0F9D58] mt-0.5"
                       />
-                    </div>
-                  </div>
+                      <span className="text-[11px] text-emerald-900 leading-relaxed">
+                        <strong className="block font-bold">
+                          Create the standard class structure
+                        </strong>
+                        Pre-Nursery through Class XII with sections A/B (and C from Class VI). Without
+                        classes this campus cannot accept an admission.
+                      </span>
+                    </label>
 
-                  <label className="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="createClasses"
-                      defaultChecked
-                      className="accent-[#0F9D58] mt-0.5"
-                    />
-                    <span className="text-[11px] text-emerald-900 leading-relaxed">
-                      <strong className="block font-bold">
-                        Create the standard class structure
-                      </strong>
-                      Pre-Nursery through Class XII with sections A/B (and C from Class VI). Without
-                      classes this campus cannot accept an admission.
-                    </span>
-                  </label>
-
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-5 py-3 text-xs font-bold rounded-xl bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm"
-                  >
-                    <Plus className="w-4 h-4" /> Create Campus
-                  </button>
-                </form>
-              </details>
-
-              {/* Campus Configuration Form */}
-              {selectedCampus && (
-                <form action={updateCampusSettings} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8 w-full">
+                    <button
+                      type="submit"
+                      className="flex items-center gap-2 px-5 py-3 text-xs font-bold rounded-xl bg-[#0F9D58] text-white hover:bg-emerald-700 transition shadow-sm cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Create Campus
+                    </button>
+                  </form>
+                </div>
+              ) : selectedCampus ? (
+                /* Selected School Unified Configuration Form View */
+                <form
+                  action={updateCampusSettings}
+                  className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-8 w-full"
+                >
                   <input type="hidden" name="campusId" value={selectedCampus.id} />
 
                   {/* Header Badge */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-12 min-w-12 px-3.5 shrink-0 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center font-black text-xs font-mono tracking-wider uppercase shadow-xs">
+                      <div className="h-12 min-w-12 px-3.5 shrink-0 rounded-2xl bg-emerald-950 border border-emerald-900 text-amber-300 flex items-center justify-center font-black text-xs font-mono tracking-wider uppercase shadow-sm">
                         {selectedCampus.code}
                       </div>
                       <div>
@@ -410,17 +435,151 @@ export default async function AdminSettingsPage({
                       </div>
                     </div>
 
-                    <div className="px-3.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center gap-1.5">
-                      <IndianRupee className="w-4 h-4 text-amber-700" />
-                      <span>Reg. Fee: ₹{selectedCampus.registrationFee.toLocaleString()}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="px-3.5 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5">
+                        <IndianRupee className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Reg. Fee: ₹{selectedCampus.registrationFee.toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Section 1: Financial & Identity Controls */}
+                  {/* SECTION 1: SCHOOL-WISE SERVICE & CHANNEL CONTROLS (RADIO BUTTONS) */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-800">
+                        <Sliders className="w-4 h-4" />
+                        <span>1. Services &amp; Gateway Controls ({selectedCampus.code})</span>
+                      </h3>
+                      <span className="text-[11px] text-slate-400 font-medium">
+                        School-level enable / disable controls
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80">
+                      {/* Online Fee Payment Radio Group */}
+                      <div className="bg-white p-4.5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-emerald-800" />
+                          <span className="text-xs font-black text-slate-900">Online Fee Payment</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          Razorpay online fee payment portal for parents of {selectedCampus.name}.
+                        </p>
+                        <div className="space-y-2 pt-1">
+                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
+                            <input
+                              type="radio"
+                              name="isOnlinePaymentEnabled"
+                              value="true"
+                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === true}
+                              className="accent-emerald-700 w-4 h-4"
+                            />
+                            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                              <span>Enabled</span>
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-rose-50/50 transition">
+                            <input
+                              type="radio"
+                              name="isOnlinePaymentEnabled"
+                              value="false"
+                              defaultChecked={selectedCampus.isOnlinePaymentEnabled === false}
+                              className="accent-rose-600 w-4 h-4"
+                            />
+                            <span className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-rose-500" />
+                              <span>Disabled by Admin</span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* SMS Gateway Radio Group */}
+                      <div className="bg-white p-4.5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4 text-emerald-800" />
+                          <span className="text-xs font-black text-slate-900">SMS Gateway Channel</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          SMS delivery for notices, fee receipts &amp; alerts for {selectedCampus.name}.
+                        </p>
+                        <div className="space-y-2 pt-1">
+                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
+                            <input
+                              type="radio"
+                              name="isSmsEnabled"
+                              value="true"
+                              defaultChecked={selectedCampus.isSmsEnabled === true}
+                              className="accent-emerald-700 w-4 h-4"
+                            />
+                            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                              <span>Enabled</span>
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-rose-50/50 transition">
+                            <input
+                              type="radio"
+                              name="isSmsEnabled"
+                              value="false"
+                              defaultChecked={selectedCampus.isSmsEnabled === false}
+                              className="accent-rose-600 w-4 h-4"
+                            />
+                            <span className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-rose-500" />
+                              <span>Disabled by Admin</span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Email Channel Radio Group */}
+                      <div className="bg-white p-4.5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-emerald-800" />
+                          <span className="text-xs font-black text-slate-900">Email Notification Channel</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">
+                          Email notifications for admissions &amp; circulars for {selectedCampus.name}.
+                        </p>
+                        <div className="space-y-2 pt-1">
+                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
+                            <input
+                              type="radio"
+                              name="isEmailEnabled"
+                              value="true"
+                              defaultChecked={selectedCampus.isEmailEnabled === true}
+                              className="accent-emerald-700 w-4 h-4"
+                            />
+                            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                              <span>Enabled</span>
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-rose-50/50 transition">
+                            <input
+                              type="radio"
+                              name="isEmailEnabled"
+                              value="false"
+                              defaultChecked={selectedCampus.isEmailEnabled === false}
+                              className="accent-rose-600 w-4 h-4"
+                            />
+                            <span className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-rose-500" />
+                              <span>Disabled by Admin</span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: ADMISSION & FEE CONFIGURATION */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-800">
                       <Tag className="w-4 h-4" />
-                      <span>1. Admission & ID Formatting Controls</span>
+                      <span>2. Admission &amp; ID Formatting Controls</span>
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 bg-slate-50/70 p-5 rounded-2xl border border-slate-100">
@@ -436,7 +595,7 @@ export default async function AdminSettingsPage({
                           className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                         />
                         <p className="text-[10px] text-slate-400 mt-1">
-                          School registration fee charged for {selectedCampus.name}.
+                          Registration fee for {selectedCampus.name}.
                         </p>
                       </div>
 
@@ -486,17 +645,17 @@ export default async function AdminSettingsPage({
                           <option value="2027-2028">2027-2028</option>
                         </select>
                         <p className="text-[10px] text-slate-400 mt-1">
-                          Current session for {selectedCampus.name}.
+                          Current active session for {selectedCampus.name}.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Section 2: School Profile & Affiliation */}
+                  {/* SECTION 3: CBSE AFFILIATION & SCHOOL DETAILS */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 text-emerald-800">
                       <Award className="w-4 h-4" />
-                      <span>2. CBSE Affiliation & School Information</span>
+                      <span>3. CBSE Affiliation &amp; School Information</span>
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 bg-slate-50/70 p-5 rounded-2xl border border-slate-100">
@@ -580,7 +739,10 @@ export default async function AdminSettingsPage({
                     </div>
                   </div>
 
-                  <div className="flex justify-end pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <p className="text-[11px] text-slate-400">
+                      All changes apply immediately to {selectedCampus.name}.
+                    </p>
                     <button
                       type="submit"
                       className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 px-7 rounded-2xl text-xs transition shadow-md flex items-center gap-2 cursor-pointer"
@@ -590,7 +752,7 @@ export default async function AdminSettingsPage({
                     </button>
                   </div>
                 </form>
-              )}
+              ) : null}
             </div>
           )}
 
