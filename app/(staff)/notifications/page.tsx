@@ -69,7 +69,14 @@ export default async function NotificationsPage({
   }
 
   const canSend = permissions.modules.notifications.canUpdate || permissions.isAdmin;
-  const scope = resolveCampusScope(user, params.campus);
+
+  // Notifications are strictly school-wise. Default to assigned campus or first campus (DPS Azad Nagar) for Super Admin.
+  const firstCampus = await prisma.campus.findFirst({ orderBy: { name: "asc" } });
+  const effectiveCampusId = (params.campus && params.campus !== "ALL")
+    ? params.campus
+    : user?.campusId || firstCampus?.id;
+
+  const scope = resolveCampusScope(user, effectiveCampusId);
   const providers = await getProviderStatus();
 
   const campuses = await prisma.campus.findMany({
