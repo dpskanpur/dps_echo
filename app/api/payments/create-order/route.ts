@@ -71,6 +71,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invoice not found." }, { status: 404 });
     }
 
+    // Check Master Overall Online Payment Switch
+    const systemSettings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
+    if (systemSettings && !systemSettings.isOnlinePaymentEnabled) {
+      const reason = systemSettings.onlinePaymentDisabledReason
+        ? `Online fee payment disabled: ${systemSettings.onlinePaymentDisabledReason}`
+        : "Online fee payment is currently disabled. Please pay at the school accounts office.";
+      return NextResponse.json({ success: false, error: reason }, { status: 503 });
+    }
+
+    // Check Campus-Specific Online Payment Switch
+    const campus = await prisma.campus.findUnique({ where: { id: invoice.campusId } });
+    if (campus && !campus.isOnlinePaymentEnabled) {
+      const reason = campus.onlinePaymentDisabledReason
+        ? `Online fee payment disabled for ${campus.name}: ${campus.onlinePaymentDisabledReason}`
+        : `Online fee payment is currently disabled for ${campus.name}. Please pay at the school accounts office.`;
+      return NextResponse.json({ success: false, error: reason }, { status: 503 });
+    }
+
     if (invoice.balanceAmount <= 0) {
       return NextResponse.json(
         { success: false, error: "This invoice is already paid in full." },

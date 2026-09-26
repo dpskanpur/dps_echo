@@ -15,6 +15,7 @@ import {
   Bell,
   History,
   Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
@@ -162,6 +163,13 @@ export function Sidebar({
                 icon={AlertTriangle}
                 label="Defaulters"
                 active={pathname.startsWith("/fees/defaulters")}
+              />
+
+              <SidebarLink
+                href="/fees/razorpay"
+                icon={CreditCard}
+                label="Razorpay Settings"
+                active={pathname.startsWith("/fees/razorpay")}
               />
             </div>
           </div>
