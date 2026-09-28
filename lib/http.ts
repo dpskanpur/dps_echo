@@ -116,30 +116,25 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      if (attempt === 0) {
-        const res = await fetch(url, {
-          method: init.method || "GET",
-          headers: init.headers,
-          body: init.body,
-          signal: AbortSignal.timeout(timeoutMs),
-        });
-        const body = await res.text();
-        return {
-          ok: res.ok,
-          status: res.status,
-          text: async () => body,
-          json: async () => {
-            try {
-              return JSON.parse(body || "{}");
-            } catch {
-              return {};
-            }
-          },
-        };
-      }
-
-      // Retry attempt 2 & 3: use nodeHttpRequest with 3-tier IPv4 custom lookup & TLS SNI
-      return await nodeHttpRequest(url, { ...init, timeoutMs });
+      const res = await fetch(url, {
+        method: init.method || "GET",
+        headers: init.headers,
+        body: init.body,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const body = await res.text();
+      return {
+        ok: res.ok,
+        status: res.status,
+        text: async () => body,
+        json: async () => {
+          try {
+            return JSON.parse(body || "{}");
+          } catch {
+            return {};
+          }
+        },
+      };
     } catch (err) {
       lastError = err;
       if (attempt < 2) await new Promise((r) => setTimeout(r, 300));
