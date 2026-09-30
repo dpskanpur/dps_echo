@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 export function CampusSelector({
   campuses,
@@ -29,15 +30,16 @@ export function CampusSelector({
             router.push(`/students/new?campus=${campusId}&mode=${mode}`);
           }
         }}
-        className="w-full bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs font-bold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 cursor-pointer"
+        className="w-full appearance-none bg-slate-50/50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl pl-3 pr-9 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 cursor-pointer shadow-2xs transition-all"
       >
         {campuses.map((c) => (
-          <option key={c.id} value={c.id}>
+          <option key={c.id} value={c.id} className="dark:bg-slate-900 text-slate-900 dark:text-white py-1">
             {c.name} ({c.code})
             {showFee && c.registrationFee ? ` — Fee: ₹${c.registrationFee.toLocaleString("en-IN")}` : ""}
           </option>
         ))}
       </select>
+      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none shrink-0" />
     </div>
   );
 }
