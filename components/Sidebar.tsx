@@ -16,6 +16,8 @@ import {
   History,
   Sparkles,
   CreditCard,
+  FileSpreadsheet,
+  FileCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
@@ -150,30 +152,23 @@ export function Sidebar({
             </div>
             <div className="space-y-1">
               <SidebarLink
-                href="/fees/structures"
-                icon={Layers}
-                label="Structures"
-                active={pathname.startsWith("/fees/structures")}
+                href="/fees/demands"
+                icon={FileSpreadsheet}
+                label="Quarterly Demands"
+                active={pathname.startsWith("/fees/demands")}
               />
 
               <SidebarLink
-                href="/fees/invoices"
-                icon={Receipt}
-                label="Invoices"
-                active={pathname.startsWith("/fees/invoices")}
-              />
-
-              <SidebarLink
-                href="/fees/defaulters"
-                icon={AlertTriangle}
-                label="Defaulters"
-                active={pathname.startsWith("/fees/defaulters")}
+                href="/fees/online-payments"
+                icon={FileCheck}
+                label="Online Paid Receipts"
+                active={pathname.startsWith("/fees/online-payments")}
               />
 
               <SidebarLink
                 href="/fees/razorpay"
                 icon={CreditCard}
-                label="Razorpay"
+                label="Razorpay Settings"
                 active={pathname.startsWith("/fees/razorpay")}
               />
             </div>
