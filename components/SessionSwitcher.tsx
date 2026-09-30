@@ -36,18 +36,18 @@ export function SessionSwitcher({ sessions }: { sessions: SessionOption[] }) {
   };
 
   return (
-    <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
-      <CalendarDays className="w-4 h-4 text-emerald-700" />
-      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Session:</span>
+    <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-2xs transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700">
+      <CalendarDays className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Session:</span>
       <select
         value={selectedSession || "ALL"}
         onChange={handleChange}
         aria-label="Select academic session"
-        className="text-sm font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-4"
+        className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-3"
       >
-        <option value="ALL">All Sessions</option>
+        <option value="ALL" className="dark:bg-slate-900">All Sessions</option>
         {sessions.map((s) => (
-          <option key={s.id} value={s.name}>
+          <option key={s.id} value={s.name} className="dark:bg-slate-900">
             {s.name}
             {s.isCurrent ? " (current)" : ""}
           </option>

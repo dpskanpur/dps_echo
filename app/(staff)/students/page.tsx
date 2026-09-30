@@ -117,96 +117,100 @@ export default async function StudentsPage({
     : [];
 
   return (
-        <main className="p-8 space-y-6 flex-1 overflow-y-auto">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-6 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold">
+              <Users className="w-5 h-5" />
+            </div>
             <div>
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-emerald-800" />
-                <h1 className="text-xl font-black text-slate-900">Student Directory</h1>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Student Directory</h1>
+              <p className="text-xs text-slate-500 dark:text-bodydark2 mt-0.5">
                 Centralized registry of registered applicants and enrolled students across DPS Kanpur.
               </p>
             </div>
-
-            <div className="flex items-center gap-2">
-              {permissions.modules.students.canUpdate ? (
-                <>
-                  <Link
-                    href="/students/new"
-                    className="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>+ New Student Registration</span>
-                  </Link>
-                  <BulkImportModal />
-                </>
-              ) : (
-                <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-medium">
-                  <Lock className="w-3.5 h-3.5 text-amber-600" />
-                  View-Only Mode ({permissions.roleDisplayName})
-                </div>
-              )}
-            </div>
           </div>
+        </div>
 
-          {/* Filter Bar */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center gap-4">
-            {/* Live Search */}
-            <LiveSearchInput
-              defaultValue={q}
-              placeholder="Search by student name, registration ID or scholar no..."
-              className="flex-1 min-w-[240px]"
-            />
-
-            {/* Class Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <form method="GET" className="flex items-center gap-2">
-                {campusId && <input type="hidden" name="campus" value={campusId} />}
-                <select
-                  name="classId"
-                  defaultValue={classId || "ALL"}
-                  aria-label="Filter by class"
-                  className="bg-slate-50 border border-slate-200 text-xs rounded-lg px-2.5 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                >
-                  <option value="ALL">All Classes</option>
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  name="status"
-                  defaultValue={status || "ALL"}
-                  aria-label="Filter by status"
-                  className="bg-slate-50 border border-slate-200 text-xs rounded-lg px-2.5 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                >
-                  <option value="ALL">All Enrolment States</option>
-                  <option value="REGISTERED">Registered Applicants</option>
-                  <option value="ACTIVE">Active Enrolled</option>
-                  <option value="TC_ISSUED">TC Issued</option>
-                </select>
-
-                <button
-                  type="submit"
-                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-2 rounded-lg font-semibold transition"
-                >
-                  Apply
-                </button>
-              </form>
+        <div className="flex items-center gap-2">
+          {permissions.modules.students.canUpdate ? (
+            <>
+              <Link
+                href="/students/new"
+                className="inline-flex items-center gap-2 bg-[#0F9D58] hover:bg-[#0d8a4d] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>+ New Student Registration</span>
+              </Link>
+              <BulkImportModal />
+            </>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 px-3 py-1.5 rounded-xl text-xs font-semibold">
+              <Lock className="w-3.5 h-3.5" />
+              View-Only Mode ({permissions.roleDisplayName})
             </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* Student Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+      {/* Filter Bar */}
+      <div className="bg-white dark:bg-boxdark p-4 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs flex flex-wrap items-center gap-4">
+        {/* Live Search */}
+        <LiveSearchInput
+          defaultValue={q}
+          placeholder="Search by student name, registration ID or scholar no..."
+          className="flex-1 min-w-[240px]"
+        />
+
+        {/* Class Filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-slate-400" />
+          <form method="GET" className="flex items-center gap-2">
+            {campusId && <input type="hidden" name="campus" value={campusId} />}
+            <select
+              name="classId"
+              defaultValue={classId || "ALL"}
+              aria-label="Filter by class"
+              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark text-xs rounded-xl px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="ALL">All Classes</option>
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="status"
+              defaultValue={status || "ALL"}
+              aria-label="Filter by status"
+              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark text-xs rounded-xl px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="ALL">All Enrolment States</option>
+              <option value="REGISTERED">Registered Applicants</option>
+              <option value="ACTIVE">Active Enrolled</option>
+              <option value="TC_ISSUED">TC Issued</option>
+            </select>
+
+            <button
+              type="submit"
+              className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs px-4 py-2 rounded-xl font-bold transition hover:bg-slate-800"
+            >
+              Apply
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Student Table */}
+      <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
                     <th className="py-3.5 px-4">Registration / Scholar ID</th>
                     <th className="py-3.5 px-4">Student Name</th>
                     <th className="py-3.5 px-4">Campus & Class</th>
@@ -381,7 +385,6 @@ export default async function StudentsPage({
                                 <Pencil className="w-4 h-4" />
                               </Link>
 
-                              {/* 3. Delete Student Record */}
                               {permissions.isAdmin && (
                                 <DeleteStudentButton
                                   studentId={s.id}
@@ -405,6 +408,6 @@ export default async function StudentsPage({
               pageSize={pageSize}
             />
           </div>
-        </main>
+        </div>
   );
 }

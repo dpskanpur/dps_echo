@@ -61,18 +61,18 @@ export async function Navbar({
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-10 flex w-full bg-white dark:bg-boxdark drop-shadow-1 border-b border-stroke dark:border-strokedark px-4 py-3 md:px-6 2xl:px-11 items-center justify-between">
+    <header className="sticky top-0 z-20 flex w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 py-2.5 md:px-6 2xl:px-8 items-center justify-between shadow-2xs select-none">
       {/* Campus Selector & Academic Year */}
       <div className="flex items-center gap-3 md:gap-4">
-        <Suspense fallback={<div className="h-8 w-44 bg-whiten dark:bg-meta-4 rounded-sm animate-pulse" />}>
+        <Suspense fallback={<div className="h-8 w-44 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />}>
           <CampusSwitcher campuses={campuses} />
         </Suspense>
-        <Suspense fallback={<div className="h-8 w-40 bg-whiten dark:bg-meta-4 rounded-sm animate-pulse" />}>
+        <Suspense fallback={<div className="h-8 w-40 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />}>
           <SessionSwitcher sessions={sessions} />
         </Suspense>
 
         {/* Public portals */}
-        <div className="hidden sm:flex items-center gap-1.5 pl-3 border-l border-stroke dark:border-strokedark">
+        <div className="hidden sm:flex items-center gap-1 pl-3 border-l border-slate-200 dark:border-slate-800">
           {PUBLIC_PORTALS.map((portal) => (
             <a
               key={portal.href}
@@ -81,7 +81,7 @@ export async function Navbar({
               rel="noopener noreferrer"
               title={`${portal.label} (opens in a new tab)`}
               aria-label={`${portal.label} — public page, opens in a new tab`}
-              className="w-8 h-8 rounded-sm flex items-center justify-center text-body hover:text-dps-green dark:text-bodydark dark:hover:text-white hover:bg-whiten dark:hover:bg-meta-4 transition"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
             >
               <portal.icon className="w-4 h-4" />
             </a>
@@ -101,13 +101,13 @@ export async function Navbar({
         <ThemeSwitcher />
 
         {/* Staff Profile Badge */}
-        <div className="flex items-center gap-3 pl-3 border-l border-stroke dark:border-strokedark">
-          <div className="w-8 h-8 rounded-full bg-dps-green text-white flex items-center justify-center font-bold text-xs shadow-xs">
+        <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
+          <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-black text-xs shadow-xs ring-2 ring-emerald-600/20">
             {initials}
           </div>
           <div className="hidden sm:block text-left">
-            <div className="text-xs font-bold text-black dark:text-white leading-tight truncate max-w-[140px]">{userName}</div>
-            <div className="text-[10px] text-dps-green dark:text-dps-gold font-semibold flex items-center gap-1 font-mono">
+            <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[140px]">{userName}</div>
+            <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 font-mono">
               <Shield className="w-2.5 h-2.5" /> {userRole}
             </div>
           </div>
@@ -115,7 +115,7 @@ export async function Navbar({
           <a
             href="/api/auth/logout"
             title="Sign out of DPS Echo"
-            className="p-1.5 text-body hover:text-meta-1 hover:bg-whiten dark:text-bodydark dark:hover:bg-meta-4 rounded-sm transition"
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all duration-200"
           >
             <LogOut className="w-4 h-4" />
           </a>

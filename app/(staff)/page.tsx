@@ -240,37 +240,37 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="rounded-sm bg-gradient-to-r from-dps-green-dark via-dps-green to-slate-900 p-6 md:p-8 text-white shadow-default relative overflow-hidden">
+      <div className="rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 p-6 md:p-8 text-white shadow-xl shadow-emerald-950/10 border border-emerald-800/30 relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 opacity-10 pointer-events-none flex items-center pr-8">
           <Building2 className="w-64 h-64 text-white" />
         </div>
         <div className="relative z-10 max-w-2xl space-y-2">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-400/30">
-            <ShieldCheck className="w-3.5 h-3.5 text-dps-gold" />
+          <div className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-300 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/20">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
             <span>{permissions.roleDisplayName}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
             Welcome, {user?.name || user?.email.split("@")[0]}
           </h1>
-          <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed">
+          <p className="text-xs sm:text-sm text-emerald-100/70 leading-relaxed">
             DPS Echo multi-campus administration desk for Azad Nagar, Barra, Kidwai Nagar, and Servodaya Nagar.
           </p>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Active Students KPI */}
         {canViewStudents && (
-          <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center justify-between">
+          <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-body dark:text-bodydark">Active Students</span>
-              <h4 className="mt-2 text-title-md text-2xl font-bold text-black dark:text-white">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Students</span>
+              <h4 className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                 {activeStudentsCount}
               </h4>
-              <span className="mt-1 block text-xs font-medium text-meta-3">Enrolled Across Campuses</span>
+              <span className="mt-1 block text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">Enrolled Across Campuses</span>
             </div>
-            <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 text-dps-green dark:text-dps-gold">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
               <Users className="w-6 h-6" />
             </div>
           </div>
@@ -279,28 +279,28 @@ export default async function DashboardPage({
         {/* Outstanding Dues KPI */}
         {canViewFees && (
           <>
-            <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center justify-between">
+            <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between">
               <div>
-                <span className="text-sm font-medium text-body dark:text-bodydark">Outstanding Dues</span>
-                <h4 className="mt-2 text-title-md text-2xl font-bold text-black dark:text-white">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Outstanding Dues</span>
+                <h4 className="mt-2 text-2xl font-black font-mono text-amber-950 dark:text-amber-400">
                   {formatCurrency(totalOutstandingDues)}
                 </h4>
-                <span className="mt-1 block text-xs font-medium text-meta-1">{defaultersCount} Overdue Invoices</span>
+                <span className="mt-1 block text-[11px] font-bold text-rose-600 dark:text-rose-400">{defaultersCount} Overdue Invoices</span>
               </div>
-              <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 text-blue-600 dark:text-blue-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                 <Receipt className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center justify-between">
+            <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between">
               <div>
-                <span className="text-sm font-medium text-body dark:text-bodydark">Total Tender Collected</span>
-                <h4 className="mt-2 text-title-md text-2xl font-bold text-black dark:text-white">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Tender Collected</span>
+                <h4 className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                   {formatCurrency(totalCollectedAllTime)}
                 </h4>
-                <span className="mt-1 block text-xs font-medium text-meta-3">POS, UPI & Receipts</span>
+                <span className="mt-1 block text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">POS, UPI &amp; Receipts</span>
               </div>
-              <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 text-teal-600 dark:text-teal-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-400 border border-teal-200 dark:border-teal-800">
                 <CreditCard className="w-6 h-6" />
               </div>
             </div>
@@ -309,15 +309,15 @@ export default async function DashboardPage({
 
         {/* TC Clearance KPI */}
         {canViewTc && (
-          <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center justify-between">
+          <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-body dark:text-bodydark">TCs Issued</span>
-              <h4 className="mt-2 text-title-md text-2xl font-bold text-black dark:text-white">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">TCs Issued</span>
+              <h4 className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                 {tcIssuedCount}
               </h4>
-              <span className="mt-1 block text-xs font-medium text-meta-6">CBSE Clearance Compliant</span>
+              <span className="mt-1 block text-[11px] font-semibold text-sky-700 dark:text-sky-400">CBSE Clearance Compliant</span>
             </div>
-            <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 text-amber-600 dark:text-amber-400">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-800 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
               <FileCheck className="w-6 h-6" />
             </div>
           </div>
@@ -325,15 +325,15 @@ export default async function DashboardPage({
 
         {/* Alumni KPI */}
         {canViewAlumni && (
-          <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center justify-between">
+          <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-body dark:text-bodydark">Graduated Alumni</span>
-              <h4 className="mt-2 text-title-md text-2xl font-bold text-black dark:text-white">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Graduated Alumni</span>
+              <h4 className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                 {alumniCount}
               </h4>
-              <span className="mt-1 block text-xs font-medium text-purple-600 dark:text-purple-400">Permanent Records</span>
+              <span className="mt-1 block text-[11px] font-semibold text-purple-600 dark:text-purple-400">Permanent Records</span>
             </div>
-            <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 text-purple-600 dark:text-purple-400">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-800 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
               <GraduationCap className="w-6 h-6" />
             </div>
           </div>
@@ -343,17 +343,17 @@ export default async function DashboardPage({
         {canViewRbac && (
           <Link
             href="/admin/rbac"
-            className="rounded-sm border border-stroke bg-black dark:bg-boxdark p-6 shadow-default hover:bg-slate-800 transition flex items-center justify-between group"
+            className="rounded-3xl border border-slate-900 bg-slate-900 dark:bg-boxdark p-6 shadow-xs hover:bg-slate-800 transition-all duration-200 flex items-center justify-between group"
           >
             <div>
-              <span className="text-sm font-medium text-slate-300">RBAC Matrix</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">RBAC Matrix</span>
               <h4 className="mt-1 text-base font-bold text-white flex items-center gap-1.5">
-                <span>Admin & Settings</span>
-                <ArrowRight className="w-3.5 h-3.5 text-dps-gold group-hover:translate-x-1 transition" />
+                <span>Admin &amp; Settings</span>
+                <ArrowRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-1 transition" />
               </h4>
-              <span className="mt-1 block text-xs font-medium text-dps-gold">Configure Permissions</span>
+              <span className="mt-1 block text-[11px] font-bold text-amber-400">Configure Permissions</span>
             </div>
-            <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-slate-800 text-dps-gold">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-amber-400 border border-slate-700">
               <KeyRound className="w-6 h-6" />
             </div>
           </Link>
@@ -362,19 +362,19 @@ export default async function DashboardPage({
 
       {/* Trends */}
       {(canViewStudents || canViewFees) && (
-        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2 2xl:gap-7.5">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {canViewStudents && (
-            <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark space-y-4">
+            <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-black dark:text-white">Enrollment Trend</h2>
-                  <p className="text-xs text-body dark:text-bodydark mt-0.5">
+                  <h2 className="text-base font-black text-slate-900 dark:text-white">Enrollment Trend</h2>
+                  <p className="text-xs text-slate-500 dark:text-bodydark mt-0.5">
                     New admissions over the last 12 months
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-xl font-black text-black dark:text-white">{totalAdmissionsThisWindow}</div>
-                  <div className="text-[10px] font-semibold text-body dark:text-bodydark uppercase tracking-wider">
+                  <div className="text-xl font-black font-mono text-slate-900 dark:text-white">{totalAdmissionsThisWindow}</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Admissions
                   </div>
                 </div>
@@ -389,17 +389,17 @@ export default async function DashboardPage({
           )}
 
           {canViewFees && (
-            <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark space-y-4">
+            <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-black dark:text-white">Fee Collection Trend</h2>
-                  <p className="text-xs text-body dark:text-bodydark mt-0.5">
+                  <h2 className="text-base font-black text-slate-900 dark:text-white">Fee Collection Trend</h2>
+                  <p className="text-xs text-slate-500 dark:text-bodydark mt-0.5">
                     Collected against invoiced, last 12 months
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-xl font-black text-black dark:text-white">{collectionRate}%</div>
-                  <div className="text-[10px] font-semibold text-body dark:text-bodydark uppercase tracking-wider">
+                  <div className="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">{collectionRate}%</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Collected
                   </div>
                 </div>
@@ -418,23 +418,23 @@ export default async function DashboardPage({
 
       {/* Defaulter Summary */}
       {canViewFees && (
-        <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark space-y-4">
+        <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-meta-1" />
-              <h2 className="text-base font-bold text-black dark:text-white">Largest Outstanding Dues</h2>
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <h2 className="text-base font-black text-slate-900 dark:text-white">Largest Outstanding Dues</h2>
             </div>
-            <Link href="/fees/defaulters" className="text-xs font-bold text-dps-green dark:text-dps-gold hover:underline">
+            <Link href="/fees/defaulters" className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
               Full Defaulter List →
             </Link>
           </div>
 
           {topDefaulters.length === 0 ? (
-            <div className="py-8 text-center text-xs text-body dark:text-bodydark">
+            <div className="py-8 text-center text-xs text-slate-400">
               No overdue invoices. Everything is settled.
             </div>
           ) : (
-            <div className="divide-y divide-stroke dark:divide-strokedark">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {topDefaulters.map((inv) => {
                 const daysOverdue = Math.max(
                   0,
@@ -444,13 +444,13 @@ export default async function DashboardPage({
                   <Link
                     key={inv.id}
                     href={`/students/${inv.student.id}`}
-                    className="py-3 flex items-center justify-between gap-3 hover:bg-whiten dark:hover:bg-meta-4 -mx-2 px-2 rounded-sm transition"
+                    className="py-3 px-3 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl transition-all duration-150"
                   >
                     <div className="min-w-0">
-                      <div className="font-bold text-black dark:text-white text-xs truncate">
+                      <div className="font-bold text-slate-900 dark:text-white text-xs truncate">
                         {inv.student.firstName} {inv.student.lastName}
                       </div>
-                      <div className="text-[10px] text-body dark:text-bodydark font-mono truncate">
+                      <div className="text-[10px] text-slate-500 font-mono truncate">
                         {inv.student.scholarNo} • {inv.student.class.name} •{" "}
                         {inv.student.campus.code}
                         {inv.student.guardians[0]?.phone
@@ -459,10 +459,10 @@ export default async function DashboardPage({
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-black text-xs text-meta-1">
+                      <div className="font-black font-mono text-xs text-rose-600 dark:text-rose-400">
                         {formatCurrency(inv.balanceAmount)}
                       </div>
-                      <div className="text-[10px] text-body dark:text-bodydark font-medium">
+                      <div className="text-[10px] text-slate-400 font-medium">
                         {daysOverdue} day{daysOverdue === 1 ? "" : "s"} overdue
                       </div>
                     </div>
@@ -475,35 +475,35 @@ export default async function DashboardPage({
       )}
 
       {/* Main Data Tables Section */}
-      <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2 2xl:gap-7.5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Admissions Section */}
         {canViewStudents && (
-          <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark space-y-4">
+          <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-black dark:text-white">Recent Admissions</h2>
-              <Link href="/students" className="text-xs font-bold text-dps-green dark:text-dps-gold hover:underline">
+              <h2 className="text-base font-black text-slate-900 dark:text-white">Recent Admissions</h2>
+              <Link href="/students" className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
                 View All Roster →
               </Link>
             </div>
 
-            <div className="divide-y divide-stroke dark:divide-strokedark">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {recentStudents.length === 0 ? (
-                <div className="py-8 text-center text-xs text-body dark:text-bodydark">No recent admissions found.</div>
+                <div className="py-8 text-center text-xs text-slate-400">No recent admissions found.</div>
               ) : (
                 recentStudents.map((s) => (
-                  <div key={s.id} className="py-3 flex items-center justify-between gap-3">
+                  <div key={s.id} className="py-3 px-2 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl transition">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-meta-2 dark:bg-meta-4 text-dps-green dark:text-dps-gold flex items-center justify-center font-bold text-xs">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 flex items-center justify-center font-black text-xs border border-emerald-200/60 dark:border-emerald-800">
                         {s.firstName[0]}
                       </div>
                       <div>
-                        <div className="font-bold text-black dark:text-white text-xs">{s.firstName} {s.lastName}</div>
-                        <div className="text-[10px] text-body dark:text-bodydark font-mono">
+                        <div className="font-bold text-slate-900 dark:text-white text-xs">{s.firstName} {s.lastName}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">
                           {s.scholarNo} • {s.class.name}-{s.section?.name || "A"} • {s.campus.name}
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] bg-meta-3/10 text-meta-3 font-bold px-2 py-0.5 rounded-full border border-meta-3/30">
+                    <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                       Enrolled
                     </span>
                   </div>
@@ -515,33 +515,33 @@ export default async function DashboardPage({
 
         {/* Recent Fee Transactions */}
         {canViewFees && (
-          <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark space-y-4">
+          <div className="rounded-3xl border border-slate-200 dark:border-strokedark bg-white dark:bg-boxdark p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-black dark:text-white">Recent Tender Collections</h2>
-              <Link href="/fees/invoices" className="text-xs font-bold text-dps-green dark:text-dps-gold hover:underline">
+              <h2 className="text-base font-black text-slate-900 dark:text-white">Recent Tender Collections</h2>
+              <Link href="/fees/online-payments" className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
                 View Ledger →
               </Link>
             </div>
 
-            <div className="divide-y divide-stroke dark:divide-strokedark">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {allPayments.length === 0 ? (
-                <div className="py-8 text-center text-xs text-body dark:text-bodydark">No payment records found.</div>
+                <div className="py-8 text-center text-xs text-slate-400">No payment records found.</div>
               ) : (
                 allPayments.map((p) => (
-                  <div key={p.id} className="py-3 flex items-center justify-between gap-3">
+                  <div key={p.id} className="py-3 px-2 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl transition">
                     <div>
-                      <div className="font-bold text-black dark:text-white text-xs">
+                      <div className="font-bold text-slate-900 dark:text-white text-xs">
                         {p.student.firstName} {p.student.lastName}
                       </div>
-                      <div className="text-[10px] text-body dark:text-bodydark font-mono">
+                      <div className="text-[10px] text-slate-500 font-mono">
                         {p.receiptNo} • {p.paymentMode} • {formatDate(p.paymentDate)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-black text-xs text-meta-3">
+                      <div className="font-black font-mono text-xs text-emerald-700 dark:text-emerald-400">
                         +{formatCurrency(p.amountPaid)}
                       </div>
-                      <div className="text-[10px] text-body dark:text-bodydark font-mono">
+                      <div className="text-[10px] text-slate-400 font-mono">
                         {p.student.campus.code}
                       </div>
                     </div>

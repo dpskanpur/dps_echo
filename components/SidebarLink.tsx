@@ -52,10 +52,10 @@ export function SidebarLink({
       href={href}
       target={target}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-sm px-4 py-2.5 font-medium text-slate-300 duration-200 ease-in-out hover:bg-slate-800 hover:text-white dark:hover:bg-meta-4",
+        "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium text-xs text-slate-400 transition-all duration-200 ease-in-out hover:bg-slate-800/70 hover:text-white dark:hover:bg-slate-800/50",
         active
-          ? "bg-slate-800 text-white dark:bg-meta-4 shadow-sm font-semibold border-l-4 border-dps-gold"
-          : "text-slate-300 hover:text-white",
+          ? "bg-emerald-500/10 text-emerald-400 dark:bg-emerald-500/15 dark:text-emerald-300 font-bold shadow-xs border-l-2 border-emerald-500"
+          : "hover:translate-x-0.5",
         className
       )}
     >

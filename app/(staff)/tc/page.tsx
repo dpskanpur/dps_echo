@@ -83,21 +83,23 @@ export default async function TransferCertificatePage({
   });
 
   return (
-        <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-800" />
-                <h1 className="text-xl font-black text-slate-900">
-                  Transfer Certificate (TC) & Clearance Hub
-                </h1>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Issue CBSE-prescribed Transfer Certificates with automated no-dues verification and tamper-evident QR code stamps.
-              </p>
-            </div>
+    <div className="space-y-6 max-w-6xl mx-auto w-full">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-6 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold shrink-0">
+            <FileText className="w-6 h-6" />
           </div>
+          <div>
+            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              Transfer Certificate (TC) & Clearance Hub
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-bodydark2 mt-0.5">
+              Issue CBSE-prescribed Transfer Certificates with automated no-dues verification and tamper-evident QR code stamps.
+            </p>
+          </div>
+        </div>
+      </div>
 
           {/* If TC View / Print Mode is active */}
           {activeTC && (
@@ -418,36 +420,36 @@ export default async function TransferCertificatePage({
           )}
 
           {/* Issued TC Register Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs overflow-hidden">
+            <div className="p-5 border-b border-slate-200 dark:border-strokedark flex items-center justify-between bg-slate-50/80 dark:bg-boxdark-2">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm">Issued Transfer Certificates Register</h3>
-                <p className="text-xs text-slate-500">Official log of completed pupil transfers and school withdrawals.</p>
+                <h3 className="font-black text-slate-900 dark:text-white text-sm">Issued Transfer Certificates Register</h3>
+                <p className="text-xs text-slate-500 dark:text-bodydark2 mt-0.5">Official log of completed pupil transfers and school withdrawals.</p>
               </div>
-              <span className="text-xs font-bold text-slate-600 bg-slate-200/80 px-2.5 py-1 rounded">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-200/80 dark:bg-slate-800 px-3 py-1 rounded-xl border border-slate-300 dark:border-slate-700">
                 Total Issued: {issuedTCs.length}
               </span>
             </div>
 
-            <div className="divide-y divide-slate-100 text-xs">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
               {issuedTCs.length === 0 ? (
                 <div className="p-6 text-center text-slate-400">
                   No Transfer Certificates issued yet for the selected campus.
                 </div>
               ) : (
                 issuedTCs.map((tc) => (
-                  <div key={tc.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+                  <div key={tc.id} className="p-4 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-emerald-900">{tc.tcNumber}</span>
-                        <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded">
+                        <span className="font-mono font-bold text-emerald-900 dark:text-emerald-400">{tc.tcNumber}</span>
+                        <span className="text-[10px] bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-bold px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                           {tc.status}
                         </span>
                       </div>
-                      <h4 className="font-bold text-slate-900 mt-1">
+                      <h4 className="font-bold text-slate-900 dark:text-white mt-1">
                         {tc.student.firstName} {tc.student.lastName} ({tc.student.scholarNo})
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 dark:text-bodydark2">
                         Class: {tc.student.class.name} • Campus: {tc.student.campus.name} • Issued on {formatDate(tc.issueDate)}
                       </p>
                     </div>
@@ -455,9 +457,9 @@ export default async function TransferCertificatePage({
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/tc?tcId=${tc.id}`}
-                        className="bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                        className="bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 hover:text-emerald-800 dark:hover:text-emerald-400 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700"
                       >
-                        <Printer className="w-3.5 h-3.5" /> View & Print
+                        <Printer className="w-3.5 h-3.5" /> View &amp; Print
                       </Link>
                     </div>
                   </div>
@@ -472,6 +474,6 @@ export default async function TransferCertificatePage({
               pageSize={pageSize}
             />
           </div>
-        </main>
+    </div>
   );
 }

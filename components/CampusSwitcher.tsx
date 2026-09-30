@@ -44,18 +44,18 @@ export function CampusSwitcher({ campuses }: { campuses: CampusOption[] }) {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
-      <Building2 className="w-4 h-4 text-emerald-700" />
-      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Campus:</span>
+    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-2xs transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700">
+      <Building2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">Campus:</span>
       <select
         value={selectedCampusId || "ALL"}
         onChange={handleCampusChange}
         aria-label="Select Campus"
-        className="text-sm font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-4"
+        className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-3"
       >
-        {!requiresOneCampus && <option value="ALL">🏢 All Campuses (Combined)</option>}
+        {!requiresOneCampus && <option value="ALL" className="dark:bg-slate-900">🏢 All Campuses (Combined)</option>}
         {campuses.map((c) => (
-          <option key={c.id} value={c.id}>
+          <option key={c.id} value={c.id} className="dark:bg-slate-900">
             {c.name} ({c.code})
           </option>
         ))}

@@ -56,18 +56,18 @@ export function RecordPaymentModal({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div
-            className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+            <div className="bg-slate-900 dark:bg-slate-950 text-white p-6 flex items-center justify-between border-b border-slate-800">
               <div>
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block">
                   Offline Fee Collection Desk
                 </span>
-                <h3 className="text-base font-bold flex items-center gap-2">
+                <h3 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
                   <span>{studentName}</span>
                 </h3>
                 <span className="text-xs text-slate-400 font-mono">Invoice #{invoiceNo}</span>
@@ -75,7 +75,7 @@ export function RecordPaymentModal({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg transition"
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-all duration-200"
               >
                 <X className="w-5 h-5" />
               </button>
