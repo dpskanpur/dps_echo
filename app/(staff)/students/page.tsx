@@ -119,14 +119,14 @@ export default async function StudentsPage({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-6 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-5 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold">
-              <Users className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 flex items-center justify-center font-bold">
+              <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Student Directory</h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Student Directory</h1>
               <p className="text-xs text-slate-500 dark:text-bodydark2 mt-0.5">
                 Centralized registry of registered applicants and enrolled students across DPS Kanpur.
               </p>
@@ -156,7 +156,7 @@ export default async function StudentsPage({
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white dark:bg-boxdark p-4 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs flex flex-wrap items-center gap-4">
+      <div className="bg-white dark:bg-boxdark p-4 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs flex flex-wrap items-center gap-4">
         {/* Live Search */}
         <LiveSearchInput
           defaultValue={q}
@@ -206,7 +206,7 @@ export default async function StudentsPage({
       </div>
 
       {/* Student Table */}
-      <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-boxdark rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
