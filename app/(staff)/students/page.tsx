@@ -210,10 +210,10 @@ export default async function StudentsPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+              <tr className="sticky top-0 z-10 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-xs text-slate-700 dark:text-slate-200 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                     <th className="py-3.5 px-4">Registration / Scholar ID</th>
                     <th className="py-3.5 px-4">Student Name</th>
-                    <th className="py-3.5 px-4">Campus & Class</th>
+                    <th className="py-3.5 px-4">Campus &amp; Class</th>
                     <th className="py-3.5 px-4">Parent / Contact</th>
                     {customColumns.map((col) => (
                       <th key={col.id} className="py-3.5 px-4">
@@ -225,11 +225,14 @@ export default async function StudentsPage({
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                   {students.length === 0 ? (
                     <tr>
-                      <td colSpan={7 + customColumns.length} className="py-8 text-center text-slate-400">
-                        No students found matching the selected criteria.
+                      <td colSpan={7 + customColumns.length} className="py-12 text-center text-slate-400">
+                        <div className="space-y-2">
+                          <Users className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                          <p className="font-medium">No students found matching the selected criteria.</p>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -240,28 +243,28 @@ export default async function StudentsPage({
                       const isRegisteredOnly = s.status === "REGISTERED";
 
                       return (
-                        <tr key={s.id} className="hover:bg-slate-50/80 transition">
+                        <tr key={s.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
                           <td className="py-3.5 px-4">
                             {isRegisteredOnly ? (
                               <div>
-                                <span className="font-mono font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-xs inline-block">
+                                <span className="font-mono font-bold text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-xs inline-block">
                                   {s.registrationNo || s.scholarNo}
                                 </span>
-                                <span className="text-[10px] text-slate-400 block mt-0.5">
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5">
                                   Reg: {s.registrationDate ? formatDate(s.registrationDate) : "Recent"}
                                 </span>
                               </div>
                             ) : (
                               <div>
-                                <span className="font-mono font-bold text-slate-900 block">
+                                <span className="font-mono font-bold text-slate-900 dark:text-white block">
                                   {s.scholarNo}
                                 </span>
                                 {s.registrationNo && (
-                                  <span className="font-mono text-[10px] text-emerald-700 block font-semibold">
+                                  <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400 block font-semibold">
                                     Reg ID: {s.registrationNo}
                                   </span>
                                 )}
-                                <span className="text-[10px] text-slate-400 block">
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
                                   Adm: {formatDate(s.admissionDate)}
                                 </span>
                               </div>
@@ -273,8 +276,8 @@ export default async function StudentsPage({
                               <div
                                 className={`w-8 h-8 rounded-full border font-bold text-xs flex items-center justify-center shrink-0 ${
                                   isRegisteredOnly
-                                    ? "bg-amber-50 border-amber-200 text-amber-800"
-                                    : "bg-emerald-50 border-emerald-200 text-emerald-800"
+                                    ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300"
+                                    : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
                                 }`}
                               >
                                 {s.firstName[0]}
@@ -283,11 +286,11 @@ export default async function StudentsPage({
                               <div>
                                 <Link
                                   href={`/students/${s.id}`}
-                                  className="font-bold text-slate-900 hover:text-emerald-800 transition"
+                                  className="font-bold text-slate-900 dark:text-white hover:text-emerald-800 dark:hover:text-emerald-400 transition"
                                 >
                                   {s.firstName} {s.lastName}
                                 </Link>
-                                <span className="block text-[11px] text-slate-400">
+                                <span className="block text-[11px] text-slate-400 dark:text-slate-500">
                                   DOB: {formatDate(s.dob)} • {s.gender}
                                 </span>
                               </div>
@@ -295,19 +298,19 @@ export default async function StudentsPage({
                           </td>
 
                           <td className="py-3.5 px-4">
-                            <span className="font-bold text-slate-800 block">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 block">
                               {s.class.name} {s.section ? `(${s.section.name})` : ""}
                             </span>
-                            <span className="text-[10px] font-semibold text-emerald-700">
+                            <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
                               {s.campus.name}
                             </span>
                           </td>
 
                           <td className="py-3.5 px-4">
-                            <span className="font-medium text-slate-800 block">
+                            <span className="font-medium text-slate-800 dark:text-slate-200 block">
                               {primaryGuardian?.name || "N/A"}
                             </span>
-                            <span className="text-[11px] text-slate-500 font-mono">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                               {primaryGuardian?.phone || s.emergencyContact || "-"}
                             </span>
                           </td>
@@ -327,7 +330,7 @@ export default async function StudentsPage({
                               val = String((s as any)[col.key] || "");
                             }
                             return (
-                              <td key={col.id} className="py-3.5 px-4 text-xs font-medium text-slate-700">
+                              <td key={col.id} className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
                                 {val || "-"}
                               </td>
                             );
@@ -335,17 +338,28 @@ export default async function StudentsPage({
 
                           <td className="py-3.5 px-4">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                                 isRegisteredOnly
-                                  ? "bg-amber-100 text-amber-900 border border-amber-200"
+                                  ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
                                   : s.status === "ACTIVE"
-                                  ? "bg-emerald-100 text-emerald-800"
+                                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800"
                                   : s.status === "TC_ISSUED"
-                                  ? "bg-purple-100 text-purple-800"
-                                  : "bg-slate-100 text-slate-600"
+                                  ? "bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
                               }`}
                             >
-                              {isRegisteredOnly ? "REGISTERED (PENDING ADMISSION)" : s.status}
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  isRegisteredOnly
+                                    ? "bg-amber-500"
+                                    : s.status === "ACTIVE"
+                                    ? "bg-emerald-500 animate-pulse"
+                                    : s.status === "TC_ISSUED"
+                                    ? "bg-purple-500"
+                                    : "bg-slate-400"
+                                }`}
+                              />
+                              <span>{isRegisteredOnly ? "Registered (Pending)" : s.status}</span>
                             </span>
                           </td>
 

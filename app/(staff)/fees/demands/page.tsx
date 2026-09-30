@@ -200,7 +200,7 @@ export default async function DemandsPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+              <tr className="sticky top-0 z-10 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-xs text-slate-700 dark:text-slate-200 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                 <th className="py-3.5 px-5">Scholar No &amp; Student</th>
                 <th className="py-3.5 px-5">Campus / Class</th>
                 <th className="py-3.5 px-5">Period / Quarter</th>
@@ -234,10 +234,10 @@ export default async function DemandsPage({
                     </td>
 
                     <td className="py-4 px-5">
-                      <span className="font-bold text-slate-800 dark:text-slate-200 block text-xs">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 block text-xs">
                         {inv.student.class.name}
                       </span>
-                      <span className="text-[10px] font-black uppercase text-emerald-950 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full mt-1 inline-block">
+                      <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800 px-2 py-0.5 rounded-full mt-1 inline-block">
                         {inv.student.campus.code}
                       </span>
                     </td>
@@ -271,21 +271,24 @@ export default async function DemandsPage({
                       )}
                     </td>
 
-                    <td className="py-4 px-5 font-mono font-black text-emerald-800 dark:text-emerald-400 text-sm">
+                    <td className="py-4 px-5 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm">
                       {formatCurrency(inv.netAmount)}
                     </td>
 
                     <td className="py-4 px-5 text-right">
                       {inv.status === "PAID" ? (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           Paid Online
                         </span>
                       ) : inv.status === "PARTIALLY_PAID" ? (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-200">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                           Partial Online
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                           Pending
                         </span>
                       )}

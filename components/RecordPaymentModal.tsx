@@ -47,7 +47,7 @@ export function RecordPaymentModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center gap-1.5 bg-[#0F9D58] hover:bg-[#0d8a4d] active:scale-95 text-white font-bold rounded-xl transition shadow-xs cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 bg-[#0F9D58] hover:bg-[#0d8a4d] active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-2xs cursor-pointer ${
           buttonSize === "sm" ? "px-3 py-1.5 text-xs" : "px-3.5 py-2 text-xs"
         }`}
       >
@@ -56,9 +56,9 @@ export function RecordPaymentModal({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div
-            className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            className="bg-white dark:bg-boxdark rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
