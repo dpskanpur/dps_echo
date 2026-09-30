@@ -22,11 +22,11 @@ export function Pagination({
 
   if (totalCount <= pageSize) {
     return (
-      <div className="bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between text-xs text-slate-500">
+      <div className="bg-white dark:bg-boxdark border-t border-slate-200/80 dark:border-strokedark px-4 py-3 flex items-center justify-between text-xs text-slate-500 dark:text-bodydark2">
         <div>
-          Showing <strong className="text-slate-800">{totalCount > 0 ? 1 : 0}</strong> to{" "}
-          <strong className="text-slate-800">{totalCount}</strong> of{" "}
-          <strong className="text-slate-800">{totalCount}</strong> entries
+          Showing <strong className="text-slate-800 dark:text-white">{totalCount > 0 ? 1 : 0}</strong> to{" "}
+          <strong className="text-slate-800 dark:text-white">{totalCount}</strong> of{" "}
+          <strong className="text-slate-800 dark:text-white">{totalCount}</strong> entries
         </div>
       </div>
     );
@@ -83,11 +83,11 @@ export function Pagination({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="bg-white border-t border-slate-200 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+    <div className="bg-white dark:bg-boxdark border-t border-slate-200/80 dark:border-strokedark px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-bodydark2">
       <div>
-        Showing <strong className="text-slate-800">{startItem}</strong> to{" "}
-        <strong className="text-slate-800">{endItem}</strong> of{" "}
-        <strong className="text-slate-800">{totalCount.toLocaleString()}</strong> entries
+        Showing <strong className="text-slate-800 dark:text-white">{startItem}</strong> to{" "}
+        <strong className="text-slate-800 dark:text-white">{endItem}</strong> of{" "}
+        <strong className="text-slate-800 dark:text-white">{totalCount.toLocaleString()}</strong> entries
       </div>
 
       <div className="flex items-center gap-1.5 font-medium">
@@ -95,14 +95,14 @@ export function Pagination({
         {currentPage > 1 ? (
           <Link
             href={createPageUrl(currentPage - 1)}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition flex items-center gap-1 shadow-2xs"
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1 shadow-2xs"
             title="Previous Page"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             <span>Prev</span>
           </Link>
         ) : (
-          <span className="px-2.5 py-1.5 rounded-lg border border-slate-150 bg-slate-50 text-slate-400 cursor-not-allowed flex items-center gap-1 select-none">
+          <span className="px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed flex items-center gap-1 select-none">
             <ChevronLeft className="w-3.5 h-3.5" />
             <span>Prev</span>
           </span>
@@ -123,7 +123,7 @@ export function Pagination({
             return isCurrent ? (
               <span
                 key={p}
-                className="w-8 h-8 rounded-lg bg-emerald-800 text-white font-bold flex items-center justify-center border border-emerald-800 shadow-2xs text-xs"
+                className="w-8 h-8 rounded-lg bg-emerald-700 dark:bg-emerald-600 text-white font-bold flex items-center justify-center border border-emerald-700 dark:border-emerald-600 shadow-2xs text-xs"
               >
                 {p}
               </span>
@@ -131,7 +131,7 @@ export function Pagination({
               <Link
                 key={p}
                 href={createPageUrl(p)}
-                className="w-8 h-8 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold flex items-center justify-center transition shadow-2xs text-xs"
+                className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-center transition shadow-2xs text-xs"
               >
                 {p}
               </Link>
@@ -143,14 +143,14 @@ export function Pagination({
         {currentPage < totalPages ? (
           <Link
             href={createPageUrl(currentPage + 1)}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition flex items-center gap-1 shadow-2xs"
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1 shadow-2xs"
             title="Next Page"
           >
             <span>Next</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         ) : (
-          <span className="px-2.5 py-1.5 rounded-lg border border-slate-150 bg-slate-50 text-slate-400 cursor-not-allowed flex items-center gap-1 select-none">
+          <span className="px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed flex items-center gap-1 select-none">
             <span>Next</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </span>
