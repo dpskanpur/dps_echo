@@ -798,8 +798,8 @@ export default async function AdminSettingsPage({
                       />
                       <span>
                         {systemSettings.isRegistrationOpen
-                          ? "✓ Registration OPEN (Click to Close)"
-                          : "🚫 Registration CLOSED (Click to Open)"}
+                          ? "Registration OPEN (Click to Close)"
+                          : "Registration CLOSED (Click to Open)"}
                       </span>
                     </button>
                   </form>

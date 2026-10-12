@@ -196,10 +196,10 @@ export function PromotionConsole({
               }
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0F9D58] cursor-pointer"
             >
-              <option value="ALL">🌐 All Campuses (Combined)</option>
+              <option value="ALL">All Campuses (Combined)</option>
               {campuses.map((c) => (
                 <option key={c.id} value={c.id}>
-                  🏫 {c.name} ({c.code})
+                  {c.name} ({c.code})
                 </option>
               ))}
             </select>
@@ -379,10 +379,10 @@ export function PromotionConsole({
                               : "bg-emerald-50 border-emerald-300 text-emerald-950"
                           }`}
                         >
-                          <option value="PROMOTE">🎓 Promote Next Class</option>
-                          <option value="BRANCH_TRANSFER">🔄 Promote & Branch Transfer</option>
-                          <option value="RETAIN">🔁 Retain in Same Class</option>
-                          <option value="GRADUATED">🎓 Graduated / TC Issued</option>
+                          <option value="PROMOTE">Promote Next Class</option>
+                          <option value="BRANCH_TRANSFER">Promote & Branch Transfer</option>
+                          <option value="RETAIN">Retain in Same Class</option>
+                          <option value="GRADUATED">Graduated / TC Issued</option>
                         </select>
                       </td>
 
@@ -400,7 +400,7 @@ export function PromotionConsole({
                         >
                           {campuses.map((c) => (
                             <option key={c.id} value={c.id}>
-                              🏫 {c.name} ({c.code})
+                              {c.name} ({c.code})
                             </option>
                           ))}
                         </select>

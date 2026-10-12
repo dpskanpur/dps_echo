@@ -2,16 +2,16 @@ import { Suspense } from "react";
 import { CampusSwitcher } from "./CampusSwitcher";
 import { SessionSwitcher } from "./SessionSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import { LiveSearchInput } from "./LiveSearchInput";
+import { BreadcrumbTrail } from "./BreadcrumbTrail";
 import { listAcademicSessions } from "@/lib/academic-session";
-import { Search, UserCheck, LogOut, Shield, UserPlus, CreditCard, QrCode } from "lucide-react";
+import { Search, LogOut, Bell, Shield, UserPlus, QrCode } from "lucide-react";
 import Link from "next/link";
 import { UserPermissions } from "@/lib/permissions";
 
 /** Parent-facing pages, reachable from the staff header as icons. */
 const PUBLIC_PORTALS = [
   { href: "/public-registration", label: "Online Registration", icon: UserPlus },
-  /* { href: "/pay", label: "Quick Pay Fees", icon: CreditCard }, -- Fee module temporarily disabled */
+  /* { href: "/pay", label: "Quick Pay Fees" }, -- Fee module temporarily disabled */
   { href: "/verify-tc", label: "Verify TC (QR)", icon: QrCode },
 ] as const;
 
@@ -42,17 +42,15 @@ export async function Navbar({
   user?: UserInfo;
   permissions?: UserPermissions;
 }) {
-  // The switcher reads the selected value from the URL itself.
   let sessions: SessionOption[] = [];
   try {
     sessions = await listAcademicSessions();
   } catch {
-    // A session list failure must not take the whole shell down.
+    // Fail safe
   }
 
   const userName = user?.name || "DPS Staff";
   const userRole = permissions?.roleDisplayName || user?.role || "ADMIN";
-  const userEmail = user?.email || "admin@dpskanpur.com";
   const initials = userName
     .split(" ")
     .map((n) => n[0])
@@ -61,63 +59,91 @@ export async function Navbar({
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-20 flex w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 py-2.5 md:px-6 2xl:px-8 items-center justify-between shadow-2xs select-none">
-      {/* Campus Selector & Academic Year */}
-      <div className="flex items-center gap-3 md:gap-4">
-        <Suspense fallback={<div className="h-8 w-44 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />}>
+    <header className="sticky top-0 z-20 flex h-[48px] w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 md:px-4 items-center justify-between select-none">
+      {/* Left: Campus & Session Selectors + Breadcrumb Trail */}
+      <div className="flex items-center gap-2.5 min-w-0">
+        <Suspense fallback={<div className="h-7 w-32 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />}>
           <CampusSwitcher campuses={campuses} />
         </Suspense>
-        <Suspense fallback={<div className="h-8 w-40 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />}>
+        <Suspense fallback={<div className="h-7 w-28 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />}>
           <SessionSwitcher sessions={sessions} />
         </Suspense>
 
-        {/* Public portals */}
-        <div className="hidden sm:flex items-center gap-1 pl-3 border-l border-slate-200 dark:border-slate-800">
+        <div className="hidden xl:block h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
+        <BreadcrumbTrail />
+      </div>
+
+      {/* Right Utility: Global Command Search + PROD badge + Notifications + Profile */}
+      <div className="flex items-center gap-2">
+        {/* Global Command Search (Cmd + K) Trigger */}
+        <div className="hidden md:flex items-center gap-2 h-7 px-2.5 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs text-slate-400 w-48 justify-between cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+          <div className="flex items-center gap-1.5 truncate">
+            <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="truncate">Quick search...</span>
+          </div>
+          <kbd className="font-mono text-[10px] text-slate-400 bg-white dark:bg-slate-900 px-1 py-0.2 rounded border border-slate-200 dark:border-slate-700">
+            ⌘K
+          </kbd>
+        </div>
+
+        {/* Environment Badge */}
+        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-slate-200 text-slate-600 bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
+          PROD
+        </span>
+
+        {/* Public portal quick links */}
+        <div className="hidden sm:flex items-center gap-1">
           {PUBLIC_PORTALS.map((portal) => (
             <a
               key={portal.href}
               href={portal.href}
               target="_blank"
               rel="noopener noreferrer"
-              title={`${portal.label} (opens in a new tab)`}
-              aria-label={`${portal.label} — public page, opens in a new tab`}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              title={`${portal.label} (new tab)`}
+              aria-label={portal.label}
+              className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
-              <portal.icon className="w-4 h-4" />
+              <portal.icon className="w-3.5 h-3.5" />
             </a>
           ))}
         </div>
-      </div>
 
-      {/* Right User, Theme Switcher & Quick Search */}
-      <div className="flex items-center gap-3 md:gap-4">
-        <LiveSearchInput
-          targetPath="/students"
-          placeholder="Search student by name or ID..."
-          className="hidden lg:flex w-64"
-        />
+        {/* Notification Bell */}
+        <Link
+          href="/notifications"
+          title="Notifications"
+          className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors relative"
+        >
+          <Bell className="w-3.5 h-3.5" />
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 absolute top-1.5 right-1.5" />
+        </Link>
 
-        {/* Dark Mode Theme Switcher */}
+        {/* Theme Switcher */}
         <ThemeSwitcher />
 
-        {/* Staff Profile Badge */}
-        <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-          <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-black text-xs shadow-xs ring-2 ring-emerald-600/20">
+        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-0.5" />
+
+        {/* User Profile Trigger */}
+        <div className="flex items-center gap-2 pl-1">
+          <div className="w-7 h-7 rounded bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center font-bold text-xs select-none">
             {initials}
           </div>
-          <div className="hidden sm:block text-left">
-            <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[140px]">{userName}</div>
-            <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 font-mono">
-              <Shield className="w-2.5 h-2.5" /> {userRole}
+          <div className="hidden sm:block text-left leading-none">
+            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[110px]">
+              {userName}
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+              {userRole}
             </div>
           </div>
 
           <a
             href="/api/auth/logout"
-            title="Sign out of DPS Echo"
-            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all duration-200"
+            title="Sign out of ERP"
+            aria-label="Sign out"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
