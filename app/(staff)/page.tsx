@@ -82,7 +82,8 @@ export default async function DashboardPage({
 
   // Aggregate Metrics (only query permitted domains)
   const canViewStudents = permissions.modules.students.canView;
-  const canViewFees = permissions.modules.fees.canView;
+  /* const canViewFees = permissions.modules.fees.canView; -- Fee module temporarily disabled */
+  const canViewFees = false;
   const canViewTc = permissions.modules.tc.canView;
   const canViewAlumni = permissions.modules.alumni.canView;
   const canViewRbac = permissions.modules.rbac.canView;
@@ -99,7 +100,8 @@ export default async function DashboardPage({
     ? await prisma.student.count({ where: { ...filterCampus, status: "ALUMNI" } })
     : 0;
 
-  // Financial Metrics
+  // Financial Metrics - TEMPORARILY DISABLED
+  /*
   const allInvoices = canViewFees
     ? await prisma.feeInvoice.findMany({ where: filterCampus })
     : [];
@@ -129,6 +131,11 @@ export default async function DashboardPage({
     (acc, p) => acc + (p.amountPaid || 0),
     0
   );
+  */
+  const totalOutstandingDues = 0;
+  const defaultersCount = 0;
+  const allPayments: any[] = [];
+  const totalCollectedAllTime = 0;
 
   // Recent Admissions
   const recentStudents = canViewStudents
@@ -168,6 +175,8 @@ export default async function DashboardPage({
       })
     : [];
 
+  // Payments & Invoices in window - TEMPORARILY DISABLED
+  /*
   const paymentsInWindow = canViewFees
     ? await prisma.feePayment.findMany({
         where: {
@@ -184,6 +193,9 @@ export default async function DashboardPage({
         select: { createdAt: true, netAmount: true },
       })
     : [];
+  */
+  const paymentsInWindow: any[] = [];
+  const invoicesInWindow: any[] = [];
 
   const enrollmentTrend: TrendPoint[] = monthBuckets.map((bucket) => ({
     label: bucket.label,
@@ -206,7 +218,8 @@ export default async function DashboardPage({
   const collectionRate =
     invoicedThisWindow > 0 ? Math.round((collectedThisWindow / invoicedThisWindow) * 100) : 0;
 
-  // Actionable defaulter list — the largest outstanding balances, not just a count.
+  // Actionable defaulter list — TEMPORARILY DISABLED
+  /*
   const topDefaulters = canViewFees
     ? await prisma.feeInvoice.findMany({
         where: {
@@ -236,6 +249,8 @@ export default async function DashboardPage({
         },
       })
     : [];
+  */
+  const topDefaulters: any[] = [];
 
   return (
     <div className="space-y-6">
@@ -273,7 +288,8 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Outstanding Dues KPI */}
+        {/* Outstanding Dues KPI - TEMPORARILY DISABLED */}
+        {/*
         {canViewFees && (
           <>
             <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-between">
@@ -303,6 +319,7 @@ export default async function DashboardPage({
             </div>
           </>
         )}
+        */}
 
         {/* TC Clearance KPI */}
         {canViewTc && (
@@ -385,6 +402,8 @@ export default async function DashboardPage({
             </div>
           )}
 
+          {/* Fee Collection Trend - TEMPORARILY DISABLED */}
+          {/*
           {canViewFees && (
             <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
               <div className="flex items-start justify-between gap-4">
@@ -410,10 +429,12 @@ export default async function DashboardPage({
               />
             </div>
           )}
+          */}
         </div>
       )}
 
-      {/* Defaulter Summary */}
+      {/* Defaulter Summary - TEMPORARILY DISABLED */}
+      {/*
       {canViewFees && (
         <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
@@ -470,6 +491,7 @@ export default async function DashboardPage({
           )}
         </div>
       )}
+      */}
 
       {/* Main Data Tables Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -510,7 +532,8 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Recent Fee Transactions */}
+        {/* Recent Fee Transactions - TEMPORARILY DISABLED */}
+        {/*
         {canViewFees && (
           <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
@@ -548,6 +571,7 @@ export default async function DashboardPage({
             </div>
           </div>
         )}
+        */}
       </div>
     </div>
   );

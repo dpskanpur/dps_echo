@@ -273,13 +273,17 @@ export default async function TransferCertificatePage({
                 </span>
               </div>
 
-              {/* No-Dues Clearance Banner */}
+              {/* No-Dues Clearance Banner (Fee module disabled - auto-clear) */}
               {(() => {
+                /* Fee module temporarily disabled
                 const targetStudentPendingDues = targetStudent.invoices.reduce(
                   (acc: number, inv: any) => acc + inv.balanceAmount,
                   0
                 );
                 const isTcBlockedForSubAdmin = targetStudentPendingDues > 0 && !permissions.isAdmin;
+                */
+                const targetStudentPendingDues = 0;
+                const isTcBlockedForSubAdmin = false;
 
                 return (
                   <div className="space-y-4">

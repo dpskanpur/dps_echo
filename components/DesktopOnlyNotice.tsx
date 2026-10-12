@@ -45,12 +45,14 @@ export function DesktopOnlyNotice() {
           <div className="space-y-2">
             <p className="text-[11px] font-semibold text-slate-600">Parents can still use:</p>
             <div className="flex flex-col gap-1.5">
+              {/* Fee module temporarily disabled
               <a
                 href="/pay"
                 className="text-xs font-semibold text-emerald-800 hover:underline"
               >
                 Pay school fees →
               </a>
+              */}
               <a
                 href="/public-registration"
                 className="text-xs font-semibold text-emerald-800 hover:underline"

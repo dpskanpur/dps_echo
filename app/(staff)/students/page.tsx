@@ -96,9 +96,11 @@ export default async function StudentsPage({
         class: true,
         section: true,
         guardians: { where: { isPrimary: true } },
+        /* Fee module temporarily disabled
         invoices: {
           where: { status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] } },
         },
+        */
       },
       orderBy: [{ class: { sequence: "asc" } }, { firstName: "asc" }],
       take: pageSize,
@@ -221,14 +223,14 @@ export default async function StudentsPage({
                       </th>
                     ))}
                     <th className="py-3.5 px-4">Enrolment Status</th>
-                    <th className="py-3.5 px-4">Fee Dues</th>
+                    {/* <th className="py-3.5 px-4">Fee Dues</th> -- Fee module temporarily disabled */}
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                   {students.length === 0 ? (
                     <tr>
-                      <td colSpan={7 + customColumns.length} className="py-12 text-center text-slate-400">
+                      <td colSpan={6 + customColumns.length} className="py-12 text-center text-slate-400">
                         <div className="space-y-2">
                           <Users className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
                           <p className="font-medium">No students found matching the selected criteria.</p>
@@ -238,8 +240,10 @@ export default async function StudentsPage({
                   ) : (
                     students.map((s) => {
                       const primaryGuardian = s.guardians[0];
-                      const pendingInvoices = s.invoices.length;
+                      /* Fee module temporarily disabled
+                      const pendingInvoices = (s as any).invoices?.length || 0;
                       const hasDues = pendingInvoices > 0;
+                      */
                       const isRegisteredOnly = s.status === "REGISTERED";
 
                       return (
@@ -363,6 +367,7 @@ export default async function StudentsPage({
                             </span>
                           </td>
 
+                          {/* Fee Dues cell - TEMPORARILY DISABLED
                           <td className="py-3.5 px-4">
                             {isRegisteredOnly ? (
                               <span className="text-[11px] text-amber-700 font-medium italic">
@@ -378,6 +383,7 @@ export default async function StudentsPage({
                               </span>
                             )}
                           </td>
+                          */}
 
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">

@@ -35,7 +35,8 @@ export function Sidebar({
   const pathname = usePathname();
 
   const canStudents = permissions?.modules?.students?.canView ?? true;
-  const canFees = permissions?.modules?.fees?.canView ?? true;
+  /* const canFees = permissions?.modules?.fees?.canView ?? true; -- Fee module temporarily disabled */
+  const canFees = false;
   const canTc = permissions?.modules?.tc?.canView ?? true;
   
   const userCampusCode = (permissions?.campusCode || "").toUpperCase();
@@ -47,7 +48,8 @@ export function Sidebar({
   const canNotifications = (permissions?.modules?.notifications?.canView || permissions?.isAdmin) ?? false;
 
   const canUpdateStudents = permissions?.modules?.students?.canUpdate ?? false;
-  const canUpdateFees = permissions?.modules?.fees?.canUpdate ?? false;
+  /* const canUpdateFees = permissions?.modules?.fees?.canUpdate ?? false; -- Fee module temporarily disabled */
+  const canUpdateFees = false;
 
   return (
     <aside className="w-64 bg-slate-950 dark:bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800/80 dark:border-slate-800 min-h-screen select-none">
@@ -140,7 +142,8 @@ export function Sidebar({
           </div>
         )}
 
-        {/* Fee & Finance */}
+        {/* Fee & Finance - TEMPORARILY DISABLED */}
+        {/*
         {canFees && (
           <div>
             <div className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-between">
@@ -175,6 +178,7 @@ export function Sidebar({
             </div>
           </div>
         )}
+        */}
 
         {/* Parent Communication */}
         {canNotifications && (

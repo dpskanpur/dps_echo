@@ -11,7 +11,7 @@ import { UserPermissions } from "@/lib/permissions";
 /** Parent-facing pages, reachable from the staff header as icons. */
 const PUBLIC_PORTALS = [
   { href: "/public-registration", label: "Online Registration", icon: UserPlus },
-  { href: "/pay", label: "Quick Pay Fees", icon: CreditCard },
+  /* { href: "/pay", label: "Quick Pay Fees", icon: CreditCard }, -- Fee module temporarily disabled */
   { href: "/verify-tc", label: "Verify TC (QR)", icon: QrCode },
 ] as const;
 

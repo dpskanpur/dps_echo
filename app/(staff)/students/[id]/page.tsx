@@ -47,7 +47,9 @@ export default async function StudentDetailPage({
   searchParams: Promise<{ tab?: string; edit?: string; notice?: string }>;
 }) {
   const { id } = await params;
-  const { tab = "overview", edit, notice } = await searchParams;
+  const { tab: rawTab = "overview", edit, notice } = await searchParams;
+  // Fallback to overview if fee tab was requested while module is disabled
+  const tab = rawTab === "fees" ? "overview" : rawTab;
   const isEditing = edit === "true";
 
   const user = await getCurrentUser();
@@ -99,9 +101,16 @@ export default async function StudentDetailPage({
   });
 
   const primaryGuardian = student.guardians.find((g) => g.isPrimary) || student.guardians[0];
+
+  // Fee module temporarily disabled
+  /*
   const totalInvoiced = student.invoices.reduce((acc, inv) => acc + inv.netAmount, 0);
   const totalPaid = student.invoices.reduce((acc, inv) => acc + inv.paidAmount, 0);
   const totalBalance = student.invoices.reduce((acc, inv) => acc + inv.balanceAmount, 0);
+  */
+  const totalInvoiced = 0;
+  const totalPaid = 0;
+  const totalBalance = 0;
 
   const providers = await getProviderStatus(student.campusId);
 
@@ -621,7 +630,8 @@ export default async function StudentDetailPage({
             </div>
           )}
 
-            {/* Quick Balance Ticker */}
+            {/* Quick Balance Ticker - TEMPORARILY DISABLED */}
+            {/*
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-slate-100">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <span className="text-[11px] font-bold uppercase text-slate-400 block">
@@ -650,6 +660,7 @@ export default async function StudentDetailPage({
                 </span>
               </div>
             </div>
+            */}
           </div>
 
           {/* Dossier Tabs */}
@@ -674,6 +685,8 @@ export default async function StudentDetailPage({
             >
               <Users className="w-4 h-4" /> Family & Guardians ({student.guardians.length})
             </Link>
+            {/* Fee Ledger tab button - TEMPORARILY DISABLED */}
+            {/*
             <Link
               href={`/students/${student.id}?tab=fees`}
               className={`pb-3 border-b-2 transition flex items-center gap-1.5 ${
@@ -684,6 +697,7 @@ export default async function StudentDetailPage({
             >
               <Receipt className="w-4 h-4" /> Fee Ledger & Invoices ({student.invoices.length})
             </Link>
+            */}
             <Link
               href={`/students/${student.id}?tab=docs`}
               className={`pb-3 border-b-2 transition flex items-center gap-1.5 ${
@@ -849,10 +863,10 @@ export default async function StudentDetailPage({
             </div>
           )}
 
-          {/* Tab 3: Fee Ledger & Invoices */}
+          {/* Tab 3: Fee Ledger & Invoices - TEMPORARILY DISABLED */}
+          {/*
           {tab === "fees" && (
             <div className="space-y-6">
-              {/* Fee Discount Approval & Setting Card */}
               <StudentDiscountCard
                 studentId={student.id}
                 studentName={`${student.firstName} ${student.lastName}`}
@@ -866,7 +880,6 @@ export default async function StudentDetailPage({
                 totalGrossDemand={student.invoices.reduce((acc, inv) => acc + inv.grossAmount, 0)}
               />
 
-              {/* Invoices List */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
                 <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                   <div>
@@ -920,7 +933,6 @@ export default async function StudentDetailPage({
                         </div>
                       </div>
 
-                      {/* Invoice Item Breakdown */}
                       <div className="bg-slate-50 p-2.5 rounded-lg text-[11px] grid grid-cols-2 sm:grid-cols-4 gap-2 border border-slate-100">
                         {inv.items.map((item) => (
                           <div key={item.id}>
@@ -936,7 +948,6 @@ export default async function StudentDetailPage({
                         )}
                       </div>
 
-                      {/* Payments against this invoice */}
                       {inv.payments.length > 0 && (
                         <div className="pl-3 border-l-2 border-emerald-500 space-y-1 text-xs">
                           {inv.payments.map((p) => (
@@ -956,6 +967,7 @@ export default async function StudentDetailPage({
               </div>
             </div>
           )}
+          */}
 
           {/* Tab 4: Document Locker */}
           {tab === "docs" && (
