@@ -203,20 +203,20 @@ export function BulkImportModal() {
 
       {/* Modal Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-boxdark rounded-3xl shadow-2xl border border-slate-200 dark:border-strokedark w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-800">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-slate-900">
+                  <h2 className="text-base font-black text-slate-900 dark:text-white">
                     Bulk Student Import (.CSV Only)
                   </h2>
-                  <p className="text-xs text-slate-500">
-                    Batch register students across Azad Nagar, Barra, Kidwai Nagar & Servodaya Nagar.
+                  <p className="text-xs text-slate-500 dark:text-bodydark2">
+                    Batch register students across Azad Nagar, Barra, Kidwai Nagar &amp; Servodaya Nagar.
                   </p>
                 </div>
               </div>
@@ -224,7 +224,7 @@ export function BulkImportModal() {
               <button
                 onClick={handleClose}
                 disabled={isProcessing}
-                className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition"
+                className="w-8 h-8 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition"
               >
                 <X className="w-5 h-5" />
               </button>

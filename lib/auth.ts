@@ -82,12 +82,16 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
       matrix[mod] = { module: mod, canView: true, canUpdate: true, canDelete: true };
     });
 
+    // Fee module temporarily disabled
+    matrix.fees = { module: "fees", canView: false, canUpdate: false, canDelete: false };
+
     return {
       modules: matrix,
       hasAnyAccess: true,
       isAdmin: true,
       canManageStudents: true,
-      canManageFees: true,
+      /* canManageFees: true, -- fee module temporarily disabled */
+      canManageFees: false,
       isViewOnlyStudents: false,
       isViewOnlyFees: false,
       roleDisplayName: "Admin",
@@ -113,12 +117,17 @@ export async function getUserPermissions(user: SessionUser | null): Promise<User
     }
   });
 
+  // Fee module temporarily disabled
+  matrix.fees = { module: "fees", canView: false, canUpdate: false, canDelete: false };
+
   const hasAnyAccess = Object.values(matrix).some((m) => m.canView);
 
   const canManageStudents = matrix.students.canUpdate;
-  const canManageFees = matrix.fees.canUpdate;
+  /* const canManageFees = matrix.fees.canUpdate; -- fee module temporarily disabled */
+  const canManageFees = false;
   const isViewOnlyStudents = matrix.students.canView && !matrix.students.canUpdate;
-  const isViewOnlyFees = matrix.fees.canView && !matrix.fees.canUpdate;
+  /* const isViewOnlyFees = matrix.fees.canView && !matrix.fees.canUpdate; -- fee module temporarily disabled */
+  const isViewOnlyFees = false;
 
   return {
     modules: matrix,
@@ -192,6 +201,11 @@ export async function requirePermission(
   module: AppModuleId,
   level: "view" | "update" | "delete" = "update"
 ): Promise<{ user: SessionUser; permissions: UserPermissions }> {
+  // Fee module is temporarily disabled
+  if (module === "fees") {
+    throw new Error("The Fee module is currently disabled.");
+  }
+
   const user = await getCurrentUser();
   if (!user) {
     throw new Error("Not authenticated. Please sign in again.");

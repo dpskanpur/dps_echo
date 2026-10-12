@@ -34,11 +34,11 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       {/* Below 768px: the staff console is not usable, so it is not shown. */}
       <DesktopOnlyNotice />
 
-      <div className="hidden md:flex min-h-screen bg-whiten dark:bg-boxdark-2">
+      <div className="hidden md:flex min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
         <Sidebar userEmail={user.email} userRole={user.role} permissions={permissions} />
         <div className="flex-1 flex flex-col min-w-0">
           <Navbar campuses={campuses} user={user} permissions={permissions} />
-          <main className="flex-1 p-4 md:p-6 2xl:p-10 mx-auto w-full max-w-screen-2xl">
+          <main className="flex-1 p-4 md:p-6 2xl:p-8 mx-auto w-full max-w-screen-2xl">
             {children}
           </main>
         </div>

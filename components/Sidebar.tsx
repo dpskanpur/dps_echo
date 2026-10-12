@@ -16,6 +16,8 @@ import {
   History,
   Sparkles,
   CreditCard,
+  FileSpreadsheet,
+  FileCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
@@ -33,7 +35,8 @@ export function Sidebar({
   const pathname = usePathname();
 
   const canStudents = permissions?.modules?.students?.canView ?? true;
-  const canFees = permissions?.modules?.fees?.canView ?? true;
+  /* const canFees = permissions?.modules?.fees?.canView ?? true; -- Fee module temporarily disabled */
+  const canFees = false;
   const canTc = permissions?.modules?.tc?.canView ?? true;
   
   const userCampusCode = (permissions?.campusCode || "").toUpperCase();
@@ -45,29 +48,31 @@ export function Sidebar({
   const canNotifications = (permissions?.modules?.notifications?.canView || permissions?.isAdmin) ?? false;
 
   const canUpdateStudents = permissions?.modules?.students?.canUpdate ?? false;
-  const canUpdateFees = permissions?.modules?.fees?.canUpdate ?? false;
+  /* const canUpdateFees = permissions?.modules?.fees?.canUpdate ?? false; -- Fee module temporarily disabled */
+  const canUpdateFees = false;
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800 dark:border-strokedark dark:bg-boxdark min-h-screen">
+    <aside className="w-64 bg-slate-950 dark:bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800/80 dark:border-slate-800 min-h-screen select-none">
       {/* Brand Header */}
-      <div className="flex items-center justify-between gap-2 px-6 py-5.5 border-b border-slate-800 dark:border-strokedark">
+      <div className="flex items-center justify-between gap-2 px-6 py-5 border-b border-slate-800/80 dark:border-slate-800 relative">
         <div className="space-y-1">
           <img
             src="/echo-logo-white.png"
             alt="ECHO — DPS Kanpur Portal"
-            className="h-9 w-auto object-contain"
+            className="h-8 w-auto object-contain"
           />
-          <p className="text-[11px] font-medium text-slate-400 dark:text-bodydark truncate">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/90 truncate">
             {permissions?.roleDisplayName || "Staff Desk"}
           </p>
         </div>
+        <div className="absolute bottom-0 left-6 right-6 h-[1px] bg-gradient-to-r from-emerald-500/30 via-transparent to-transparent" />
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+      <nav className="flex-1 px-3.5 py-5 space-y-6 overflow-y-auto">
         {/* Overview */}
         <div>
-          <h3 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2">
+          <h3 className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
             Overview
           </h3>
           <div className="space-y-1">
@@ -83,10 +88,10 @@ export function Sidebar({
         {/* Student Management */}
         {canStudents && (
           <div>
-            <div className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2 flex items-center justify-between">
+            <div className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-between">
               <span>Students</span>
               {!canUpdateStudents && (
-                <span className="text-[9px] text-amber-400 font-semibold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
+                <span className="text-[9px] text-amber-400 font-bold bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-800/40">
                   view only
                 </span>
               )}
@@ -137,53 +142,48 @@ export function Sidebar({
           </div>
         )}
 
-        {/* Fee & Finance */}
+        {/* Fee & Finance - TEMPORARILY DISABLED */}
+        {/*
         {canFees && (
           <div>
-            <div className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2 flex items-center justify-between">
-              <span>Fees</span>
+            <div className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-between">
+              <span>Fees &amp; Billing</span>
               {!canUpdateFees && (
-                <span className="text-[9px] text-amber-400 font-semibold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
+                <span className="text-[9px] text-amber-400 font-bold bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-800/40">
                   view only
                 </span>
               )}
             </div>
             <div className="space-y-1">
               <SidebarLink
-                href="/fees/structures"
-                icon={Layers}
-                label="Structures"
-                active={pathname.startsWith("/fees/structures")}
+                href="/fees/demands"
+                icon={FileSpreadsheet}
+                label="Quarterly Demands"
+                active={pathname.startsWith("/fees/demands")}
               />
 
               <SidebarLink
-                href="/fees/invoices"
-                icon={Receipt}
-                label="Invoices"
-                active={pathname.startsWith("/fees/invoices")}
-              />
-
-              <SidebarLink
-                href="/fees/defaulters"
-                icon={AlertTriangle}
-                label="Defaulters"
-                active={pathname.startsWith("/fees/defaulters")}
+                href="/fees/online-payments"
+                icon={FileCheck}
+                label="Online Paid Receipts"
+                active={pathname.startsWith("/fees/online-payments")}
               />
 
               <SidebarLink
                 href="/fees/razorpay"
                 icon={CreditCard}
-                label="Razorpay"
+                label="Razorpay Settings"
                 active={pathname.startsWith("/fees/razorpay")}
               />
             </div>
           </div>
         )}
+        */}
 
         {/* Parent Communication */}
         {canNotifications && (
           <div>
-            <h3 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2">
+            <h3 className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
               Communication
             </h3>
             <div className="space-y-1">
@@ -200,7 +200,7 @@ export function Sidebar({
         {/* Administration & Access */}
         {(canRbac || canAudit) && (
           <div>
-            <h3 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-bodydark2">
+            <h3 className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
               Administration
             </h3>
             <div className="space-y-1">
@@ -216,7 +216,7 @@ export function Sidebar({
                 <SidebarLink
                   href="/admin/audit-logs"
                   icon={History}
-                  label="Audit"
+                  label="Audit Logs"
                   active={pathname.startsWith("/admin/audit-logs")}
                 />
               )}
@@ -226,13 +226,13 @@ export function Sidebar({
       </nav>
 
       {/* Footer Status */}
-      <div className="p-4.5 border-t border-slate-800 dark:border-strokedark bg-slate-950/40 dark:bg-boxdark-2">
-        <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-          <Building2 className="w-4 h-4 text-dps-gold" />
+      <div className="p-4 border-t border-slate-800/80 dark:border-slate-800 bg-slate-900/60">
+        <div className="flex items-center gap-2 text-xs text-slate-200 font-bold">
+          <Building2 className="w-4 h-4 text-emerald-400" />
           <span className="truncate">DPS Kanpur Group</span>
         </div>
-        <div className="mt-1 text-[11px] text-slate-400 dark:text-bodydark2">
-          Session 2025-26 • 4 Campuses
+        <div className="mt-0.5 text-[10px] font-medium text-slate-400">
+          4 Offical Campuses • Unified Portal
         </div>
       </div>
     </aside>

@@ -141,9 +141,9 @@ export function DobInputWithWords({
   return (
     <>
       <div>
-        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
           <span>Date of Birth (DD/MM/YYYY) <span className="text-rose-500 font-bold">*</span></span>
-          <span className="text-[10px] text-slate-400 font-normal">Cannot be future date</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">Cannot be future date</span>
         </label>
         <input
           type="date"
@@ -152,14 +152,14 @@ export function DobInputWithWords({
           max={todayStr}
           onChange={handleDobChange}
           required
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 invalid:border-rose-300 invalid:text-rose-900 cursor-pointer"
+          className="w-full bg-slate-50/50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 invalid:border-rose-300 invalid:text-rose-900 cursor-pointer shadow-2xs"
         />
       </div>
 
       <div className="sm:col-span-2">
-        <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
           <span>Date of Birth (in Words)</span>
-          <span className="text-[10px] text-emerald-700 font-semibold">✨ Auto-converted</span>
+          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">✨ Auto-converted</span>
         </label>
         <input
           type="text"
@@ -167,7 +167,7 @@ export function DobInputWithWords({
           value={words}
           onChange={(e) => setWords(e.target.value)}
           placeholder="Select DOB above to auto-convert to words..."
-          className="w-full bg-emerald-50/50 border border-emerald-200 rounded-xl p-2.5 text-xs font-bold text-emerald-950 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+          className="w-full bg-emerald-50/40 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 rounded-xl p-2.5 text-xs font-bold text-emerald-950 dark:text-emerald-300 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-2xs"
         />
       </div>
     </>

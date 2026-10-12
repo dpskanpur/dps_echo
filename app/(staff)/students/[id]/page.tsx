@@ -47,7 +47,9 @@ export default async function StudentDetailPage({
   searchParams: Promise<{ tab?: string; edit?: string; notice?: string }>;
 }) {
   const { id } = await params;
-  const { tab = "overview", edit, notice } = await searchParams;
+  const { tab: rawTab = "overview", edit, notice } = await searchParams;
+  // Fallback to overview if fee tab was requested while module is disabled
+  const tab = rawTab === "fees" ? "overview" : rawTab;
   const isEditing = edit === "true";
 
   const user = await getCurrentUser();
@@ -99,76 +101,94 @@ export default async function StudentDetailPage({
   });
 
   const primaryGuardian = student.guardians.find((g) => g.isPrimary) || student.guardians[0];
+
+  // Fee module temporarily disabled
+  /*
   const totalInvoiced = student.invoices.reduce((acc, inv) => acc + inv.netAmount, 0);
   const totalPaid = student.invoices.reduce((acc, inv) => acc + inv.paidAmount, 0);
   const totalBalance = student.invoices.reduce((acc, inv) => acc + inv.balanceAmount, 0);
+  */
+  const totalInvoiced = 0;
+  const totalPaid = 0;
+  const totalBalance = 0;
 
   const providers = await getProviderStatus(student.campusId);
 
   return (
-        <main className="p-8 space-y-6 flex-1 overflow-y-auto max-w-6xl mx-auto w-full">
-          {/* Back Navigation */}
-          <div className="flex items-center justify-between">
-            <Link
-              href="/students"
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1"
-            >
-              ← Back to Student Directory
-            </Link>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Student ID:</span>
-              <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                {student.id}
-              </span>
-            </div>
-          </div>
+    <div className="space-y-6 max-w-6xl mx-auto w-full">
+      {/* Back Navigation */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/students"
+          className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1"
+        >
+          ← Back to Student Directory
+        </Link>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">Student ID:</span>
+          <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">
+            {student.id}
+          </span>
+        </div>
+      </div>
 
-          {notice === "individual_sms_sent" && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-medium">
-              SMS message dispatched successfully to {primaryGuardian?.name || "parent"}!
-            </div>
-          )}
+      {notice === "individual_sms_sent" && (
+        <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-900 dark:text-emerald-300 font-medium">
+          SMS message dispatched successfully to {primaryGuardian?.name || "parent"}!
+        </div>
+      )}
 
-          {/* Student Dossier Header Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs relative overflow-hidden">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              {/* Left Details */}
-              <div className="flex items-start gap-4">
-                {student.photoUrl ? (
-                  <img
-                    src={student.photoUrl}
-                    alt={`${student.firstName} ${student.lastName}`}
-                    className="w-16 h-20 rounded-xl object-cover border border-slate-200 shadow-md shrink-0 bg-slate-100"
+      {/* Student Dossier Header Card */}
+      <div className="bg-white dark:bg-boxdark rounded-2xl border border-slate-200/80 dark:border-strokedark p-6 shadow-xs relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          {/* Left Details */}
+          <div className="flex items-start gap-4">
+            {student.photoUrl ? (
+              <img
+                src={student.photoUrl}
+                alt={`${student.firstName} ${student.lastName}`}
+                className="w-16 h-20 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-md shrink-0 bg-slate-100 dark:bg-slate-800"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-teal-600 text-white font-black text-2xl flex items-center justify-center shadow-md shrink-0">
+                {student.firstName[0]}
+                {student.lastName[0]}
+              </div>
+            )}
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {student.firstName} {student.lastName}
+                </h1>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                    student.status === "ACTIVE"
+                      ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800"
+                      : student.status === "REGISTERED"
+                      ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                      : student.status === "TC_ISSUED"
+                      ? "bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      student.status === "ACTIVE"
+                        ? "bg-emerald-500 animate-pulse"
+                        : student.status === "REGISTERED"
+                        ? "bg-amber-500"
+                        : student.status === "TC_ISSUED"
+                        ? "bg-purple-500"
+                        : "bg-slate-400"
+                    }`}
                   />
-                ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-teal-600 text-white font-black text-2xl flex items-center justify-center shadow-md shrink-0">
-                    {student.firstName[0]}
-                    {student.lastName[0]}
-                  </div>
+                  <span>{student.status === "REGISTERED" ? "Registered (Pending)" : student.status}</span>
+                </span>
+                {student.registrationNo && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 text-xs font-mono font-bold border border-amber-200 dark:border-amber-800">
+                    REG ID: {student.registrationNo}
+                  </span>
                 )}
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl font-black text-slate-900">
-                      {student.firstName} {student.lastName}
-                    </h1>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        student.status === "ACTIVE"
-                          ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                          : student.status === "REGISTERED"
-                          ? "bg-amber-100 text-amber-900 border border-amber-300 font-extrabold"
-                          : student.status === "TC_ISSUED"
-                          ? "bg-purple-100 text-purple-800 border border-purple-200"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {student.status === "REGISTERED" ? "REGISTERED (PENDING ADMISSION)" : student.status}
-                    </span>
-                    {student.registrationNo && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-xs font-mono font-bold border border-amber-200">
-                        REG ID: {student.registrationNo}
-                      </span>
-                    )}
                     {student.house && (
                       <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-semibold">
                         House: {student.house}
@@ -610,7 +630,8 @@ export default async function StudentDetailPage({
             </div>
           )}
 
-            {/* Quick Balance Ticker */}
+            {/* Quick Balance Ticker - TEMPORARILY DISABLED */}
+            {/*
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-slate-100">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <span className="text-[11px] font-bold uppercase text-slate-400 block">
@@ -639,6 +660,7 @@ export default async function StudentDetailPage({
                 </span>
               </div>
             </div>
+            */}
           </div>
 
           {/* Dossier Tabs */}
@@ -663,6 +685,8 @@ export default async function StudentDetailPage({
             >
               <Users className="w-4 h-4" /> Family & Guardians ({student.guardians.length})
             </Link>
+            {/* Fee Ledger tab button - TEMPORARILY DISABLED */}
+            {/*
             <Link
               href={`/students/${student.id}?tab=fees`}
               className={`pb-3 border-b-2 transition flex items-center gap-1.5 ${
@@ -673,6 +697,7 @@ export default async function StudentDetailPage({
             >
               <Receipt className="w-4 h-4" /> Fee Ledger & Invoices ({student.invoices.length})
             </Link>
+            */}
             <Link
               href={`/students/${student.id}?tab=docs`}
               className={`pb-3 border-b-2 transition flex items-center gap-1.5 ${
@@ -838,10 +863,10 @@ export default async function StudentDetailPage({
             </div>
           )}
 
-          {/* Tab 3: Fee Ledger & Invoices */}
+          {/* Tab 3: Fee Ledger & Invoices - TEMPORARILY DISABLED */}
+          {/*
           {tab === "fees" && (
             <div className="space-y-6">
-              {/* Fee Discount Approval & Setting Card */}
               <StudentDiscountCard
                 studentId={student.id}
                 studentName={`${student.firstName} ${student.lastName}`}
@@ -855,7 +880,6 @@ export default async function StudentDetailPage({
                 totalGrossDemand={student.invoices.reduce((acc, inv) => acc + inv.grossAmount, 0)}
               />
 
-              {/* Invoices List */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
                 <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                   <div>
@@ -909,7 +933,6 @@ export default async function StudentDetailPage({
                         </div>
                       </div>
 
-                      {/* Invoice Item Breakdown */}
                       <div className="bg-slate-50 p-2.5 rounded-lg text-[11px] grid grid-cols-2 sm:grid-cols-4 gap-2 border border-slate-100">
                         {inv.items.map((item) => (
                           <div key={item.id}>
@@ -925,7 +948,6 @@ export default async function StudentDetailPage({
                         )}
                       </div>
 
-                      {/* Payments against this invoice */}
                       {inv.payments.length > 0 && (
                         <div className="pl-3 border-l-2 border-emerald-500 space-y-1 text-xs">
                           {inv.payments.map((p) => (
@@ -945,16 +967,17 @@ export default async function StudentDetailPage({
               </div>
             </div>
           )}
+          */}
 
           {/* Tab 4: Document Locker */}
           {tab === "docs" && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+            <div className="bg-white dark:bg-boxdark rounded-2xl border border-slate-200/80 dark:border-strokedark p-6 shadow-xs">
               <DocumentUploadSection
                 studentId={student.id}
                 documents={student.documents}
               />
             </div>
           )}
-        </main>
+    </div>
   );
 }

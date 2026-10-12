@@ -47,21 +47,21 @@ export function LiveSearchInput({
 
   return (
     <div className={`relative flex items-center w-full ${className}`}>
-      <Search className="w-4 h-4 absolute left-3 text-slate-400 pointer-events-none shrink-0" />
+      <Search className="w-4 h-4 absolute left-3 text-slate-400 dark:text-slate-500 pointer-events-none shrink-0" />
       <input
         type="text"
         value={value}
         onChange={(e) => handleSearch(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-slate-50 text-xs border border-slate-200 rounded-xl pl-9 pr-8 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition shadow-xs"
+        className="w-full bg-slate-50/50 dark:bg-slate-900/60 text-xs border border-slate-200/80 dark:border-slate-800 rounded-xl pl-9 pr-8 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500 transition shadow-2xs"
       />
       {isPending ? (
-        <Loader2 className="w-3.5 h-3.5 absolute right-3 text-emerald-600 animate-spin shrink-0" />
+        <Loader2 className="w-3.5 h-3.5 absolute right-3 text-emerald-600 dark:text-emerald-400 animate-spin shrink-0" />
       ) : value ? (
         <button
           type="button"
           onClick={() => handleSearch("")}
-          className="absolute right-3 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200/50 transition cursor-pointer shrink-0"
+          className="absolute right-3 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
           title="Clear search"
         >
           <X className="w-3.5 h-3.5" />

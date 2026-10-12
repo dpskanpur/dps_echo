@@ -130,11 +130,11 @@ export function ValidatedInput({
 
   return (
     <div>
-      <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
         <span>
           {label} {isRequired && <span className="text-rose-500 font-bold">*</span>}
         </span>
-        {hint && <span className="text-[10px] text-slate-400 font-normal">{hint}</span>}
+        {hint && <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">{hint}</span>}
       </label>
 
       <input
@@ -148,15 +148,15 @@ export function ValidatedInput({
         pattern={pattern}
         maxLength={maxLength}
         placeholder={placeholder}
-        className={`w-full bg-slate-50 border rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 transition-all ${
+        className={`w-full bg-slate-50/50 dark:bg-slate-900/60 border rounded-xl p-2.5 text-xs font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 transition-all shadow-2xs ${
           error
-            ? "border-rose-400 bg-rose-50/40 text-rose-900 focus:ring-rose-500/20 focus:border-rose-500"
-            : "border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-600"
+            ? "border-rose-400 dark:border-rose-500 bg-rose-50/40 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 focus:ring-rose-500/20 focus:border-rose-500"
+            : "border-slate-200/80 dark:border-slate-800 focus:ring-emerald-500/20 focus:border-emerald-600 dark:focus:border-emerald-500"
         } ${uppercase ? "uppercase" : ""} ${className}`}
       />
 
       {error ? (
-        <p className="text-[10px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+        <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-1 flex items-center gap-1">
           <span>⚠️</span> {error}
         </p>
       ) : null}

@@ -9,7 +9,7 @@ interface PrintButtonProps {
 
 export function PrintButton({
   label = "Print TC",
-  className = "bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-xs cursor-pointer",
+  className = "bg-emerald-700 hover:bg-emerald-600 active:scale-[0.98] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-2 shadow-2xs cursor-pointer",
 }: PrintButtonProps) {
   return (
     <button

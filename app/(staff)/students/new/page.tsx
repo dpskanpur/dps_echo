@@ -69,33 +69,35 @@ export default async function NewAdmissionPage({
   });
 
   return (
-        <main className="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto max-w-5xl mx-auto w-full">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <ClipboardList className="w-6 h-6 text-emerald-800" />
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900">
-                  Official DPS Registration Form
-                </h1>
-                {!isRegistrationOpen && (
-                  <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-extrabold border border-slate-300 flex items-center gap-1.5 shadow-xs">
-                    <Lock className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Registration Closed</span>
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Digital counterpart of official DPS Kanpur paper Registration Form. Generates unique Registration ID (`REG-AZD-2026-XXXX`).
-              </p>
+    <div className="space-y-6 max-w-5xl mx-auto w-full">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-6 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs">
+        <div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold">
+              <ClipboardList className="w-5 h-5" />
             </div>
-            <Link
-              href="/students"
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 self-start sm:self-auto"
-            >
-              ← Back to Directory
-            </Link>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              Official DPS Registration Form
+            </h1>
+            {!isRegistrationOpen && (
+              <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 rounded-full text-xs font-black border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 shadow-xs">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Registration Closed</span>
+              </span>
+            )}
           </div>
+          <p className="text-xs text-slate-500 dark:text-bodydark2 mt-0.5">
+            Digital counterpart of official DPS Kanpur paper Registration Form. Generates unique Registration ID (`REG-AZD-2026-XXXX`).
+          </p>
+        </div>
+        <Link
+          href="/students"
+          className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white self-start sm:self-auto"
+        >
+          ← Back to Directory
+        </Link>
+      </div>
 
           {/* OFFICIAL DPS REGISTRATION FORM */}
           <RegistrationFormWrapper action={registerStudent}>
@@ -104,17 +106,17 @@ export default async function NewAdmissionPage({
             <fieldset disabled={!isRegistrationOpen} className={!isRegistrationOpen ? "opacity-50 pointer-events-none select-none filter grayscale-[30%] space-y-6" : "space-y-6"}>
 
             {/* SECTION 1: TARGET CLASS & ACADEMIC PLACEMENT */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                <Building2 className="w-4 h-4 text-emerald-800" />
-                <h3 className="text-sm font-bold text-slate-900">
+            <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <Building2 className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   1. Admission Target & Campus
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Campus *
                   </label>
                   <CampusSelector
@@ -124,13 +126,13 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Seeking Admission in Class *
                   </label>
                   <select
                     name="classId"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark rounded-xl p-2.5 text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   >
                     {classes.map((cls) => (
                       <option key={cls.id} value={cls.id}>
@@ -141,14 +143,14 @@ export default async function NewAdmissionPage({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Academic Session *
                   </label>
                   <select
                     name="academicYearIn"
                     required
                     defaultValue={activeSessionName}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark rounded-xl p-2.5 text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   >
                     {admissionSessions.length === 0 ? (
                       <option value={activeSessionName}>{activeSessionName}</option>
@@ -169,10 +171,10 @@ export default async function NewAdmissionPage({
             </div>
 
             {/* SECTION 2: STUDENT'S DETAILS */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                <User className="w-4 h-4 text-emerald-800" />
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+            <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <User className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
                   2. Student's Details
                 </h3>
               </div>
@@ -210,13 +212,13 @@ export default async function NewAdmissionPage({
                 <DobInputWithWords />
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Gender <span className="text-rose-500 font-bold">*</span>
                   </label>
                   <select
                     name="gender"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark rounded-xl p-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -252,13 +254,13 @@ export default async function NewAdmissionPage({
                 />
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Category <span className="text-rose-500 font-bold">*</span>
                   </label>
                   <select
                     name="category"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark rounded-xl p-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   >
                     <option value="General">General</option>
                     <option value="OBC">OBC</option>
@@ -294,9 +296,9 @@ export default async function NewAdmissionPage({
               </div>
 
               {/* Residential Address */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Present Residential Address <span className="text-rose-500 font-bold">*</span>
                   </label>
                   <textarea
@@ -304,7 +306,7 @@ export default async function NewAdmissionPage({
                     required
                     rows={2}
                     placeholder="House No., Street Name, Locality, Kanpur"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark rounded-xl p-2.5 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   ></textarea>
                 </div>
 
@@ -318,14 +320,14 @@ export default async function NewAdmissionPage({
                 />
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Permanent Address
                   </label>
                   <textarea
                     name="permanentAddress"
                     rows={2}
                     placeholder="Same as present address or permanent village/hometown address"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark rounded-xl p-2.5 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   ></textarea>
                 </div>
 
@@ -340,17 +342,17 @@ export default async function NewAdmissionPage({
             </div>
 
             {/* SECTION 3: PARENT / GUARDIAN DETAILS */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                <Phone className="w-4 h-4 text-emerald-800" />
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+            <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <Phone className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
                   3. Parent / Guardian Details
                 </h3>
               </div>
 
               {/* Father Details */}
               <div className="space-y-3">
-                <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 inline-block">
+                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 inline-block">
                   Father's Particulars
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -388,8 +390,8 @@ export default async function NewAdmissionPage({
               </div>
 
               {/* Mother Details */}
-              <div className="space-y-3 pt-4 border-t border-slate-100">
-                <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 inline-block">
+              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <span className="text-xs font-bold text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800 inline-block">
                   Mother's Particulars
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -427,10 +429,10 @@ export default async function NewAdmissionPage({
             </div>
 
             {/* SECTION 4: PRIOR SCHOOLING HISTORY */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                <GraduationCap className="w-4 h-4 text-emerald-800" />
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+            <div className="bg-white dark:bg-boxdark rounded-3xl border border-slate-200 dark:border-strokedark p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <GraduationCap className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">
                   4. Last School Attended & PEN Info
                 </h3>
               </div>
@@ -490,6 +492,6 @@ export default async function NewAdmissionPage({
               </button>
             </div>
           </RegistrationFormWrapper>
-        </main>
+    </div>
   );
 }

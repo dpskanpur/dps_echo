@@ -85,24 +85,24 @@ export default async function AdminSettingsPage({
     : [];
 
   return (
-        <main className="p-6 sm:p-8 space-y-6 flex-1 overflow-y-auto max-w-7xl mx-auto w-full">
-          {/* Top Banner Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-900 text-white flex items-center justify-center font-bold shadow-md">
-                  <Building2 className="w-5 h-5 text-amber-300" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-black text-slate-900 tracking-tight">
-                    Administration & Institutional Access Hub
-                  </h1>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Configure school-specific registration fees, custom ID formats, staff RBAC permissions, online payments, and communication channels.
-                  </p>
-                </div>
-              </div>
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
+      {/* Top Banner Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-6 rounded-3xl border border-slate-200 dark:border-strokedark shadow-xs">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-900 text-white flex items-center justify-center font-bold shadow-md shrink-0">
+              <Building2 className="w-5 h-5 text-amber-300" />
             </div>
+            <div>
+              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                Administration &amp; Institutional Access Hub
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-bodydark2 mt-0.5">
+                Configure school-specific registration fees, custom ID formats, staff RBAC permissions, online payments, and communication channels.
+              </p>
+            </div>
+          </div>
+        </div>
 
             {notice && (
               <div className="px-3.5 py-2 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs font-bold flex items-center gap-2 shadow-xs">
@@ -896,6 +896,6 @@ export default async function AdminSettingsPage({
               </div>
             </div>
           )}
-        </main>
+    </div>
   );
 }

@@ -36,6 +36,8 @@ export default async function PublicQuickPayPage({
 
   const gatewayLive = isGatewayConfigured();
 
+  // Fee module is temporarily disabled
+  /*
   if (scholarNo) {
     const headerList = await headers();
     const ip = (headerList.get("x-forwarded-for") || "unknown").split(",")[0].trim();
@@ -78,20 +80,33 @@ export default async function PublicQuickPayPage({
       }
     }
   }
+  */
 
   return (
     <PublicShell
       eyebrow="Fee Payment"
-      title="Pay school fees"
-      subtitle="Enter the student's unique scholar or admission number to see outstanding dues and pay online via UPI, card or net banking."
+      title="Online Fee Portal"
+      subtitle="Online fee collection module is currently offline."
       badge={
         <>
-          <Lock className="w-3.5 h-3.5" /> Secure payment
+          <Lock className="w-3.5 h-3.5" /> Module Offline
         </>
       }
     >
       <div className="space-y-6">
-        {/* Search / Lookup Box */}
+        {/* Module Disabled Notice */}
+        <div className="bg-white border border-slate-300 p-8 text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+            <Lock className="w-6 h-6" />
+          </div>
+          <h2 className="text-base font-bold text-slate-800">Fee Module Temporarily Disabled</h2>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            The online fee payment desk is currently deactivated. Please contact your campus accounts department directly for fee inquiries or counter payments.
+          </p>
+        </div>
+
+        {/* Search / Lookup Box - TEMPORARILY DISABLED */}
+        {/*
         <div className="bg-white border border-slate-300 p-5 sm:p-6">
           <form method="GET" className="space-y-4">
             <div>
@@ -122,6 +137,7 @@ export default async function PublicQuickPayPage({
             </button>
           </form>
         </div>
+        */}
 
         {/* Found Student Dues */}
         {student && (

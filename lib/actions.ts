@@ -737,6 +737,8 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
     throw new Error("Student not found");
   }
 
+  // Fee module temporarily disabled: dues check bypassed
+  /*
   const pendingDuesTotal = student.invoices.reduce((acc, inv) => acc + inv.balanceAmount, 0);
   const isSuperAdmin = user.role === "SUPER_ADMIN" || user.email === "admin@dpskanpur.com";
 
@@ -745,6 +747,7 @@ export async function issueTransferCertificate(formData: FormData): Promise<void
       `Cannot issue Transfer Certificate: Student has ₹${pendingDuesTotal} in outstanding fee dues. All fee dues must be cleared first.`
     );
   }
+  */
 
   const father = student.guardians.find((g) => g.relation === "FATHER")?.name || "Mr. Guardian";
   const mother = student.guardians.find((g) => g.relation === "MOTHER")?.name || "Mrs. Guardian";
