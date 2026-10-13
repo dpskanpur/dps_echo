@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
 import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
+import { resolveCampusScope } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { deleteStudent } from "@/lib/actions";
 import { DeleteStudentButton } from "@/components/DeleteStudentButton";
@@ -33,7 +34,7 @@ export default async function StudentsPage({
     page?: string;
   }>;
 }) {
-  const { campus: campusId, classId, status, q, session, page: pageStr } = await searchParams;
+  const { campus: rawCampusId, classId, status, q, session, page: pageStr } = await searchParams;
   const user = await getCurrentUser();
   const permissions = await getUserPermissions(user);
 
@@ -41,15 +42,19 @@ export default async function StudentsPage({
     redirect("/?error=unauthorized_students");
   }
 
+  const campusScope = resolveCampusScope(user, rawCampusId);
+  const campusId = campusScope.campusId;
+
   const currentPage = Math.max(1, parseInt(pageStr || "1", 10));
   const pageSize = 10;
 
   const campuses = await prisma.campus.findMany({
+    where: campusScope.locked && campusScope.campusId ? { id: campusScope.campusId } : {},
     orderBy: { name: "asc" },
   });
 
   const classes = await prisma.class.findMany({
-    where: campusId && campusId !== "ALL" ? { campusId } : {},
+    where: campusId ? { campusId } : {},
     orderBy: { sequence: "asc" },
   });
 
@@ -58,10 +63,7 @@ export default async function StudentsPage({
   const sessionScope = resolveSessionScope(session, await listAcademicSessions());
 
   // Build filter query
-  const whereClause: any = { ...sessionScope.studentWhere };
-  if (campusId && campusId !== "ALL") {
-    whereClause.campusId = campusId;
-  }
+  const whereClause: any = { ...sessionScope.studentWhere, ...campusScope.where };
   if (classId && classId !== "ALL") {
     whereClause.classId = classId;
   }

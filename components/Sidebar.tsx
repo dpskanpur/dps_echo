@@ -15,6 +15,7 @@ import {
   CreditCard,
   FileSpreadsheet,
   FileCheck,
+  Briefcase,
 } from "lucide-react";
 import { SidebarLink } from "./SidebarLink";
 import { UserPermissions } from "@/lib/permissions";
@@ -31,6 +32,7 @@ export function Sidebar({
   const pathname = usePathname();
 
   const canStudents = permissions?.modules?.students?.canView ?? true;
+  const canEmployees = permissions?.modules?.employees?.canView ?? true;
   /* const canFees = permissions?.modules?.fees?.canView ?? true; -- Fee module temporarily disabled */
   const canFees = false;
   const canTc = permissions?.modules?.tc?.canView ?? true;
@@ -44,6 +46,7 @@ export function Sidebar({
   const canNotifications = (permissions?.modules?.notifications?.canView || permissions?.isAdmin) ?? false;
 
   const canUpdateStudents = permissions?.modules?.students?.canUpdate ?? false;
+  const canUpdateEmployees = permissions?.modules?.employees?.canUpdate ?? false;
   /* const canUpdateFees = permissions?.modules?.fees?.canUpdate ?? false; -- Fee module temporarily disabled */
   const canUpdateFees = false;
 
@@ -132,6 +135,36 @@ export function Sidebar({
                   icon={GraduationCap}
                   label="Alumni"
                   active={pathname.startsWith("/alumni")}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Faculty & Staff Directory */}
+        {canEmployees && (
+          <div>
+            <div className="px-3.5 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-between">
+              <span>Faculty &amp; Staff</span>
+              {!canUpdateEmployees && (
+                <span className="text-[9px] text-amber-400 font-bold bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-800/40">
+                  view only
+                </span>
+              )}
+            </div>
+            <div className="space-y-1">
+              <SidebarLink
+                href="/employees"
+                icon={Briefcase}
+                label="Staff Directory"
+                active={pathname === "/employees" || (pathname.startsWith("/employees/") && pathname !== "/employees/new")}
+              />
+              {canUpdateEmployees && (
+                <SidebarLink
+                  href="/employees/new"
+                  icon={UserPlus}
+                  label="Add Employee"
+                  active={pathname === "/employees/new"}
                 />
               )}
             </div>
