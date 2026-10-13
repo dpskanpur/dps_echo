@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { updateEmployee, updateEmployeeClearance } from "@/lib/employee-actions";
 import { PassportPhotoUploader } from "@/components/PassportPhotoUploader";
 import { EmployeeDocumentSection } from "@/components/EmployeeDocumentSection";
+import { EmployeeCategoryAcademicSection } from "@/components/EmployeeCategoryAcademicSection";
 import {
   Briefcase,
   ArrowLeft,
@@ -284,12 +285,15 @@ export default async function EmployeeDetailPage({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                 <div className="lg:col-span-1">
                   <PassportPhotoUploader
                     name="photoUrl"
                     value={employee.photoUrl}
                     employeeId={employee.id}
+                    layout="vertical"
+                    label="Staff Passport Photo"
+                    helperText="Upload formal staff passport photo (JPG/PNG, max 5MB)."
                   />
                 </div>
 
@@ -301,7 +305,7 @@ export default async function EmployeeDetailPage({
                     <select
                       name="campusId"
                       defaultValue={employee.campusId}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold"
                     >
                       {campuses.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -320,7 +324,7 @@ export default async function EmployeeDetailPage({
                       name="employeeCode"
                       defaultValue={employee.employeeCode}
                       required
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono"
                     />
                   </div>
 
@@ -331,7 +335,7 @@ export default async function EmployeeDetailPage({
                     <select
                       name="status"
                       defaultValue={employee.status}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold"
                     >
                       <option value="ACTIVE">Active</option>
                       <option value="ON_LEAVE">On Approved Leave</option>
@@ -350,7 +354,7 @@ export default async function EmployeeDetailPage({
                       name="firstName"
                       defaultValue={employee.firstName}
                       required
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
                     />
                   </div>
 
@@ -362,7 +366,7 @@ export default async function EmployeeDetailPage({
                       type="text"
                       name="lastName"
                       defaultValue={employee.lastName}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
                     />
                   </div>
 
@@ -373,7 +377,7 @@ export default async function EmployeeDetailPage({
                     <select
                       name="gender"
                       defaultValue={employee.gender}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold"
                     >
                       <option value="FEMALE">Female</option>
                       <option value="MALE">Male</option>
@@ -389,7 +393,7 @@ export default async function EmployeeDetailPage({
                       type="date"
                       name="dob"
                       defaultValue={dobIso}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
                     />
                   </div>
 
@@ -402,7 +406,7 @@ export default async function EmployeeDetailPage({
                       name="bloodGroup"
                       defaultValue={employee.bloodGroup || ""}
                       placeholder="e.g., B+"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
                     />
                   </div>
 
@@ -414,229 +418,102 @@ export default async function EmployeeDetailPage({
                       type="date"
                       name="joiningDate"
                       defaultValue={joiningIso}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Role & Academic Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Category
-                  </label>
-                  <select
-                    name="category"
-                    defaultValue={employee.category}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold"
-                  >
-                    <option value="TEACHING">Teaching Faculty</option>
-                    <option value="NON_TEACHING">Non-Teaching</option>
-                    <option value="ADMIN">Administration</option>
-                    <option value="SUPPORT">Support Staff</option>
-                  </select>
+              {/* Dynamic Category & Academic / CBSE OASIS Section */}
+              <EmployeeCategoryAcademicSection
+                initialValues={{
+                  category: employee.category,
+                  designation: employee.designation,
+                  department: employee.department,
+                  employmentType: employee.employmentType,
+                  joiningDate: joiningIso,
+                  status: employee.status,
+                  qualification: employee.qualification,
+                  subjectsTaught: employee.subjectsTaught,
+                  oasisId: employee.oasisId,
+                  ctetQualified: employee.ctetQualified,
+                  experienceYrs: employee.priorExperienceYrs,
+                  assignedClass: employee.assignedClass,
+                  assignedHouse: employee.assignedHouse,
+                  notes: employee.notes,
+                }}
+              />
+
+              {/* Section 4: Contact & Emergency Information */}
+              <div className="bg-white dark:bg-boxdark p-6 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <Phone className="w-4 h-4 text-emerald-600" />
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                    4. Contact &amp; Emergency Details
+                  </h2>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Designation
-                  </label>
-                  <input
-                    type="text"
-                    name="designation"
-                    defaultValue={employee.designation}
-                    required
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      Primary Mobile <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      defaultValue={employee.phone}
+                      required
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Department / Wing
-                  </label>
-                  <input
-                    type="text"
-                    name="department"
-                    defaultValue={employee.department || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      defaultValue={employee.email || ""}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Employment Type
-                  </label>
-                  <select
-                    name="employmentType"
-                    defaultValue={employee.employmentType}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold"
-                  >
-                    <option value="PERMANENT">Permanent</option>
-                    <option value="PROBATION">Probation</option>
-                    <option value="CONTRACT">Contractual</option>
-                    <option value="VISITING">Visiting</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      Emergency Contact Name
+                    </label>
+                    <input
+                      type="text"
+                      name="emergencyName"
+                      defaultValue={employee.emergencyName || ""}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Qualifications
-                  </label>
-                  <input
-                    type="text"
-                    name="qualification"
-                    defaultValue={employee.qualification || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      Emergency Contact Phone
+                    </label>
+                    <input
+                      type="tel"
+                      name="emergencyPhone"
+                      defaultValue={employee.emergencyPhone || ""}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Subjects Taught
-                  </label>
-                  <input
-                    type="text"
-                    name="subjectsTaught"
-                    defaultValue={employee.subjectsTaught || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    CBSE OASIS Teacher ID
-                  </label>
-                  <input
-                    type="text"
-                    name="cbseOasisId"
-                    defaultValue={employee.oasisId || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    CTET / TET Qualified
-                  </label>
-                  <select
-                    name="ctetQualified"
-                    defaultValue={employee.ctetQualified || "NA"}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold"
-                  >
-                    <option value="YES">Yes — Qualified</option>
-                    <option value="NO">No</option>
-                    <option value="NA">Not Applicable</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Prior Experience (Years)
-                  </label>
-                  <input
-                    type="number"
-                    name="experienceYrs"
-                    defaultValue={employee.priorExperienceYrs ?? 0}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Class Teacher Assignment
-                  </label>
-                  <input
-                    type="text"
-                    name="assignedClass"
-                    defaultValue={employee.assignedClass || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    House Assignment
-                  </label>
-                  <input
-                    type="text"
-                    name="assignedHouse"
-                    defaultValue={employee.assignedHouse || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Primary Mobile
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    defaultValue={employee.phone}
-                    required
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    defaultValue={employee.email || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Emergency Contact Name
-                  </label>
-                  <input
-                    type="text"
-                    name="emergencyName"
-                    defaultValue={employee.emergencyName || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Emergency Contact Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="emergencyPhone"
-                    defaultValue={employee.emergencyPhone || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Residential Address
-                  </label>
-                  <input
-                    type="text"
-                    name="address"
-                    defaultValue={employee.currentAddress || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div className="sm:col-span-1">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                    Remarks / Committees
-                  </label>
-                  <input
-                    type="text"
-                    name="remarks"
-                    defaultValue={employee.notes || ""}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"
-                  />
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      Residential Address
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      defaultValue={employee.currentAddress || ""}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs"
+                    />
+                  </div>
                 </div>
               </div>
 

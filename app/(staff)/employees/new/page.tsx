@@ -5,13 +5,12 @@ import { resolveCampusScope } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { createEmployee } from "@/lib/employee-actions";
 import { PassportPhotoUploader } from "@/components/PassportPhotoUploader";
+import { EmployeeCategoryAcademicSection } from "@/components/EmployeeCategoryAcademicSection";
 import {
   Briefcase,
   ArrowLeft,
   UserCheck,
-  GraduationCap,
   Phone,
-  ShieldCheck,
   Building2,
 } from "lucide-react";
 
@@ -79,9 +78,15 @@ export default async function NewEmployeePage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             <div className="lg:col-span-1">
-              <PassportPhotoUploader name="photoUrl" employeeId="temp-new-emp" />
+              <PassportPhotoUploader
+                name="photoUrl"
+                employeeId="temp-new-emp"
+                layout="vertical"
+                label="Staff Passport Photo"
+                helperText="Upload formal staff passport photo (JPG/PNG, max 5MB)."
+              />
             </div>
 
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -188,220 +193,8 @@ export default async function NewEmployeePage() {
           </div>
         </div>
 
-        {/* Section 2: Role, Category & Employment Details */}
-        <div className="bg-white dark:bg-boxdark p-6 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs space-y-4">
-          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-            <Briefcase className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              2. Designation &amp; Employment Classification
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Staff Category <span className="text-rose-500">*</span>
-              </label>
-              <select
-                name="category"
-                defaultValue="TEACHING"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200"
-              >
-                <option value="TEACHING">Teaching Faculty</option>
-                <option value="NON_TEACHING">Non-Teaching (Lab / Library / Sports)</option>
-                <option value="ADMIN">Administration / Office</option>
-                <option value="SUPPORT">Support / Transport / Security</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Designation <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="designation"
-                required
-                placeholder="e.g., PGT Physics, PRT, Coordinator, Librarian"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Department / Wing
-              </label>
-              <input
-                type="text"
-                name="department"
-                placeholder="e.g., Primary Wing, Science Dept, Admin Office"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Employment Nature
-              </label>
-              <select
-                name="employmentType"
-                defaultValue="PERMANENT"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200"
-              >
-                <option value="PERMANENT">Permanent / Confirmed</option>
-                <option value="PROBATION">Probation</option>
-                <option value="CONTRACT">Contractual / Ad-hoc</option>
-                <option value="VISITING">Visiting / Part-Time</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Date of Joining <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="joiningDate"
-                required
-                defaultValue={defaultToday}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Current Status
-              </label>
-              <select
-                name="status"
-                defaultValue="ACTIVE"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200"
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="ON_LEAVE">On Approved Leave</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 3: CBSE OASIS Compliance & Academic Assignments */}
-        <div className="bg-white dark:bg-boxdark p-6 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-emerald-600" />
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                3. CBSE OASIS Credentials &amp; School Assignments
-              </h2>
-            </div>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
-              <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              CBSE Mandatory Disclosure Ready
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Academic &amp; Professional Qualification
-              </label>
-              <input
-                type="text"
-                name="qualification"
-                placeholder="e.g., M.Sc. (Physics), B.Ed."
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Subjects Taught
-              </label>
-              <input
-                type="text"
-                name="subjectsTaught"
-                placeholder="e.g., Mathematics, Science"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                CBSE OASIS Teacher ID
-              </label>
-              <input
-                type="text"
-                name="cbseOasisId"
-                placeholder="e.g., OASIS-UP-44912"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                CTET / State TET Qualified
-              </label>
-              <select
-                name="ctetQualified"
-                defaultValue="NA"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200"
-              >
-                <option value="YES">Yes — Qualified</option>
-                <option value="NO">No</option>
-                <option value="NA">Not Applicable (Admin / Support)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Prior Experience (Years)
-              </label>
-              <input
-                type="number"
-                name="experienceYrs"
-                min={0}
-                max={50}
-                defaultValue={0}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Class Teacher Responsibility
-              </label>
-              <input
-                type="text"
-                name="assignedClass"
-                placeholder="e.g., Class IV - Section B"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                House Master / House Assignment
-              </label>
-              <input
-                type="text"
-                name="assignedHouse"
-                placeholder="e.g., Nalanda / Takshashila"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Additional Responsibilities / Administrative Remarks
-              </label>
-              <input
-                type="text"
-                name="remarks"
-                placeholder="e.g., Examination In-charge, Time-Table Committee"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-slate-200"
-              />
-            </div>
-          </div>
-        </div>
+        {/* Section 2 & 3: Role, Category & CBSE OASIS (Interactive Client Component) */}
+        <EmployeeCategoryAcademicSection defaultToday={defaultToday} />
 
         {/* Section 4: Contact & Emergency Details */}
         <div className="bg-white dark:bg-boxdark p-6 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs space-y-4">
