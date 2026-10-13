@@ -167,6 +167,7 @@ export default async function StudentsPage({
           <Filter className="w-4 h-4 text-slate-400" />
           <form method="GET" className="flex items-center gap-2">
             {campusId && <input type="hidden" name="campus" value={campusId} />}
+            {sessionScope.name && <input type="hidden" name="session" value={sessionScope.name} />}
             <select
               name="classId"
               defaultValue={classId || "ALL"}

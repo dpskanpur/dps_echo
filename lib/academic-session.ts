@@ -111,29 +111,28 @@ export function resolveSessionScope(
   requested: string | null | undefined,
   available: SessionOption[]
 ): SessionScope {
-  // Explicitly asking for everything is honoured.
-  if (requested === "ALL") {
-    return { name: null, studentWhere: {} };
-  }
+  // Only active sessions (Current or Upcoming) are valid view targets
+  const activeSessions = available.filter((s) => s.isCurrent);
+  const pool = activeSessions.length > 0 ? activeSessions : available;
 
-  // Find ongoing calendar academic session if active, otherwise fallback to first active
+  // Find ongoing calendar academic session (April to March)
   const now = new Date();
   const calYear = now.getFullYear();
   const currentAcademicStartYear = now.getMonth() >= 3 ? calYear : calYear - 1;
   const currentAcademicName = `${currentAcademicStartYear}-${currentAcademicStartYear + 1}`;
 
-  const defaultSession =
-    available.find((s) => s.isCurrent && s.name === currentAcademicName) ||
-    available.find((s) => s.isCurrent) ||
-    available[0];
+  const currentSession =
+    pool.find((s) => s.name === currentAcademicName) ||
+    pool[0];
 
-  const wanted = requested || defaultSession?.name;
-  if (!wanted) return { name: null, studentWhere: {} };
+  // If a valid active session is requested (Current or Upcoming), scope to it.
+  // There is no concept of "ALL" sessions — portal views are always scoped to either Current or Upcoming.
+  const match = requested && requested !== "ALL" ? pool.find((s) => s.name === requested) : null;
+  const target = match || currentSession;
 
-  const match = available.find((s) => s.name === wanted);
-  if (!match) return { name: null, studentWhere: {} };
+  if (!target) return { name: null, studentWhere: {} };
 
-  return { name: match.name, studentWhere: { academicYearIn: match.name } };
+  return { name: target.name, studentWhere: { academicYearIn: target.name } };
 }
 
 // -------------------------------------------------------------
