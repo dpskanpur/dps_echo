@@ -9,6 +9,7 @@ interface PassportPhotoUploaderProps {
   onChange?: (url: string | null) => void;
   name?: string;
   studentId?: string;
+  employeeId?: string;
   required?: boolean;
   className?: string;
 }
@@ -18,6 +19,7 @@ export function PassportPhotoUploader({
   onChange,
   name = "photoUrl",
   studentId = "temp-new",
+  employeeId,
   required = false,
   className,
 }: PassportPhotoUploaderProps) {
@@ -45,7 +47,11 @@ export function PassportPhotoUploader({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("studentId", studentId);
+      if (employeeId) {
+        formData.append("employeeId", employeeId);
+      } else {
+        formData.append("studentId", studentId);
+      }
       formData.append("targetType", "PHOTO");
 
       const res = await fetch("/api/v1/upload", {

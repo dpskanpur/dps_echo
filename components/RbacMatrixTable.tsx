@@ -60,7 +60,15 @@ export function RbacMatrixTable({
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("STAFF");
-  const [newPreset, setNewPreset] = useState<"FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "NONE">("FEES_SPECIALIST");
+  const [newPreset, setNewPreset] = useState<
+    | "FULL_ADMIN"
+    | "CAMPUS_SUB_ADMIN"
+    | "HR_SPECIALIST"
+    | "FEES_SPECIALIST"
+    | "ADMISSIONS_SPECIALIST"
+    | "VIEW_ALL"
+    | "NONE"
+  >("CAMPUS_SUB_ADMIN");
   const [newCampusId, setNewCampusId] = useState("ALL");
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
@@ -320,8 +328,10 @@ export function RbacMatrixTable({
                     <option value="" disabled>
                       Approve & Assign Role...
                     </option>
-                    <option value="FEES_SPECIALIST" className="bg-white text-slate-800">💳 Approve as Fee Desk Specialist</option>
+                    <option value="CAMPUS_SUB_ADMIN" className="bg-white text-slate-800">🏫 Approve as Campus Sub-Admin (Students & Staff Manage)</option>
+                    <option value="HR_SPECIALIST" className="bg-white text-slate-800">👔 Approve as HR / Staff Specialist (Employee Directory)</option>
                     <option value="ADMISSIONS_SPECIALIST" className="bg-white text-slate-800">🎓 Approve as Admissions Specialist</option>
+                    <option value="FEES_SPECIALIST" className="bg-white text-slate-800">💳 Approve as Fee Desk Specialist</option>
                     <option value="VIEW_ALL" className="bg-white text-slate-800">👁️ Approve as Staff Viewer</option>
                     <option value="FULL_ADMIN" className="bg-white text-slate-800">⭐ Approve as Full Administrator</option>
                   </select>
@@ -485,10 +495,12 @@ export function RbacMatrixTable({
                             <option value="" disabled>
                               Preset...
                             </option>
-                            <option value="FULL_ADMIN">⭐ Full Admin</option>
-                            <option value="FEES_SPECIALIST">💳 Fee Desk</option>
+                            <option value="CAMPUS_SUB_ADMIN">🏫 Campus Sub-Admin</option>
+                            <option value="HR_SPECIALIST">👔 HR / Staff Desk</option>
                             <option value="ADMISSIONS_SPECIALIST">🎓 Admissions</option>
+                            <option value="FEES_SPECIALIST">💳 Fee Desk</option>
                             <option value="VIEW_ALL">👁️ View Only</option>
+                            <option value="FULL_ADMIN">⭐ Full Admin</option>
                             <option value="REVOKE_ALL">🚫 Revoke All</option>
                           </select>
                         ) : (
@@ -665,8 +677,10 @@ export function RbacMatrixTable({
                   onChange={(e: any) => setNewPreset(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F9D58] focus:bg-white transition cursor-pointer"
                 >
+                  <option value="CAMPUS_SUB_ADMIN">🏫 Campus Sub-Admin (Manage Students, Employees, TC &amp; Alumni for Campus)</option>
+                  <option value="HR_SPECIALIST">👔 HR / Staff Specialist (Employee Directory Manage + Student View)</option>
+                  <option value="ADMISSIONS_SPECIALIST">🎓 Admissions Specialist (Student/TC Manage + Employee View)</option>
                   <option value="FEES_SPECIALIST">💳 Fee Desk Specialist (Fee Manage + Student View)</option>
-                  <option value="ADMISSIONS_SPECIALIST">🎓 Admissions Specialist (Student/TC Manage + Fee View)</option>
                   <option value="VIEW_ALL">👁️ View-Only All Modules</option>
                   <option value="FULL_ADMIN">⭐ Full Administrator (All Modules View/Update/Delete)</option>
                   <option value="NONE">🚫 Zero Permissions (Pending Approval)</option>

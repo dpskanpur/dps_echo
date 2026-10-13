@@ -50,6 +50,7 @@ model Campus {
 
   classes       Class[]
   students      Student[]
+  employees     Employee[]
   feeHeads      FeeHead[]
   feeStructures FeeStructure[]
   feeInvoices   FeeInvoice[]
@@ -603,3 +604,83 @@ model AuditLog {
   @@index([createdAt])
   @@index([campusCode])
 }
+
+// -------------------------------------------------------------
+// Employee & Faculty Directory (Zero-Payroll Institutional Records)
+// -------------------------------------------------------------
+
+model Employee {
+  id                  String   @id @default(cuid())
+  employeeCode        String   @unique // e.g. "EMP-KID-0001"
+  campusId            String
+  campus              Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  // Personal Details
+  firstName           String
+  lastName            String
+  gender              String   @default("FEMALE") // "MALE", "FEMALE", "OTHER"
+  dob                 DateTime?
+  bloodGroup          String?
+  photoUrl            String?
+
+  // Contact & Emergency
+  phone               String
+  email               String?
+  currentAddress      String?
+  emergencyName       String?
+  emergencyPhone      String?
+
+  // Role & Academic/Administrative Assignment (No Salary/Payroll Data)
+  category            String   @default("TEACHING") // "TEACHING", "NON_TEACHING", "ADMIN", "SUPPORT"
+  designation         String   // e.g. "PGT Physics", "PRT English", "Lab Assistant", "Office Superintendent"
+  department          String?  // e.g. "Science", "Primary Wing", "Administration", "Transport"
+  employmentType      String   @default("PERMANENT") // "PERMANENT", "PROBATION", "CONTRACT", "VISITING"
+  joiningDate         DateTime @default(now())
+  status              String   @default("ACTIVE") // "ACTIVE", "ON_LEAVE", "RESIGNED", "RETIRED", "TRANSFERRED"
+
+  // CBSE OASIS & School Assignments
+  qualification       String?  // e.g. "M.Sc., B.Ed."
+  subjectsTaught      String?  // Comma-separated subjects for faculty
+  oasisId             String?  // CBSE OASIS / Teacher Unique ID
+  ctetQualified       String   @default("NA") // "YES", "NO", "NA"
+  priorExperienceYrs  Int      @default(0)
+  assignedClass       String?  // e.g. "Class V - A" (Class Teacher assignment)
+  assignedHouse       String?  // "Ganga", "Yamuna", "Jhelum", "Chenab", "Ravi", "Sutlej"
+
+  // Statutory Identity (Non-financial identity only)
+  aadhaarNo           String?
+  panNo               String?
+  notes               String?
+
+  // Exit & Relieving Clearance Checklist
+  leavingDate         DateTime?
+  exitReason          String?  // "RESIGNED", "RETIRED", "TRANSFERRED", "TERMINATED"
+  clearanceLibrary    Boolean  @default(false)
+  clearanceIdKeys     Boolean  @default(false)
+  clearanceItAssets   Boolean  @default(false)
+  relievingIssued     Boolean  @default(false)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  documents           EmployeeDocument[]
+
+  @@index([campusId, status])
+  @@index([category])
+}
+
+model EmployeeDocument {
+  id          String   @id @default(cuid())
+  employeeId  String
+  docType     String   // "AADHAAR_PAN", "DEGREE_BED", "APPOINTMENT_LETTER", "POLICE_VERIFICATION", "EXPERIENCE_CERT", "OTHER"
+  title       String
+  fileName    String
+  fileUrl     String
+  fileSize    String?
+  uploadedAt  DateTime @default(now())
+
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+}
+

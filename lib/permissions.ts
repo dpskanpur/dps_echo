@@ -10,6 +10,7 @@ export const IDLE_WARNING_MS = 10 * 60 * 1000;
 
 export const APP_MODULES = [
   { id: "students", label: "Students", description: "Directory, Admissions & Student Dossiers" },
+  { id: "employees", label: "Employees", description: "Faculty & Staff Directory, CBSE OASIS & Document Records" },
   { id: "fees", label: "Fees", description: "Fee Collection Desk, Structures, Invoices & Defaulters" },
   { id: "tc", label: "Certificates", description: "Transfer Certificate (TC) & Clearance" },
   { id: "alumni", label: "Alumni", description: "Graduated Students & Alumni Records" },
@@ -23,6 +24,7 @@ export type AppModuleId = typeof APP_MODULES[number]["id"];
 
 export const EMPTY_MODULE_MATRIX: Record<AppModuleId, ModulePermission> = {
   students: { module: "students", canView: false, canUpdate: false, canDelete: false },
+  employees: { module: "employees", canView: false, canUpdate: false, canDelete: false },
   fees: { module: "fees", canView: false, canUpdate: false, canDelete: false },
   tc: { module: "tc", canView: false, canUpdate: false, canDelete: false },
   alumni: { module: "alumni", canView: false, canUpdate: false, canDelete: false },

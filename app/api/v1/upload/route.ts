@@ -49,9 +49,13 @@ export async function POST(req: Request) {
     const user = await getCurrentUser();
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const rawStudentId = (formData.get("studentId") as string) || "new-registration";
-    // Strictly sanitize studentId to prevent path traversal
-    const studentId = rawStudentId.replace(/[^a-zA-Z0-9_-]/g, "") || "new-registration";
+    const rawStudentId = (formData.get("studentId") as string) || "";
+    const rawEmployeeId = (formData.get("employeeId") as string) || "";
+    // Strictly sanitize IDs to prevent path traversal
+    const studentId = rawStudentId.replace(/[^a-zA-Z0-9_-]/g, "");
+    const employeeId = rawEmployeeId.replace(/[^a-zA-Z0-9_-]/g, "");
+    const targetFolderId = employeeId ? `emp-${employeeId}` : (studentId || "new-registration");
+
     const targetType = (formData.get("targetType") as string) || "PHOTO"; // "PHOTO" | "DOCUMENT"
     const docType = (formData.get("docType") as string) || "OTHER";
     const title = (formData.get("title") as string) || docType;
@@ -62,13 +66,21 @@ export async function POST(req: Request) {
 
     const isExistingStudentRecord =
       Boolean(studentId) && !studentId.startsWith("temp-") && studentId !== "new-registration";
+    const isExistingEmployeeRecord =
+      Boolean(employeeId) && !employeeId.startsWith("temp-") && employeeId !== "new-employee";
 
-    // If attaching directly to an existing student record, verify staff update permission & campus scope
-    if (isExistingStudentRecord) {
+    // Verify staff update permission & campus scope
+    if (isExistingStudentRecord || isExistingEmployeeRecord) {
       const perms = await getUserPermissions(user);
-      if (!perms.modules.students.canUpdate && !perms.isAdmin) {
+      if (isExistingStudentRecord && !perms.modules.students.canUpdate && !perms.isAdmin) {
         return NextResponse.json(
           { error: "Unauthorized: You do not have permission to modify student records." },
+          { status: 403 }
+        );
+      }
+      if (isExistingEmployeeRecord && !perms.modules.employees.canUpdate && !perms.isAdmin) {
+        return NextResponse.json(
+          { error: "Unauthorized: You do not have permission to modify employee records." },
           { status: 403 }
         );
       }
@@ -120,18 +132,18 @@ export async function POST(req: Request) {
 
     try {
       if (targetType === "PHOTO") {
-        const uploadRes = await uploadStudentPhoto(studentId, buffer, file.name, file.type);
+        const uploadRes = await uploadStudentPhoto(targetFolderId, buffer, file.name, file.type);
         publicUrl = uploadRes.url;
         destinationPath = uploadRes.destinationPath;
       } else {
-        const uploadRes = await uploadStudentDocument(studentId, docType, buffer, file.name, file.type);
+        const uploadRes = await uploadStudentDocument(targetFolderId, docType, buffer, file.name, file.type);
         publicUrl = uploadRes.url;
         destinationPath = uploadRes.destinationPath;
       }
     } catch (gcsErr: any) {
       console.warn("GCS Upload fallback to local storage:", gcsErr?.message);
       const baseUploadsDir = path.resolve(process.cwd(), "public", "storage", "uploads");
-      const localDir = path.resolve(baseUploadsDir, studentId);
+      const localDir = path.resolve(baseUploadsDir, targetFolderId);
       if (!localDir.startsWith(baseUploadsDir + path.sep)) {
         return NextResponse.json({ error: "Invalid destination path." }, { status: 400 });
       }
@@ -139,8 +151,8 @@ export async function POST(req: Request) {
       const sanitizedFileName = `${targetType}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const filePath = path.join(localDir, sanitizedFileName);
       await fs.writeFile(filePath, buffer);
-      publicUrl = `/api/v1/storage/local/${studentId}/${sanitizedFileName}`;
-      destinationPath = `local/${studentId}/${sanitizedFileName}`;
+      publicUrl = `/api/v1/storage/local/${targetFolderId}/${sanitizedFileName}`;
+      destinationPath = `local/${targetFolderId}/${sanitizedFileName}`;
     }
 
     const sizeInKb = Math.round(file.size / 1024);
@@ -184,6 +196,43 @@ export async function POST(req: Request) {
         }
       } catch (dbErr) {
         console.warn("Database record update warning on upload:", dbErr);
+      }
+    } else if (isExistingEmployeeRecord) {
+      try {
+        const existingEmployee = await prisma.employee.findUnique({
+          where: { id: employeeId },
+          select: { id: true, campusId: true },
+        });
+
+        if (existingEmployee) {
+          if (user?.campusId && existingEmployee.campusId !== user.campusId) {
+            return NextResponse.json(
+              { error: "Forbidden: Employee belongs to another campus." },
+              { status: 403 }
+            );
+          }
+
+          if (targetType === "PHOTO") {
+            await prisma.employee.update({
+              where: { id: employeeId },
+              data: { photoUrl: publicUrl },
+            });
+          } else {
+            const newDoc = await prisma.employeeDocument.create({
+              data: {
+                employeeId,
+                docType,
+                title,
+                fileName: file.name,
+                fileUrl: publicUrl,
+                fileSize: fileSizeStr,
+              },
+            });
+            createdDocumentId = newDoc.id;
+          }
+        }
+      } catch (dbErr) {
+        console.warn("Database employee record update warning on upload:", dbErr);
       }
     }
 

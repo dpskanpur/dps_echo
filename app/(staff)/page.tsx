@@ -15,6 +15,7 @@ import {
   GraduationCap,
   KeyRound,
   ShieldCheck,
+  Briefcase,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -76,6 +77,7 @@ export default async function DashboardPage({
 
   // Aggregate Metrics (only query permitted domains)
   const canViewStudents = permissions.modules.students.canView;
+  const canViewEmployees = permissions.modules.employees?.canView ?? false;
   /* const canViewFees = permissions.modules.fees.canView; -- Fee module temporarily disabled */
   const canViewFees = false;
   const canViewTc = permissions.modules.tc.canView;
@@ -84,6 +86,10 @@ export default async function DashboardPage({
 
   const activeStudentsCount = canViewStudents
     ? await prisma.student.count({ where: { ...filterCampus, status: "ACTIVE" } })
+    : 0;
+
+  const activeEmployeesCount = canViewEmployees
+    ? await prisma.employee.count({ where: { ...filterCampus, status: "ACTIVE" } })
     : 0;
 
   const tcIssuedCount = canViewTc
@@ -280,6 +286,25 @@ export default async function DashboardPage({
               <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
+        )}
+
+        {/* Active Faculty & Staff KPI */}
+        {canViewEmployees && (
+          <Link
+            href="/employees"
+            className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all flex items-center justify-between group"
+          >
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Faculty &amp; Staff</span>
+              <h4 className="mt-1 text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                {activeEmployeesCount}
+              </h4>
+              <span className="mt-1 block text-[11px] font-medium text-emerald-700 dark:text-emerald-400">Active Staff Directory</span>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 group-hover:border-emerald-500/40 transition">
+              <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </Link>
         )}
 
         {/* Outstanding Dues KPI - TEMPORARILY DISABLED */}

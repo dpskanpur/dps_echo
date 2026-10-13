@@ -75,7 +75,14 @@ export async function updateUserModulePermission(
  */
 export async function applyRolePreset(
   userId: string,
-  preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "REVOKE_ALL"
+  preset:
+    | "FULL_ADMIN"
+    | "CAMPUS_SUB_ADMIN"
+    | "HR_SPECIALIST"
+    | "FEES_SPECIALIST"
+    | "ADMISSIONS_SPECIALIST"
+    | "VIEW_ALL"
+    | "REVOKE_ALL"
 ) {
   const admin = await assertRbacAdmin();
 
@@ -92,6 +99,29 @@ export async function applyRolePreset(
       canView = true;
       canUpdate = true;
       canDelete = true;
+    } else if (preset === "CAMPUS_SUB_ADMIN") {
+      // Sub-Admin for a specific campus (e.g. DPS Kidwai Nagar): can view & edit Students, Employees, TC, Alumni, Notifications
+      if (
+        mod.id === "students" ||
+        mod.id === "employees" ||
+        mod.id === "tc" ||
+        mod.id === "alumni" ||
+        mod.id === "notifications"
+      ) {
+        canView = true;
+        canUpdate = true;
+        canDelete = true;
+      } else if (mod.id === "sessions" || mod.id === "audit") {
+        canView = true;
+      }
+    } else if (preset === "HR_SPECIALIST") {
+      if (mod.id === "employees") {
+        canView = true;
+        canUpdate = true;
+        canDelete = true;
+      } else if (mod.id === "students") {
+        canView = true;
+      }
     } else if (preset === "FEES_SPECIALIST") {
       if (mod.id === "fees") {
         canView = true;
@@ -105,7 +135,7 @@ export async function applyRolePreset(
         canView = true;
         canUpdate = true;
         canDelete = true;
-      } else if (mod.id === "fees") {
+      } else if (mod.id === "fees" || mod.id === "employees") {
         canView = true;
       }
     } else if (preset === "VIEW_ALL") {
@@ -128,6 +158,8 @@ export async function applyRolePreset(
   // Update role name
   let newRole = user.role;
   if (preset === "FULL_ADMIN") newRole = "SUPER_ADMIN";
+  else if (preset === "CAMPUS_SUB_ADMIN") newRole = "CAMPUS_ADMIN";
+  else if (preset === "HR_SPECIALIST") newRole = "HR_MANAGER";
   else if (preset === "FEES_SPECIALIST") newRole = "FEES_MANAGER";
   else if (preset === "ADMISSIONS_SPECIALIST") newRole = "ADMISSIONS_MANAGER";
   else if (preset === "VIEW_ALL") newRole = "STAFF_VIEWER";
@@ -161,7 +193,14 @@ export async function addUserWithPermissions(
   email: string,
   name: string,
   role: string,
-  preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL" | "NONE",
+  preset:
+    | "FULL_ADMIN"
+    | "CAMPUS_SUB_ADMIN"
+    | "HR_SPECIALIST"
+    | "FEES_SPECIALIST"
+    | "ADMISSIONS_SPECIALIST"
+    | "VIEW_ALL"
+    | "NONE",
   campusId?: string | null
 ) {
   const admin = await assertRbacAdmin();
@@ -304,7 +343,13 @@ export async function deleteUser(userId: string) {
  */
 export async function approveUserAccess(
   userId: string,
-  preset: "FULL_ADMIN" | "FEES_SPECIALIST" | "ADMISSIONS_SPECIALIST" | "VIEW_ALL"
+  preset:
+    | "FULL_ADMIN"
+    | "CAMPUS_SUB_ADMIN"
+    | "HR_SPECIALIST"
+    | "FEES_SPECIALIST"
+    | "ADMISSIONS_SPECIALIST"
+    | "VIEW_ALL"
 ) {
   const admin = await assertRbacAdmin();
   await applyRolePreset(userId, preset);

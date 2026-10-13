@@ -88,6 +88,10 @@ export default async function StudentDetailPage({
     notFound();
   }
 
+  if (user?.campusId && student.campusId !== user.campusId && !permissions.isAdmin) {
+    redirect("/students?error=forbidden_campus");
+  }
+
   const linkedSiblings = await getLinkedSiblings(student.id);
 
   const classes = await prisma.class.findMany({
