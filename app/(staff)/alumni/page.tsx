@@ -1,10 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { GraduationCap, Search, Building2, Eye, Calendar, Award } from "lucide-react";
+import { GraduationCap, Search, Building2, Eye, Calendar } from "lucide-react";
 import { LiveSearchInput } from "@/components/LiveSearchInput";
 import { Pagination } from "@/components/Pagination";
 import Link from "next/link";

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, getUserPermissions, requirePermission } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { logAuditAction } from "@/lib/audit-log";
 
@@ -252,6 +252,7 @@ export async function unlinkSibling(studentId: string) {
  * Search students to link as siblings across ALL campuses
  */
 export async function searchSiblingsToLink(query: string, currentStudentId: string) {
+  await requirePermission("students", "view");
   if (!query || query.trim().length < 2) return [];
 
   const cleanQuery = query.trim().toLowerCase();
@@ -291,6 +292,7 @@ export async function searchSiblingsToLink(query: string, currentStudentId: stri
  * Get all linked siblings for a student across all campuses
  */
 export async function getLinkedSiblings(studentId: string) {
+  await requirePermission("students", "view");
   const currentStudent = await prisma.student.findUnique({
     where: { id: studentId },
     include: {

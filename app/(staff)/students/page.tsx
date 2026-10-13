@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -18,11 +16,7 @@ import {
   Search,
   Filter,
   Lock,
-  ArrowRight,
-  ClipboardList,
-  Sparkles,
   Pencil,
-  Trash2,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";

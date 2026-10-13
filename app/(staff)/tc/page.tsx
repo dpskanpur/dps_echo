@@ -1,12 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { issueTransferCertificate } from "@/lib/actions";
 import { PrintButton } from "@/components/PrintButton";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { FileText, Search, Printer, CheckCircle, ShieldCheck, UserCheck, AlertCircle, Lock } from "lucide-react";
+import { FileText, Printer, CheckCircle, ShieldCheck, AlertCircle } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 

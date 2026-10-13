@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { requireUser, getUserPermissions } from "@/lib/auth";
 import { resolveCampusScope } from "@/lib/permissions";
@@ -12,14 +10,10 @@ import {
   CreditCard,
   AlertTriangle,
   FileCheck,
-  UserPlus,
   ArrowRight,
-  TrendingUp,
-  Building2,
   Receipt,
   GraduationCap,
   KeyRound,
-  ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
 

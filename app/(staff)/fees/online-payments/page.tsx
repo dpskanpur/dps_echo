@@ -3,7 +3,7 @@ import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { redirect } from "next/navigation";
-import { FileCheck, Search, CreditCard, CheckCircle2, ShieldCheck, DollarSign, Users } from "lucide-react";
+import { FileCheck, Search, CreditCard, CheckCircle2, ShieldCheck, DollarSign } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { PrintReportButton } from "@/components/PrintReportButton";
 import Link from "next/link";

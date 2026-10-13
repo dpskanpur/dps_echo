@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { formatDateTime } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { resolveCampusScope } from "@/lib/permissions";
@@ -9,7 +7,6 @@ import { getProviderStatus } from "@/lib/notifications";
 import {
   dispatchQueuedNotifications,
   retryFailedNotifications,
-  sendAnnouncement,
 } from "@/lib/notification-actions";
 import {
   Bell,
@@ -21,7 +18,6 @@ import {
   Clock,
   AlertTriangle,
   MinusCircle,
-  Megaphone,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";

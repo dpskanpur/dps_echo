@@ -1,33 +1,19 @@
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import {
-  Shield,
-  Lock,
   KeyRound,
-  Sparkles,
   Settings,
-  Columns,
   Plus,
   X,
-  Trash2,
-  Eye,
-  EyeOff,
   CheckCircle2,
-  Sliders,
   Calendar,
   Tag,
   Building2,
   Phone,
-  Mail,
-  MapPin,
   Globe,
   Award,
   IndianRupee,
-  CreditCard,
-  MessageSquare,
   Clock,
 } from "lucide-react";
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
@@ -39,9 +25,6 @@ import { getPublicSystemSettings } from "@/lib/public-data";
 import {
   updateCampusSettings,
   updateSystemSettings,
-  createDirectoryColumn,
-  deleteDirectoryColumn,
-  toggleDirectoryColumnVisibility,
   createCampus,
 } from "@/lib/actions";
 import Link from "next/link";

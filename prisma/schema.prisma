@@ -231,6 +231,8 @@ model Student {
   promotionHistories  StudentPromotionHistory[]
 
   @@index([familyId])
+  @@index([campusId, status])
+  @@index([academicYearIn])
 }
 
 model StudentPromotionHistory {
@@ -281,6 +283,7 @@ model Guardian {
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([studentId])
   @@index([userId])
 }
 
@@ -295,6 +298,8 @@ model StudentDocument {
   uploadedAt  DateTime @default(now())
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 // -------------------------------------------------------------

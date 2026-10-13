@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import {
-  Shield,
   ShieldCheck,
   ShieldAlert,
   UserPlus,
@@ -12,12 +11,6 @@ import {
   Lock,
   Unlock,
   AlertCircle,
-  Users,
-  CreditCard,
-  FileText,
-  GraduationCap,
-  Bell,
-  SlidersHorizontal,
 } from "lucide-react";
 import { APP_MODULES, AppModuleId } from "@/lib/permissions";
 import {

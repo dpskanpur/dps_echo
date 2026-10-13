@@ -1,11 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { AlertTriangle, Phone, MessageSquare, Send, CheckCircle2, Info, FileText } from "lucide-react";
+import { AlertTriangle, Phone, MessageSquare, Send, CheckCircle2, FileText } from "lucide-react";
 import { getProviderStatus } from "@/lib/notifications";
 import { sendFeeReminder, sendBulkFeeReminders } from "@/lib/notification-actions";
 import { Pagination } from "@/components/Pagination";

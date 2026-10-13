@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, ChangeEvent } from "react";
-import { Camera, Upload, User, CheckCircle2, AlertCircle, Loader2, X } from "lucide-react";
+import { Upload, User, CheckCircle2, AlertCircle, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PassportPhotoUploaderProps {

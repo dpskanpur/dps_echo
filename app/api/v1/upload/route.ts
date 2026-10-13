@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { uploadStudentPhoto, uploadStudentDocument } from "@/lib/gcs";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 
@@ -49,13 +49,29 @@ export async function POST(req: Request) {
     const user = await getCurrentUser();
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const studentId = (formData.get("studentId") as string) || "new-registration";
+    const rawStudentId = (formData.get("studentId") as string) || "new-registration";
+    // Strictly sanitize studentId to prevent path traversal
+    const studentId = rawStudentId.replace(/[^a-zA-Z0-9_-]/g, "") || "new-registration";
     const targetType = (formData.get("targetType") as string) || "PHOTO"; // "PHOTO" | "DOCUMENT"
     const docType = (formData.get("docType") as string) || "OTHER";
     const title = (formData.get("title") as string) || docType;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
+    }
+
+    const isExistingStudentRecord =
+      Boolean(studentId) && !studentId.startsWith("temp-") && studentId !== "new-registration";
+
+    // If attaching directly to an existing student record, verify staff update permission & campus scope
+    if (isExistingStudentRecord) {
+      const perms = await getUserPermissions(user);
+      if (!perms.modules.students.canUpdate && !perms.isAdmin) {
+        return NextResponse.json(
+          { error: "Unauthorized: You do not have permission to modify student records." },
+          { status: 403 }
+        );
+      }
     }
 
     // Size & Extension Validation
@@ -114,7 +130,11 @@ export async function POST(req: Request) {
       }
     } catch (gcsErr: any) {
       console.warn("GCS Upload fallback to local storage:", gcsErr?.message);
-      const localDir = path.join(process.cwd(), "public", "storage", "uploads", studentId);
+      const baseUploadsDir = path.resolve(process.cwd(), "public", "storage", "uploads");
+      const localDir = path.resolve(baseUploadsDir, studentId);
+      if (!localDir.startsWith(baseUploadsDir + path.sep)) {
+        return NextResponse.json({ error: "Invalid destination path." }, { status: 400 });
+      }
       await fs.mkdir(localDir, { recursive: true });
       const sanitizedFileName = `${targetType}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const filePath = path.join(localDir, sanitizedFileName);
@@ -128,14 +148,21 @@ export async function POST(req: Request) {
 
     let createdDocumentId: string | null = null;
 
-    if (studentId && !studentId.startsWith("temp-") && studentId !== "new-registration") {
+    if (isExistingStudentRecord) {
       try {
         const existingStudent = await prisma.student.findUnique({
           where: { id: studentId },
-          select: { id: true },
+          select: { id: true, campusId: true },
         });
 
         if (existingStudent) {
+          if (user?.campusId && existingStudent.campusId !== user.campusId) {
+            return NextResponse.json(
+              { error: "Forbidden: Student belongs to another campus." },
+              { status: 403 }
+            );
+          }
+
           if (targetType === "PHOTO") {
             await prisma.student.update({
               where: { id: studentId },

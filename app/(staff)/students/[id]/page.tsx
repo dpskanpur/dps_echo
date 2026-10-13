@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -22,9 +20,7 @@ import {
   FolderOpen,
   Receipt,
   CheckCircle2,
-  Clock,
   Printer,
-  ShieldCheck,
   Sparkles,
   Pencil,
   Lock,

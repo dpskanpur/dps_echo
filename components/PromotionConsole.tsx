@@ -4,15 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Sparkles,
-  ArrowRight,
   CheckCircle2,
   AlertCircle,
-  Building2,
-  Calendar,
-  Users,
-  GraduationCap,
-  RefreshCw,
-  Search,
   Filter,
 } from "lucide-react";
 import { executeBatchPromotion, PromotionItemInput } from "@/lib/promotion-actions";

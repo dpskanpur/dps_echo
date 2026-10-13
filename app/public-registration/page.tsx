@@ -8,8 +8,6 @@ import {
   ShieldCheck,
   CreditCard,
   Lock,
-  Calendar,
-  Mail,
 } from "lucide-react";
 import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";

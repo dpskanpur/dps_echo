@@ -1,21 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { NoCampusState } from "@/components/NoCampusState";
 import { FeeTemplateImport } from "@/components/FeeTemplateImport";
 import { FeeHeadRow } from "@/components/FeeHeadRow";
 import {
   upsertFeeStructure,
   createFeeHead,
-  updateFeeHead,
-  deleteFeeHead,
 } from "@/lib/fee-structure-actions";
 import { FEE_FREQUENCIES, FEE_FREQUENCY_LABELS } from "@/lib/fee-constants";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Layers, Building2, Plus, Info, ChevronDown } from "lucide-react";
+import { Layers, Plus, Info, ChevronDown } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { redirect } from "next/navigation";
-import { Building2, Sparkles, ArrowRight, CheckCircle2, Shield, Calendar, Users, SlidersHorizontal } from "lucide-react";
+import { Sparkles, CheckCircle2 } from "lucide-react";
 import { PromotionConsole } from "@/components/PromotionConsole";
 
 export const dynamic = "force-dynamic";
