@@ -40,7 +40,7 @@ steps:
       - '--set-env-vars=NEXTAUTH_URL=${_APP_URL},NEXT_PUBLIC_APP_URL=${_APP_URL}'
       # Credentials come from Secret Manager — never the repo or the image.
       # Created by ./scripts/setup-secrets.sh
-      - '--set-secrets=DATABASE_URL=dps-echo-database-url:latest,SESSION_SECRET=dps-echo-session-secret:latest,GOOGLE_CLIENT_ID=dps-echo-google-client-id:latest,GOOGLE_CLIENT_SECRET=dps-echo-google-client-secret:latest'
+      - '--set-secrets=DATABASE_URL=dps-echo-database-url:latest,SESSION_SECRET=dps-echo-session-secret:latest,GOOGLE_CLIENT_ID=dps-echo-google-client-id:latest,GOOGLE_CLIENT_SECRET=dps-echo-google-client-secret:latest,SMS_USERNAME=dps-echo-sms-username:latest,SMS_PASSWORD=dps-echo-sms-password:latest,SMS_GATEWAY_URL=dps-echo-sms-gateway-url:latest,SMS_ROUTE=dps-echo-sms-route:latest,SMS_SENDER_ID=dps-echo-sms-sender-id:latest'
 
 substitutions:
   _PROJECT_ID: 'dpskanpur-backup'
