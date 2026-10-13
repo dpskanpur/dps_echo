@@ -29,14 +29,34 @@ export async function listAcademicSessions(): Promise<SessionOption[]> {
   return rows;
 }
 
+/** Only active/enabled sessions, chronological order. */
+export async function listActiveAcademicSessions(): Promise<SessionOption[]> {
+  return prisma.academicYear.findMany({
+    where: { isCurrent: true },
+    orderBy: { startDate: "asc" },
+    select: { id: true, name: true, isCurrent: true },
+  });
+}
+
 /**
- * The session new records are stamped with. Falls back to the most recent
- * session, then to a clock-derived name if the table is empty — a fresh
- * database should still accept an admission.
+ * The ongoing session new records are stamped with.
+ * Prefers the current calendar academic year if active, otherwise earliest active session.
  */
 export async function getActiveSessionName(): Promise<string> {
+  const now = new Date();
+  const calYear = now.getFullYear();
+  const currentAcademicStartYear = now.getMonth() >= 3 ? calYear : calYear - 1;
+  const currentAcademicName = `${currentAcademicStartYear}-${currentAcademicStartYear + 1}`;
+
+  const currentMatch = await prisma.academicYear.findFirst({
+    where: { isCurrent: true, name: currentAcademicName },
+    select: { name: true },
+  });
+  if (currentMatch) return currentMatch.name;
+
   const current = await prisma.academicYear.findFirst({
     where: { isCurrent: true },
+    orderBy: { startDate: "asc" },
     select: { name: true },
   });
   if (current) return current.name;
@@ -47,13 +67,24 @@ export async function getActiveSessionName(): Promise<string> {
   });
   if (latest) return latest.name;
 
-  const year = new Date().getFullYear();
-  return `${year}-${year + 1}`;
+  return currentAcademicName;
 }
 
 export async function getActiveSession(): Promise<SessionOption | null> {
+  const now = new Date();
+  const calYear = now.getFullYear();
+  const currentAcademicStartYear = now.getMonth() >= 3 ? calYear : calYear - 1;
+  const currentAcademicName = `${currentAcademicStartYear}-${currentAcademicStartYear + 1}`;
+
+  const currentMatch = await prisma.academicYear.findFirst({
+    where: { isCurrent: true, name: currentAcademicName },
+    select: { id: true, name: true, isCurrent: true },
+  });
+  if (currentMatch) return currentMatch;
+
   const current = await prisma.academicYear.findFirst({
     where: { isCurrent: true },
+    orderBy: { startDate: "asc" },
     select: { id: true, name: true, isCurrent: true },
   });
   if (current) return current;
@@ -85,10 +116,18 @@ export function resolveSessionScope(
     return { name: null, studentWhere: {} };
   }
 
-  // Otherwise fall back to the current session, so a page opened without a
-  // ?session= parameter shows the session the school is actually working in
-  // and matches what the navbar switcher displays.
-  const wanted = requested || available.find((s) => s.isCurrent)?.name;
+  // Find ongoing calendar academic session if active, otherwise fallback to first active
+  const now = new Date();
+  const calYear = now.getFullYear();
+  const currentAcademicStartYear = now.getMonth() >= 3 ? calYear : calYear - 1;
+  const currentAcademicName = `${currentAcademicStartYear}-${currentAcademicStartYear + 1}`;
+
+  const defaultSession =
+    available.find((s) => s.isCurrent && s.name === currentAcademicName) ||
+    available.find((s) => s.isCurrent) ||
+    available[0];
+
+  const wanted = requested || defaultSession?.name;
   if (!wanted) return { name: null, studentWhere: {} };
 
   const match = available.find((s) => s.name === wanted);
@@ -102,9 +141,7 @@ export function resolveSessionScope(
 //
 // A student can be admitted into the current session or a future one — a
 // school takes next year's admissions months in advance — but never into a
-// session that has already closed. Backdating an admission would silently
-// change historical roll strength and fee liability, so it is refused rather
-// than quietly accepted.
+// session that has already closed or is disabled.
 // -------------------------------------------------------------
 
 /** Start year of a session named like "2026-2027". */
@@ -113,16 +150,15 @@ function sessionStartYear(name: string): number {
   return match ? Number(match[1]) : 0;
 }
 
-/** Sessions an admission may be recorded in: the current one and later, oldest first. */
+/** Sessions an admission may be recorded in: only active/enabled sessions, oldest first. */
 export async function listAdmissionSessions(): Promise<SessionOption[]> {
-  const all = await listAcademicSessions();
-  const active = await getActiveSession();
-  if (!active) return all;
-
-  const floor = sessionStartYear(active.name);
-  return all
-    .filter((s) => sessionStartYear(s.name) >= floor)
-    .sort((a, b) => sessionStartYear(a.name) - sessionStartYear(b.name));
+  const active = await prisma.academicYear.findMany({
+    where: { isCurrent: true },
+    orderBy: { startDate: "asc" },
+    select: { id: true, name: true, isCurrent: true },
+  });
+  if (active.length > 0) return active;
+  return listAcademicSessions();
 }
 
 /**
