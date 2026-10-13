@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/utils";
+import { Sidebar } from "@/components/Sidebar";
+import { Navbar } from "@/components/Navbar";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { requireUser, getUserPermissions } from "@/lib/auth";
 import { resolveCampusScope } from "@/lib/permissions";
 import { TrendChart, TrendPoint } from "@/components/TrendChart";
 import { SessionTimeoutCountdown } from "@/components/SessionTimeoutCountdown";
-import { Card, Badge, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell } from "@/components/tremor";
-import { ExportCsvButton } from "@/components/ExportCsvButton";
 import {
   Users,
   CreditCard,
@@ -50,7 +50,7 @@ export default async function DashboardPage({
         {/* Top Minimal Brand Bar */}
         <div className="flex items-center justify-between max-w-5xl mx-auto w-full pt-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-[#0F9D58] flex items-center justify-center font-bold text-white text-lg">
+            <div className="w-10 h-10 rounded-xl bg-[#0F9D58] flex items-center justify-center font-bold text-white text-lg shadow-md">
               DE
             </div>
             <div>
@@ -59,7 +59,7 @@ export default async function DashboardPage({
             </div>
           </div>
 
-          <div className="text-xs font-mono text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded border border-slate-700">
+          <div className="text-xs font-mono text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
             {user?.email || "Unassigned"}
           </div>
         </div>
@@ -132,6 +132,10 @@ export default async function DashboardPage({
     0
   );
   */
+  const totalOutstandingDues = 0;
+  const defaultersCount = 0;
+  const allPayments: any[] = [];
+  const totalCollectedAllTime = 0;
 
   // Recent Admissions
   const recentStudents = canViewStudents
@@ -143,7 +147,13 @@ export default async function DashboardPage({
       })
     : [];
 
+  // -------------------------------------------------------------
   // Twelve-month trends
+  //
+  // Rows are bucketed in JS rather than with a SQL date_trunc so the same
+  // code path works on both the SQLite dev database and Cloud SQL.
+  // -------------------------------------------------------------
+
   const now = new Date();
   const windowStart = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
@@ -165,211 +175,403 @@ export default async function DashboardPage({
       })
     : [];
 
+  // Payments & Invoices in window - TEMPORARILY DISABLED
+  /*
+  const paymentsInWindow = canViewFees
+    ? await prisma.feePayment.findMany({
+        where: {
+          paymentDate: { gte: windowStart },
+          ...(scope.campusId ? { invoice: { campusId: scope.campusId } } : {}),
+        },
+        select: { paymentDate: true, amountPaid: true },
+      })
+    : [];
+
+  const invoicesInWindow = canViewFees
+    ? await prisma.feeInvoice.findMany({
+        where: { ...filterCampus, createdAt: { gte: windowStart } },
+        select: { createdAt: true, netAmount: true },
+      })
+    : [];
+  */
+  const paymentsInWindow: any[] = [];
+  const invoicesInWindow: any[] = [];
+
   const enrollmentTrend: TrendPoint[] = monthBuckets.map((bucket) => ({
     label: bucket.label,
     primary: admissionsInWindow.filter((a) => bucketKey(a.admissionDate) === bucket.key).length,
   }));
 
+  const collectionTrend: TrendPoint[] = monthBuckets.map((bucket) => ({
+    label: bucket.label,
+    primary: paymentsInWindow
+      .filter((p) => bucketKey(p.paymentDate) === bucket.key)
+      .reduce((acc, p) => acc + p.amountPaid, 0),
+    secondary: invoicesInWindow
+      .filter((i) => bucketKey(i.createdAt) === bucket.key)
+      .reduce((acc, i) => acc + i.netAmount, 0),
+  }));
+
   const totalAdmissionsThisWindow = enrollmentTrend.reduce((acc, p) => acc + p.primary, 0);
+  const collectedThisWindow = collectionTrend.reduce((acc, p) => acc + p.primary, 0);
+  const invoicedThisWindow = collectionTrend.reduce((acc, p) => acc + (p.secondary || 0), 0);
+  const collectionRate =
+    invoicedThisWindow > 0 ? Math.round((collectedThisWindow / invoicedThisWindow) * 100) : 0;
+
+  // Actionable defaulter list — TEMPORARILY DISABLED
+  /*
+  const topDefaulters = canViewFees
+    ? await prisma.feeInvoice.findMany({
+        where: {
+          ...filterCampus,
+          balanceAmount: { gt: 0 },
+          status: { in: ["OVERDUE", "PENDING", "PARTIALLY_PAID"] },
+          dueDate: { lt: now },
+        },
+        orderBy: { balanceAmount: "desc" },
+        take: 6,
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              scholarNo: true,
+              class: { select: { name: true } },
+              campus: { select: { code: true } },
+              guardians: {
+                where: { isPrimary: true },
+                select: { phone: true },
+                take: 1,
+              },
+            },
+          },
+        },
+      })
+    : [];
+  */
+  const topDefaulters: any[] = [];
 
   return (
-    <div className="space-y-4">
-      {/* Top Operations Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-        <div>
-          <h1 className="text-base font-semibold text-slate-900 tracking-tight">Operations Overview</h1>
-          <p className="text-xs text-slate-500">Cross-campus administration desk: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border bg-slate-50 text-slate-700 border-slate-200">
-            <ShieldCheck className="w-3.5 h-3.5 text-slate-600" />
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-boxdark p-6 rounded-2xl border border-slate-200/80 dark:border-strokedark shadow-xs">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-emerald-200/60 dark:border-emerald-800">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>{permissions.roleDisplayName}</span>
-          </span>
-          {canViewRbac && (
-            <Link
-              href="/admin/rbac"
-              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-medium text-slate-700 transition"
-            >
-              <KeyRound className="w-3 h-3 text-slate-500" />
-              <span>RBAC Matrix</span>
-            </Link>
-          )}
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Welcome back, {user?.name || user?.email.split("@")[0]}
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-bodydark2">
+            DPS Echo multi-campus administration desk for Azad Nagar, Barra, Kidwai Nagar, and Servodaya Nagar.
+          </p>
         </div>
       </div>
 
-      {/* Horizontal KPI Strip (Single Card, divide-x, high density) */}
-      <Card className="p-0 rounded-md shadow-none border border-slate-200 bg-white">
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200">
-          <div className="px-4 py-3 space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Active Students</span>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xl font-semibold tabular-nums text-slate-900 font-mono">{activeStudentsCount}</span>
-              <Badge variant="success" dot={false} className="text-[10px] font-mono">+2.4%</Badge>
-            </div>
-            <div className="text-[11px] text-slate-500">Enrolled across campuses</div>
-          </div>
-
-          <div className="px-4 py-3 space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">TCs Issued</span>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xl font-semibold tabular-nums text-slate-900 font-mono">{tcIssuedCount}</span>
-              <Badge variant="neutral" dot={false} className="text-[10px]">CBSE</Badge>
-            </div>
-            <div className="text-[11px] text-slate-500">Board clearance compliant</div>
-          </div>
-
-          <div className="px-4 py-3 space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Graduated Alumni</span>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xl font-semibold tabular-nums text-slate-900 font-mono">{alumniCount}</span>
-              <Badge variant="info" dot={false} className="text-[10px]">Archived</Badge>
-            </div>
-            <div className="text-[11px] text-slate-500">Permanent records</div>
-          </div>
-
-          <div className="px-4 py-3 space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Authorized Campuses</span>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xl font-semibold tabular-nums text-slate-900 font-mono">{campuses.length}</span>
-              <Badge variant="default" dot={false} className="text-[10px]">Active</Badge>
-            </div>
-            <div className="text-[11px] text-slate-500">Operational units</div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Main Grid: Enrollment Velocity & Recent Enrolments */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Enrollment Velocity Chart Card */}
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Active Students KPI */}
         {canViewStudents && (
-          <Card className="p-4 rounded-md shadow-none border border-slate-200 bg-white space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Students</span>
+              <h4 className="mt-1 text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                {activeStudentsCount}
+              </h4>
+              <span className="mt-1 block text-[11px] font-medium text-emerald-700 dark:text-emerald-400">Enrolled Across Campuses</span>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">
+              <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </div>
+        )}
+
+        {/* Outstanding Dues KPI - TEMPORARILY DISABLED */}
+        {/*
+        {canViewFees && (
+          <>
+            <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-between">
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-900">Enrollment Velocity</h2>
-                <p className="text-[11px] text-slate-500">Trailing 12-month admission intake</p>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Outstanding Dues</span>
+                <h4 className="mt-1 text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                  {formatCurrency(totalOutstandingDues)}
+                </h4>
+                <span className="mt-1 block text-[11px] font-medium text-amber-700 dark:text-amber-400">{defaultersCount} Overdue Invoices</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center border border-slate-200 rounded text-[11px] font-medium overflow-hidden">
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-900 font-semibold border-r border-slate-200">12M</span>
-                  <span className="px-2 py-0.5 text-slate-500 hover:bg-slate-50 border-r border-slate-200 cursor-pointer">YTD</span>
-                  <span className="px-2 py-0.5 text-slate-500 hover:bg-slate-50 cursor-pointer">QTD</span>
-                </div>
-                <ExportCsvButton
-                  filename="enrollment-trend"
-                  data={enrollmentTrend}
-                  headers={[
-                    { key: "label", label: "Month" },
-                    { key: "primary", label: "Admissions" },
-                  ]}
-                />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">
+                <Receipt className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
 
-            <div className="pt-1">
-              <div className="flex items-baseline justify-between pb-2 text-xs">
-                <span className="text-slate-500">Total Enrolled in Window</span>
-                <span className="font-mono font-semibold text-slate-900">{totalAdmissionsThisWindow} students</span>
+            <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Tender Collected</span>
+                <h4 className="mt-1 text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                  {formatCurrency(totalCollectedAllTime)}
+                </h4>
+                <span className="mt-1 block text-[11px] font-medium text-teal-700 dark:text-teal-400">POS, UPI &amp; Receipts</span>
               </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">
+                <CreditCard className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+              </div>
+            </div>
+          </>
+        )}
+        */}
+
+        {/* TC Clearance KPI */}
+        {canViewTc && (
+          <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">TCs Issued</span>
+              <h4 className="mt-1 text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                {tcIssuedCount}
+              </h4>
+              <span className="mt-1 block text-[11px] font-medium text-sky-700 dark:text-sky-400">CBSE Clearance Compliant</span>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">
+              <FileCheck className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            </div>
+          </div>
+        )}
+
+        {/* Alumni KPI */}
+        {canViewAlumni && (
+          <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Graduated Alumni</span>
+              <h4 className="mt-1 text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                {alumniCount}
+              </h4>
+              <span className="mt-1 block text-[11px] font-medium text-purple-700 dark:text-purple-400">Permanent Records</span>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">
+              <GraduationCap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+          </div>
+        )}
+
+        {/* RBAC Quick Access */}
+        {canViewRbac && (
+          <Link
+            href="/admin/rbac"
+            className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all flex items-center justify-between group"
+          >
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">RBAC Matrix</span>
+              <h4 className="mt-1 text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>Admin &amp; Settings</span>
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition" />
+              </h4>
+              <span className="mt-1 block text-[11px] font-medium text-emerald-700 dark:text-emerald-400">Configure Permissions</span>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">
+              <KeyRound className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </Link>
+        )}
+      </div>
+
+      {/* Trends */}
+      {(canViewStudents || canViewFees) && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {canViewStudents && (
+            <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">Enrollment Trend</h2>
+                  <p className="text-xs text-slate-500 dark:text-bodydark mt-0.5">
+                    New admissions over the last 12 months
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">{totalAdmissionsThisWindow}</div>
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Admissions
+                  </div>
+                </div>
+              </div>
+
               <TrendChart
                 points={enrollmentTrend}
                 primaryLabel="New admissions"
                 formatValue={(v) => `${v} student${v === 1 ? "" : "s"}`}
               />
             </div>
-          </Card>
-        )}
+          )}
 
-        {/* Recent Enrolments Dense ERP Table */}
+          {/* Fee Collection Trend - TEMPORARILY DISABLED */}
+          {/*
+          {canViewFees && (
+            <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">Fee Collection Trend</h2>
+                  <p className="text-xs text-slate-500 dark:text-bodydark mt-0.5">
+                    Collected against invoiced, last 12 months
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400">{collectionRate}%</div>
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Collected
+                  </div>
+                </div>
+              </div>
+
+              <TrendChart
+                points={collectionTrend}
+                primaryLabel="Collected"
+                secondaryLabel="Invoiced"
+                formatValue={(v) => formatCurrency(v)}
+              />
+            </div>
+          )}
+          */}
+        </div>
+      )}
+
+      {/* Defaulter Summary - TEMPORARILY DISABLED */}
+      {/*
+      {canViewFees && (
+        <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Largest Outstanding Dues</h2>
+            </div>
+            <Link href="/fees/defaulters" className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
+              Full Defaulter List →
+            </Link>
+          </div>
+
+          {topDefaulters.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              No overdue invoices. Everything is settled.
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {topDefaulters.map((inv) => {
+                const daysOverdue = Math.max(
+                  0,
+                  Math.floor((now.getTime() - new Date(inv.dueDate).getTime()) / 86400000)
+                );
+                return (
+                  <Link
+                    key={inv.id}
+                    href={`/students/${inv.student.id}`}
+                    className="py-3 px-3 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition-all duration-150"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs truncate">
+                        {inv.student.firstName} {inv.student.lastName}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono truncate">
+                        {inv.student.scholarNo} • {inv.student.class.name} •{" "}
+                        {inv.student.campus.code}
+                        {inv.student.guardians[0]?.phone
+                          ? ` • ${inv.student.guardians[0].phone}`
+                          : ""}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="font-bold font-mono text-xs text-rose-600 dark:text-rose-400">
+                        {formatCurrency(inv.balanceAmount)}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-medium">
+                        {daysOverdue} day{daysOverdue === 1 ? "" : "s"} overdue
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+      */}
+
+      {/* Main Data Tables Section */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Recent Admissions Section */}
         {canViewStudents && (
-          <Card className="p-0 rounded-md shadow-none border border-slate-200 bg-white overflow-hidden">
-            <div className="px-3 py-2.5 flex items-center justify-between border-b border-slate-200 bg-slate-50/60">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-900">Recent Enrolments</h2>
-                <span className="text-[11px] font-mono text-slate-500">({recentStudents.length} latest)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ExportCsvButton
-                  filename="recent-enrolments"
-                  data={recentStudents.map((s) => ({
-                    scholarNo: s.scholarNo,
-                    name: `${s.firstName} ${s.lastName}`,
-                    class: `${s.class.name}-${s.section?.name || "A"}`,
-                    campus: s.campus.name,
-                    status: s.status,
-                    admissionDate: s.admissionDate ? formatDate(s.admissionDate) : "",
-                  }))}
-                  headers={[
-                    { key: "scholarNo", label: "Scholar No" },
-                    { key: "name", label: "Student Name" },
-                    { key: "class", label: "Class & Section" },
-                    { key: "campus", label: "Campus" },
-                    { key: "status", label: "Status" },
-                    { key: "admissionDate", label: "Admission Date" },
-                  ]}
-                />
-                <Link
-                  href="/students"
-                  className="text-xs font-medium text-slate-700 hover:text-slate-900 hover:underline flex items-center gap-1"
-                >
-                  <span>View Roster</span>
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
+          <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Recent Admissions</h2>
+              <Link href="/students" className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
+                View All Roster →
+              </Link>
             </div>
 
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableHeaderCell className="py-2 px-3">Scholar ID</TableHeaderCell>
-                  <TableHeaderCell className="py-2 px-3">Student Name</TableHeaderCell>
-                  <TableHeaderCell className="py-2 px-3">Class</TableHeaderCell>
-                  <TableHeaderCell className="py-2 px-3">Campus</TableHeaderCell>
-                  <TableHeaderCell className="py-2 px-3">Status</TableHeaderCell>
-                  <TableHeaderCell className="py-2 px-3 text-right">Action</TableHeaderCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {recentStudents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-8 text-center text-xs text-slate-400">
-                      No recent student admissions found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  recentStudents.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="py-2 px-3 font-mono text-xs text-slate-700">
-                        {s.scholarNo}
-                      </TableCell>
-                      <TableCell className="py-2 px-3 font-medium text-slate-900">
-                        <Link href={`/students/${s.id}`} className="hover:underline">
-                          {s.firstName} {s.lastName}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="py-2 px-3 text-xs text-slate-600">
-                        {s.class.name}-{s.section?.name || "A"}
-                      </TableCell>
-                      <TableCell className="py-2 px-3 text-xs text-slate-600 font-mono">
-                        {s.campus.code}
-                      </TableCell>
-                      <TableCell className="py-2 px-3">
-                        <Badge variant="success">Enrolled</Badge>
-                      </TableCell>
-                      <TableCell className="py-2 px-3 text-right">
-                        <Link
-                          href={`/students/${s.id}`}
-                          className="text-xs text-slate-600 hover:text-slate-900 font-medium hover:underline"
-                        >
-                          Inspect
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {recentStudents.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">No recent admissions found.</div>
+              ) : (
+                recentStudents.map((s) => (
+                  <div key={s.id} className="py-3 px-2 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl transition">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 flex items-center justify-center font-black text-xs border border-emerald-200/60 dark:border-emerald-800">
+                        {s.firstName[0]}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-xs">{s.firstName} {s.lastName}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          {s.scholarNo} • {s.class.name}-{s.section?.name || "A"} • {s.campus.name}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                      Enrolled
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         )}
+
+        {/* Recent Fee Transactions - TEMPORARILY DISABLED */}
+        {/*
+        {canViewFees && (
+          <div className="rounded-2xl border border-slate-200/80 dark:border-strokedark bg-white dark:bg-boxdark p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Recent Tender Collections</h2>
+              <Link href="/fees/online-payments" className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
+                View Ledger →
+              </Link>
+            </div>
+
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {allPayments.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">No payment records found.</div>
+              ) : (
+                allPayments.map((p) => (
+                  <div key={p.id} className="py-3 px-2 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition">
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                        {p.student.firstName} {p.student.lastName}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono">
+                        {p.receiptNo} • {p.paymentMode} • {formatDate(p.paymentDate)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold font-mono text-xs text-emerald-700 dark:text-emerald-400">
+                        +{formatCurrency(p.amountPaid)}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        {p.student.campus.code}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+        */}
       </div>
     </div>
   );
