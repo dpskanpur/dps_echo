@@ -32,6 +32,11 @@ SECRETS=(
   "dps-echo-notify-email-from:NOTIFY_EMAIL_FROM:optional"
   "dps-echo-msg91-auth-key:MSG91_AUTH_KEY:optional"
   "dps-echo-msg91-sender-id:MSG91_SENDER_ID:optional"
+  "dps-echo-sms-username:SMS_USERNAME:optional"
+  "dps-echo-sms-password:SMS_PASSWORD:optional"
+  "dps-echo-sms-gateway-url:SMS_GATEWAY_URL:optional"
+  "dps-echo-sms-route:SMS_ROUTE:optional"
+  "dps-echo-sms-sender-id:SMS_SENDER_ID:optional"
 )
 
 echo "Project : $PROJECT_ID"
