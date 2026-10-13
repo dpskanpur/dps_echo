@@ -7,13 +7,26 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
+/**
+ * Navigation link that shows its own pending state.
+ *
+ * Every page here is server-rendered on demand, so a click produces nothing
+ * visible until the server responds — which reads as the app being stuck.
+ * `useLinkStatus` reports that in-flight state per link, so the item you
+ * clicked swaps its icon for a spinner immediately.
+ *
+ * A route-level loading.tsx would be the usual answer, but the sidebar and
+ * navbar are rendered inside each page rather than in a shared layout, so it
+ * would blank the whole shell on every navigation.
+ */
 function NavIcon({ Icon }: { Icon: LucideIcon }) {
+  // Must be called inside <Link> — it reads that link's navigation state.
   const { pending } = useLinkStatus();
 
   return pending ? (
-    <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin text-slate-700 dark:text-slate-300" aria-hidden />
+    <Loader2 className="w-4 h-4 shrink-0 animate-spin text-[#34A853]" aria-hidden />
   ) : (
-    <Icon className="w-3.5 h-3.5 shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200" aria-hidden />
+    <Icon className="w-4 h-4 shrink-0" aria-hidden />
   );
 }
 
@@ -39,15 +52,15 @@ export function SidebarLink({
       href={href}
       target={target}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors select-none",
+        "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 font-medium text-xs text-slate-400 transition-all duration-200 ease-in-out hover:bg-slate-800/70 hover:text-white dark:hover:bg-slate-800/50",
         active
-          ? "bg-slate-200/70 text-slate-900 dark:bg-slate-800 dark:text-white border-l-2 border-slate-900 dark:border-emerald-500 rounded-l-none pl-2"
-          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60",
+          ? "bg-emerald-500/10 text-emerald-400 dark:bg-emerald-500/15 dark:text-emerald-300 font-bold shadow-xs border-l-2 border-emerald-500"
+          : "hover:translate-x-0.5",
         className
       )}
     >
       <NavIcon Icon={icon} />
-      <span className="truncate flex-1">{label}</span>
+      <span className="truncate">{label}</span>
       {trailing}
     </Link>
   );

@@ -327,10 +327,10 @@ export function RbacMatrixTable({
                     <option value="" disabled>
                       Approve & Assign Role...
                     </option>
-                    <option value="FEES_SPECIALIST" className="bg-white text-slate-800">Approve as Fee Desk Specialist</option>
-                    <option value="ADMISSIONS_SPECIALIST" className="bg-white text-slate-800">Approve as Admissions Specialist</option>
-                    <option value="VIEW_ALL" className="bg-white text-slate-800">Approve as Staff Viewer</option>
-                    <option value="FULL_ADMIN" className="bg-white text-slate-800">Approve as Full Administrator</option>
+                    <option value="FEES_SPECIALIST" className="bg-white text-slate-800">💳 Approve as Fee Desk Specialist</option>
+                    <option value="ADMISSIONS_SPECIALIST" className="bg-white text-slate-800">🎓 Approve as Admissions Specialist</option>
+                    <option value="VIEW_ALL" className="bg-white text-slate-800">👁️ Approve as Staff Viewer</option>
+                    <option value="FULL_ADMIN" className="bg-white text-slate-800">⭐ Approve as Full Administrator</option>
                   </select>
 
                   <button
@@ -452,10 +452,10 @@ export function RbacMatrixTable({
                         className="w-full text-[11px] bg-emerald-50/80 border border-emerald-200/90 rounded-lg px-2 py-1 text-emerald-950 font-bold hover:bg-emerald-100 focus:outline-none focus:ring-1 focus:ring-[#0F9D58] cursor-pointer disabled:opacity-50 transition shadow-2xs"
                         title="Assigned Campus Scope"
                       >
-                        <option value="ALL">All Schools</option>
+                        <option value="ALL">🌐 All Schools</option>
                         {campuses.map((c) => (
                           <option key={c.id} value={c.id}>
-                            {c.name} ({c.code})
+                            🏫 {c.name} ({c.code})
                           </option>
                         ))}
                       </select>
@@ -492,11 +492,11 @@ export function RbacMatrixTable({
                             <option value="" disabled>
                               Preset...
                             </option>
-                            <option value="FULL_ADMIN">Full Admin</option>
-                            <option value="FEES_SPECIALIST">Fee Desk</option>
-                            <option value="ADMISSIONS_SPECIALIST">Admissions</option>
-                            <option value="VIEW_ALL">View Only</option>
-                            <option value="REVOKE_ALL">Revoke All</option>
+                            <option value="FULL_ADMIN">⭐ Full Admin</option>
+                            <option value="FEES_SPECIALIST">💳 Fee Desk</option>
+                            <option value="ADMISSIONS_SPECIALIST">🎓 Admissions</option>
+                            <option value="VIEW_ALL">👁️ View Only</option>
+                            <option value="REVOKE_ALL">🚫 Revoke All</option>
                           </select>
                         ) : (
                           <span className="text-[9px] text-slate-400 font-bold italic">
@@ -672,11 +672,11 @@ export function RbacMatrixTable({
                   onChange={(e: any) => setNewPreset(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F9D58] focus:bg-white transition cursor-pointer"
                 >
-                  <option value="FEES_SPECIALIST">Fee Desk Specialist (Fee Manage + Student View)</option>
-                  <option value="ADMISSIONS_SPECIALIST">Admissions Specialist (Student/TC Manage + Fee View)</option>
-                  <option value="VIEW_ALL">View-Only All Modules</option>
-                  <option value="FULL_ADMIN">Full Administrator (All Modules View/Update/Delete)</option>
-                  <option value="NONE">Zero Permissions (Pending Approval)</option>
+                  <option value="FEES_SPECIALIST">💳 Fee Desk Specialist (Fee Manage + Student View)</option>
+                  <option value="ADMISSIONS_SPECIALIST">🎓 Admissions Specialist (Student/TC Manage + Fee View)</option>
+                  <option value="VIEW_ALL">👁️ View-Only All Modules</option>
+                  <option value="FULL_ADMIN">⭐ Full Administrator (All Modules View/Update/Delete)</option>
+                  <option value="NONE">🚫 Zero Permissions (Pending Approval)</option>
                 </select>
               </div>
 
@@ -689,10 +689,10 @@ export function RbacMatrixTable({
                   onChange={(e) => setNewCampusId(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F9D58] focus:bg-white transition cursor-pointer"
                 >
-                  <option value="ALL">All Schools (Unbound)</option>
+                  <option value="ALL">🌐 All Schools (Unbound)</option>
                   {campuses.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({c.code})
+                      🏫 {c.name} ({c.code})
                     </option>
                   ))}
                 </select>
