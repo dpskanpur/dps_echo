@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MessageSquare, RefreshCw, Zap, ShieldCheck, AlertCircle } from "lucide-react";
+import { MessageSquare, RefreshCw, ShieldCheck, AlertCircle } from "lucide-react";
 import { fetchSmsBalanceAction } from "@/lib/notification-actions";
 import { SmsBalanceResult } from "@/lib/sms";
 

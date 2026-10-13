@@ -4,7 +4,7 @@ import { SessionSwitcher } from "./SessionSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { LiveSearchInput } from "./LiveSearchInput";
 import { listAcademicSessions } from "@/lib/academic-session";
-import { Search, UserCheck, LogOut, Shield, UserPlus, CreditCard, QrCode } from "lucide-react";
+import { Search, LogOut, Shield, UserPlus, CreditCard, QrCode } from "lucide-react";
 import Link from "next/link";
 import { UserPermissions } from "@/lib/permissions";
 

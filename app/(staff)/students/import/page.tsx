@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { bulkImportStudents, StudentImportRow } from "@/lib/import-actions";
 import {
   UploadCloud,
@@ -13,8 +11,6 @@ import {
   AlertTriangle,
   ArrowRight,
   Sparkles,
-  Users,
-  ShieldCheck,
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";

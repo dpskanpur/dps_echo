@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createRazorpayOrder, getPublicKeyId, isGatewayConfigured } from "@/lib/razorpay";
+import { createRazorpayOrder, getPublicKeyId } from "@/lib/razorpay";
 import { verifyPayToken } from "@/lib/pay-token";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { calculateLateFee } from "@/lib/fee-payments";

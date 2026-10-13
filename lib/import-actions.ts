@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getActiveSessionName } from "@/lib/academic-session";
+import { requirePermission } from "@/lib/auth";
+import { assertCampusAllowed } from "@/lib/permissions";
 
 export interface StudentImportRow {
   campusCode: string; // AZD, BAR, KID, SRV
@@ -31,6 +33,8 @@ export async function bulkImportStudents(rows: StudentImportRow[]): Promise<{
   importedCount: number;
   errors: string[];
 }> {
+  const { user } = await requirePermission("students", "update");
+
   // Resolved once so every row in the batch lands in the same session.
   const activeSession = await getActiveSessionName();
 
@@ -54,6 +58,14 @@ export async function bulkImportStudents(rows: StudentImportRow[]): Promise<{
       const campus = campusMap.get((row.campusCode || "").trim().toUpperCase());
       if (!campus) {
         errors.push(`Row #${rowNum} (${row.firstName} ${row.lastName}): Invalid campus code "${row.campusCode}". Allowed: AZD, BAR, KID, SRV.`);
+        continue;
+      }
+
+      // Enforce campus scope isolation for campus-bound staff
+      try {
+        assertCampusAllowed(user, campus.id);
+      } catch {
+        errors.push(`Row #${rowNum} (${row.firstName} ${row.lastName}): You are not authorized to import students into campus "${campus.code}".`);
         continue;
       }
 

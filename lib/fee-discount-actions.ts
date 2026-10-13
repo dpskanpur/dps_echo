@@ -10,7 +10,7 @@ import { createReceiptForPayment } from "@/lib/fee-payments";
 /**
  * Recalculates invoice balances for a student given their current discount configuration.
  */
-export async function recalculateStudentInvoices(studentId: string): Promise<void> {
+async function recalculateStudentInvoices(studentId: string): Promise<void> {
   const student = await prisma.student.findUnique({
     where: { id: studentId },
     select: {

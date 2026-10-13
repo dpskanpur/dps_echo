@@ -22,7 +22,6 @@ import {
   encodeSessionCookie,
   isSessionIdleExpired,
   sessionCookieOptions,
-  toSessionUser,
 } from "./session-cookie";
 
 export {

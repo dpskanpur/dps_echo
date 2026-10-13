@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { CheckCircle2, FileText, Printer, ArrowRight, ShieldCheck, Clock } from "lucide-react";
+import { CheckCircle2, FileText, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ReactNode } from "react";
 
 /**
@@ -96,6 +95,7 @@ export function PublicShell({
             >
               Admissions ↗
             </a>
+            {/* Fee module temporarily disabled
             <a
               href="/pay"
               target="_blank"
@@ -104,6 +104,7 @@ export function PublicShell({
             >
               Pay Fees ↗
             </a>
+            */}
             <a
               href="/verify-tc"
               target="_blank"

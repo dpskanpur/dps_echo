@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef, ChangeEvent } from "react";
-import { FileText, Upload, CheckCircle2, AlertCircle, Loader2, ExternalLink, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { FileText, Upload, AlertCircle, Loader2, ExternalLink, Trash2 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 

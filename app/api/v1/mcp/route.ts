@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
+import { authorizeApiRequest } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/v1/mcp - MCP Manifest & Capabilities for Gemini Enterprise, Codex, and AGY agents
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = await authorizeApiRequest(request, "students", "view");
+  if (!auth.ok) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+  }
   return NextResponse.json({
     name: "dps-echo-mcp-server",
     version: "1.0.0",

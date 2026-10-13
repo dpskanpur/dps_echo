@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MessageSquare, Send, X, AlertCircle, Info, Phone, User, CheckCircle2 } from "lucide-react";
+import { MessageSquare, Send, X, AlertCircle, Info, Phone, User } from "lucide-react";
 import { sendIndividualSmsAction } from "@/lib/notification-actions";
 import { calculateSmsCredits, SmsCreditEstimate } from "@/lib/sms-calculator";
 

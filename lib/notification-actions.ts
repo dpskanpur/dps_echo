@@ -41,6 +41,7 @@ export async function fetchSmsEstimateAction(
   message: string,
   recipientCount: number
 ): Promise<SmsCreditEstimate> {
+  await requirePermission("notifications", "view");
   return calculateSmsCredits(message, recipientCount);
 }
 

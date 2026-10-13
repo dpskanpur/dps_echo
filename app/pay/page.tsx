@@ -5,7 +5,7 @@ import { issuePayToken } from "@/lib/pay-token";
 import { isGatewayConfigured } from "@/lib/razorpay";
 import { rateLimit } from "@/lib/rate-limit";
 import { RazorpayCheckoutButton } from "@/components/RazorpayCheckoutButton";
-import { CheckCircle2, Search, Receipt, Lock, Building2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Search, Receipt, Lock, Building2 } from "lucide-react";
 import { calculateLateFee } from "@/lib/fee-payments";
 import { PublicShell } from "@/components/PublicShell";
 

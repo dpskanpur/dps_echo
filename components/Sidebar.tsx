@@ -7,9 +7,6 @@ import {
   UserPlus,
   FileText,
   GraduationCap,
-  Layers,
-  Receipt,
-  AlertTriangle,
   Building2,
   KeyRound,
   Bell,
@@ -19,7 +16,6 @@ import {
   FileSpreadsheet,
   FileCheck,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { SidebarLink } from "./SidebarLink";
 import { UserPermissions } from "@/lib/permissions";
 

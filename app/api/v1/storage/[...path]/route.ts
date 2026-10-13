@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { downloadFileFromGCS } from "@/lib/gcs";
-import { getCurrentUser } from "@/lib/auth";
+import { authorizeApiRequest } from "@/lib/api-auth";
 import fs from "fs/promises";
 import path from "path";
 
@@ -18,7 +18,21 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
+    // Security Check 0: Verify authenticated session or API token
+    const auth = await authorizeApiRequest(req, "students", "view");
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const { path: pathSegments } = await params;
+    if (
+      !pathSegments ||
+      pathSegments.length === 0 ||
+      pathSegments.some((seg) => seg === "." || seg === ".." || seg.includes("\\") || seg.includes("\0"))
+    ) {
+      return NextResponse.json({ error: "Invalid file path." }, { status: 400 });
+    }
+
     const destinationPath = pathSegments.join("/");
 
     // Security Check 1: Allowed Origins / Referer
@@ -37,8 +51,15 @@ export async function GET(
       );
     }
 
-    // Check local filesystem fallback first (for offline dev)
-    const localFilePath = path.join(process.cwd(), "public", "storage", "uploads", destinationPath.replace(/^local\//, ""));
+    // Check local filesystem fallback first (for offline dev) with strict path containment
+    const baseUploadsDir = path.resolve(process.cwd(), "public", "storage", "uploads");
+    const relativeTarget = destinationPath.replace(/^local\//, "");
+    const localFilePath = path.resolve(baseUploadsDir, relativeTarget);
+
+    if (!localFilePath.startsWith(baseUploadsDir + path.sep)) {
+      return NextResponse.json({ error: "Forbidden path traversal." }, { status: 403 });
+    }
+
     try {
       const localBuffer = await fs.readFile(localFilePath);
       const ext = destinationPath.split(".").pop()?.toLowerCase();

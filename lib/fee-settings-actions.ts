@@ -7,6 +7,7 @@ import { requirePermission } from "@/lib/auth";
 import { logAuditAction } from "@/lib/audit-log";
 
 export async function getOnlinePaymentSettings() {
+  await requirePermission("fees", "view");
   let settings = await prisma.systemSettings.findUnique({
     where: { id: "global" },
   });

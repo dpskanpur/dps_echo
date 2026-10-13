@@ -3,7 +3,7 @@ import { getCurrentUser, getUserPermissions } from "@/lib/auth";
 import { listAcademicSessions, resolveSessionScope } from "@/lib/academic-session";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { redirect } from "next/navigation";
-import { FileSpreadsheet, Search, Tag, DollarSign, Users, ShieldAlert } from "lucide-react";
+import { FileSpreadsheet, Search, Tag, DollarSign, Users } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { DemandImportModal } from "@/components/DemandImportModal";
 import Link from "next/link";

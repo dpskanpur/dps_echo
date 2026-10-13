@@ -1,6 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { Sidebar } from "@/components/Sidebar";
-import { Navbar } from "@/components/Navbar";
 import { NoCampusState } from "@/components/NoCampusState";
 import { registerStudent } from "@/lib/actions";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
@@ -9,12 +7,8 @@ import {
   Building2,
   User,
   Phone,
-  MapPin,
   ClipboardList,
   GraduationCap,
-  Users,
-  Award,
-  FileCheck,
   Lock,
 } from "lucide-react";
 import Link from "next/link";
