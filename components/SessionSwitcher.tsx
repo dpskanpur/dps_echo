@@ -44,16 +44,14 @@ export function SessionSwitcher({ sessions }: { sessions: SessionOption[] }) {
   const currentName = currentMatch?.name;
   const rawSelected = searchParams.get("session");
   const selectedSession =
-    rawSelected === "ALL"
-      ? "ALL"
-      : activeSessions.some((s) => s.name === rawSelected)
-      ? rawSelected!
-      : currentName || "ALL";
+    rawSelected && activeSessions.some((s) => s.name === rawSelected)
+      ? rawSelected
+      : currentName || "";
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const next = e.target.value;
     const params = new URLSearchParams(searchParams.toString());
-    if (next && next !== "ALL") {
+    if (next) {
       params.set("session", next);
     } else {
       params.delete("session");
@@ -87,9 +85,6 @@ export function SessionSwitcher({ sessions }: { sessions: SessionOption[] }) {
         aria-label="Select academic session"
         className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer appearance-none pr-5"
       >
-        {activeSessions.length > 1 && (
-          <option value="ALL" className="dark:bg-slate-900">All Active Sessions</option>
-        )}
         {activeSessions.map((s, idx) => (
           <option key={s.id} value={s.name} className="dark:bg-slate-900">
             {getSessionLabel(s.name, idx)}
