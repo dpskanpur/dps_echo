@@ -20,7 +20,6 @@ import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { AdminServiceToggleCards } from "@/components/AdminServiceToggleCards";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
-import { getOnlinePaymentSettings } from "@/lib/fee-settings-actions";
 import { getPublicSystemSettings } from "@/lib/public-data";
 import {
   updateCampusSettings,
@@ -51,7 +50,6 @@ export default async function AdminSettingsPage({
 
   const systemSettings = await getPublicSystemSettings();
   const campuses = await prisma.campus.findMany({ orderBy: { name: "asc" } });
-  const paymentSettings = await getOnlinePaymentSettings();
   const academicSessions = await listAcademicSessions();
   const canManageSessions = permissions.isAdmin || permissions.modules.sessions.canUpdate;
 
@@ -62,10 +60,6 @@ export default async function AdminSettingsPage({
     include: { permissions: true },
     orderBy: { createdAt: "desc" },
   });
-
-  const directoryColumns = prisma.directoryColumn
-    ? await prisma.directoryColumn.findMany({ orderBy: { sequence: "asc" } })
-    : [];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">

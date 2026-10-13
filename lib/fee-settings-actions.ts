@@ -7,7 +7,15 @@ import { requirePermission } from "@/lib/auth";
 import { logAuditAction } from "@/lib/audit-log";
 
 export async function getOnlinePaymentSettings() {
-  await requirePermission("fees", "view");
+  try {
+    await requirePermission("fees", "view");
+  } catch {
+    return {
+      masterIsOnlinePaymentEnabled: false,
+      masterOnlinePaymentDisabledReason: "Fee module currently disabled",
+      campuses: [],
+    };
+  }
   let settings = await prisma.systemSettings.findUnique({
     where: { id: "global" },
   });
