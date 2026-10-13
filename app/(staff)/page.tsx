@@ -6,6 +6,7 @@ import { TrendChart, TrendPoint } from "@/components/TrendChart";
 import { SessionTimeoutCountdown } from "@/components/SessionTimeoutCountdown";
 import { getPublicSystemSettings } from "@/lib/public-data";
 import { getActiveSessionName } from "@/lib/academic-session";
+import { OnlineRegistrationToggle } from "@/components/OnlineRegistrationToggle";
 import {
   Users,
   FileCheck,
@@ -454,12 +455,19 @@ export default async function DashboardPage({
                     </span>
                   </div>
                 </div>
-                <Link
-                  href="/admin/rbac?tab=sessions"
-                  className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
-                >
-                  Manage →
-                </Link>
+                {canViewRbac ? (
+                  <OnlineRegistrationToggle initialIsOpen={systemSettings.isRegistrationOpen} compact />
+                ) : (
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                      systemSettings.isRegistrationOpen
+                        ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300"
+                        : "bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300"
+                    }`}
+                  >
+                    {systemSettings.isRegistrationOpen ? "OPEN" : "CLOSED"}
+                  </span>
+                )}
               </div>
 
               {/* Staff Roster Composition */}

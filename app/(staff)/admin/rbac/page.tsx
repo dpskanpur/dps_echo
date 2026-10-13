@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { AdminServiceToggleCards } from "@/components/AdminServiceToggleCards";
+import { OnlineRegistrationToggle } from "@/components/OnlineRegistrationToggle";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
 import { getPublicSystemSettings } from "@/lib/public-data";
@@ -754,32 +755,7 @@ export default async function AdminSettingsPage({
                     </p>
                   </div>
 
-                  <form action={updateSystemSettings} className="flex items-center gap-3 shrink-0">
-                    <input
-                      type="hidden"
-                      name="isRegistrationOpen"
-                      value={systemSettings.isRegistrationOpen ? "false" : "true"}
-                    />
-                    <button
-                      type="submit"
-                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border shadow-2xs ${
-                        systemSettings.isRegistrationOpen
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
-                          : "bg-rose-50 text-rose-800 border-rose-300 hover:bg-rose-100"
-                      }`}
-                    >
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full ${
-                          systemSettings.isRegistrationOpen ? "bg-emerald-600 animate-pulse" : "bg-rose-600"
-                        }`}
-                      />
-                      <span>
-                        {systemSettings.isRegistrationOpen
-                          ? "✓ Registration OPEN (Click to Close)"
-                          : "🚫 Registration CLOSED (Click to Open)"}
-                      </span>
-                    </button>
-                  </form>
+                  <OnlineRegistrationToggle initialIsOpen={systemSettings.isRegistrationOpen} />
                 </div>
               </div>
               {/* Active session */}

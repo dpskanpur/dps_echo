@@ -401,3 +401,34 @@ export async function denyAndDeleteUserRequest(userId: string) {
   revalidatePath("/");
   return { success: true };
 }
+
+/**
+ * Toggle global online student registration portal status
+ */
+export async function toggleOnlineRegistrationPortal(isOpen: boolean) {
+  const admin = await assertRbacAdmin();
+
+  await prisma.systemSettings.upsert({
+    where: { id: "global" },
+    update: { isRegistrationOpen: isOpen },
+    create: { id: "global", isRegistrationOpen: isOpen },
+  });
+
+  await logAuditAction({
+    userId: admin.id,
+    userEmail: admin.email,
+    userName: admin.name || undefined,
+    userRole: admin.role,
+    campusCode: admin.campusId || undefined,
+    action: "SYSTEM_SETTINGS_UPDATE",
+    entityType: "SystemSettings",
+    entityId: "global",
+    details: { isRegistrationOpen: isOpen },
+  });
+
+  revalidatePath("/admin/rbac");
+  revalidatePath("/public-registration");
+  revalidatePath("/students");
+  revalidatePath("/");
+  return { success: true, isOpen };
+}
