@@ -6,6 +6,7 @@ const SMS_USERNAME = process.env.SMS_USERNAME || "demo";
 const SMS_PASSWORD = process.env.SMS_PASSWORD || "demo";
 const SMS_ROUTE = process.env.SMS_ROUTE || "trans1";
 const SMS_SENDER_ID = process.env.SMS_SENDER_ID || "DPSKNP";
+const SMS_DEFAULT_TEMPLATE_ID = process.env.SMS_TEMPLATE_ID || process.env.SMS_DEFAULT_TEMPLATE_ID || "1007494056285918712";
 
 export interface SmsSendResult {
   success: boolean;
@@ -63,8 +64,10 @@ export async function sendSMS({
       message: message,
     });
 
-    if (templateId) {
-      params.append("templateid", templateId);
+    // The trans1 route strictly requires a templateid parameter (fails with code 4 otherwise)
+    const effectiveTemplateId = templateId || SMS_DEFAULT_TEMPLATE_ID;
+    if (effectiveTemplateId) {
+      params.append("templateid", effectiveTemplateId);
     }
 
     const requestUrl = `${endpoint}?${params.toString()}`;
@@ -89,7 +92,7 @@ export async function sendSMS({
     const ERROR_MESSAGES: Record<string, string> = {
       "2": "Invalid SMS Gateway Credentials.",
       "3": "Insufficient SMS Credit Balance.",
-      "4": "SMS Provider Server Error.",
+      "4": "SMS Provider Server Error (DLT Template ID missing or rejected).",
       "5": "Invalid Sender ID.",
       "6": "Invalid SMS Route.",
       "7": "Submission Error.",
