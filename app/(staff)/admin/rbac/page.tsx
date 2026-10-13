@@ -19,6 +19,7 @@ import {
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { AdminServiceToggleCards } from "@/components/AdminServiceToggleCards";
 import { OnlineRegistrationToggle } from "@/components/OnlineRegistrationToggle";
+import { AcademicSessionsManager } from "@/components/AcademicSessionsManager";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
 import { getPublicSystemSettings } from "@/lib/public-data";
@@ -758,95 +759,8 @@ export default async function AdminSettingsPage({
                   <OnlineRegistrationToggle initialIsOpen={systemSettings.isRegistrationOpen} />
                 </div>
               </div>
-              {/* Active session */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-5">
-                <div>
-                  <h2 className="text-sm font-black text-slate-900">Active Academic Session</h2>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    New admissions, invoices and receipts are stamped with this session. Changing it
-                    affects every user. It does not alter records that already exist.
-                  </p>
-                </div>
-
-                {academicSessions.length === 0 ? (
-                  <p className="text-xs text-slate-400">No academic sessions exist yet.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {academicSessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className={`flex items-center justify-between gap-4 p-4 rounded-xl border ${
-                          session.isCurrent
-                            ? "bg-emerald-50 border-emerald-300"
-                            : "bg-slate-50 border-slate-200"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Calendar
-                            className={`w-4 h-4 shrink-0 ${
-                              session.isCurrent ? "text-emerald-700" : "text-slate-400"
-                            }`}
-                          />
-                          <span className="font-mono text-sm font-bold text-slate-900">
-                            {session.name}
-                          </span>
-                          {session.isCurrent && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-700 text-white px-2 py-0.5 rounded-full">
-                              Active
-                            </span>
-                          )}
-                        </div>
-
-                        {!session.isCurrent && (
-                          <form action={setActiveSession}>
-                            <input type="hidden" name="sessionId" value={session.id} />
-                            <button
-                              type="submit"
-                              className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition"
-                            >
-                              Make active
-                            </button>
-                          </form>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Open a new session */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-4">
-                <div>
-                  <h2 className="text-sm font-black text-slate-900">Open a New Session</h2>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Creates the session so admissions can be taken for it in advance. It does not
-                    become active until you make it so above.
-                  </p>
-                </div>
-
-                <form action={createAcademicSession} className="flex flex-wrap items-end gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Session</label>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      placeholder="2027-2028"
-                      pattern="\\d{4}-\\d{4}"
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-lg bg-[#0F9D58] text-white hover:bg-emerald-700 transition"
-                  >
-                    <Plus className="w-4 h-4" /> Create Session
-                  </button>
-                </form>
-                <p className="text-[10px] text-slate-400">
-                  April to March. Consecutive years only, e.g. 2027-2028.
-                </p>
-              </div>
+              {/* Academic Sessions Management with Sliding Toggles & Concurrency Rules */}
+              <AcademicSessionsManager sessions={academicSessions} />
             </div>
           )}
     </div>
