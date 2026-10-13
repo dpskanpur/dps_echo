@@ -3,7 +3,7 @@ import { CampusSwitcher } from "./CampusSwitcher";
 import { SessionSwitcher } from "./SessionSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { LiveSearchInput } from "./LiveSearchInput";
-import { listAcademicSessions } from "@/lib/academic-session";
+import { listActiveAcademicSessions } from "@/lib/academic-session";
 import { Search, LogOut, Shield, UserPlus, CreditCard, QrCode } from "lucide-react";
 import Link from "next/link";
 import { UserPermissions } from "@/lib/permissions";
@@ -45,7 +45,7 @@ export async function Navbar({
   // The switcher reads the selected value from the URL itself.
   let sessions: SessionOption[] = [];
   try {
-    sessions = await listAcademicSessions();
+    sessions = await listActiveAcademicSessions();
   } catch {
     // A session list failure must not take the whole shell down.
   }
