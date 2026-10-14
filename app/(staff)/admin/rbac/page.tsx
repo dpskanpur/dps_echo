@@ -15,11 +15,13 @@ import {
   Award,
   IndianRupee,
   Clock,
+  GraduationCap,
 } from "lucide-react";
 import { RbacMatrixTable } from "@/components/RbacMatrixTable";
 import { AdminServiceToggleCards } from "@/components/AdminServiceToggleCards";
 import { OnlineRegistrationToggle } from "@/components/OnlineRegistrationToggle";
 import { AcademicSessionsManager } from "@/components/AcademicSessionsManager";
+import { AcademicStructureManager } from "@/components/AcademicStructureManager";
 import { listAcademicSessions } from "@/lib/academic-session";
 import { setActiveSession, createAcademicSession } from "@/lib/session-actions";
 import { getPublicSystemSettings } from "@/lib/public-data";
@@ -35,9 +37,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ campus?: string; campusId?: string; tab?: string; notice?: string; name?: string; addCampus?: string }>;
+  searchParams: Promise<{ campus?: string; campusId?: string; tab?: string; notice?: string; name?: string; addCampus?: string; sessionId?: string }>;
 }) {
-  const { campus: paramCampus, campusId: queryCampusId, tab = "system", notice, name: noticeName, addCampus } = await searchParams;
+  const { campus: paramCampus, campusId: queryCampusId, tab = "system", notice, name: noticeName, addCampus, sessionId: querySessionId } = await searchParams;
   const user = await getCurrentUser();
 
   if (!user) {
@@ -58,10 +60,82 @@ export default async function AdminSettingsPage({
   const activeCampusId = queryCampusId || paramCampus || campuses[0]?.id || "";
   const selectedCampus = campuses.find((c) => c.id === activeCampusId) || campuses[0];
 
+  const activeSessionObj = academicSessions.find((s) => s.isCurrent) || academicSessions[0];
+  const targetSessionId = querySessionId || activeSessionObj?.id || "";
+  const selectedSession = academicSessions.find((s) => s.id === targetSessionId) || activeSessionObj;
+
   const users = await prisma.user.findMany({
     include: { permissions: true },
     orderBy: { createdAt: "desc" },
   });
+
+  // Query dynamic academic structure when tab === "academics"
+  let classDataList: any[] = [];
+  if (tab === "academics") {
+    const academicClassesRaw = await prisma.class.findMany({
+      where: { campusId: activeCampusId },
+      include: {
+        sections: {
+          include: {
+            sectionSessions: true,
+            _count: {
+              select: { students: true },
+            },
+          },
+          orderBy: { name: "asc" },
+        },
+      },
+      orderBy: { sequence: "asc" },
+    });
+
+    const sessionStudents = await prisma.student.groupBy({
+      by: ["classId", "sectionId"],
+      where: {
+        campusId: activeCampusId,
+        academicYearIn: selectedSession?.name,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    classDataList = academicClassesRaw.map((cls) => {
+      let classEnrolledInSession = 0;
+      const sections = cls.sections.map((sec) => {
+        const sessionCountObj = sessionStudents.find(
+          (sg) => sg.classId === cls.id && sg.sectionId === sec.id
+        );
+        const enrolledInSession = sessionCountObj?._count._all || 0;
+        classEnrolledInSession += enrolledInSession;
+
+        return {
+          id: sec.id,
+          classId: sec.classId,
+          name: sec.name,
+          roomNo: sec.roomNo,
+          maxCapacity: sec.maxCapacity,
+          studentCount: enrolledInSession,
+          totalStudents: sec._count.students,
+          sectionSessions: sec.sectionSessions.map((ss) => ({
+            academicYearId: ss.academicYearId,
+            isActive: ss.isActive,
+            maxCapacity: ss.maxCapacity,
+            roomNo: ss.roomNo,
+          })),
+        };
+      });
+
+      return {
+        id: cls.id,
+        campusId: cls.campusId,
+        name: cls.name,
+        numericGrade: cls.numericGrade,
+        sequence: cls.sequence,
+        sections,
+        studentCount: classEnrolledInSession,
+      };
+    });
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
@@ -127,6 +201,18 @@ export default async function AdminSettingsPage({
               <span>2. Staff Access Matrix (RBAC)</span>
             </Link>
 
+            <Link
+              href={`/admin/rbac?tab=academics&campusId=${activeCampusId}&sessionId=${selectedSession?.id || ""}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                tab === "academics"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <GraduationCap className="w-4 h-4 text-emerald-800" />
+              <span>3. Classes &amp; Sections</span>
+            </Link>
+
             {canManageSessions && (
               <Link
                 href={`/admin/rbac?tab=sessions&campusId=${activeCampusId}`}
@@ -137,7 +223,7 @@ export default async function AdminSettingsPage({
                 }`}
               >
                 <Calendar className="w-4 h-4 text-emerald-800" />
-                <span>Academic Sessions</span>
+                <span>4. Academic Sessions</span>
               </Link>
             )}
           </div>
@@ -738,7 +824,18 @@ export default async function AdminSettingsPage({
             <RbacMatrixTable initialUsers={users} currentUserId={user.id} campuses={campuses} />
           )}
 
-          {/* TAB 3: ACADEMIC SESSIONS & REGISTRATION CONTROLS */}
+          {/* TAB 3: CLASSES & DYNAMIC SECTIONS */}
+          {tab === "academics" && (
+            <AcademicStructureManager
+              campuses={campuses.map((c) => ({ id: c.id, name: c.name, code: c.code }))}
+              currentCampusId={activeCampusId}
+              sessions={academicSessions.map((s) => ({ id: s.id, name: s.name, isCurrent: s.isCurrent }))}
+              currentSessionId={selectedSession?.id || ""}
+              initialClasses={classDataList}
+            />
+          )}
+
+          {/* TAB 4: ACADEMIC SESSIONS & REGISTRATION CONTROLS */}
           {tab === "sessions" && canManageSessions && (
             <div className="space-y-6 w-full">
               {/* Compact Global Online Registration Toggle Card */}
