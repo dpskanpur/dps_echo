@@ -58,6 +58,11 @@ export default async function StudentsPage({
     orderBy: { sequence: "asc" },
   });
 
+  // Deduplicate class options by name when in All Campuses mode so grades are not repeated
+  const uniqueClassOptions = campusId
+    ? classes
+    : Array.from(new Map(classes.map((c) => [c.name, c])).values());
+
   // Session view filter — defaults to the current session so the list matches
   // what the navbar switcher is showing.
   const sessionScope = resolveSessionScope(session, await listAcademicSessions());
@@ -65,7 +70,13 @@ export default async function StudentsPage({
   // Build filter query
   const whereClause: any = { ...sessionScope.studentWhere, ...campusScope.where };
   if (classId && classId !== "ALL") {
-    whereClause.classId = classId;
+    const isIdMatch = classes.some((c) => c.id === classId);
+    if (campusId && isIdMatch) {
+      whereClause.classId = classId;
+    } else {
+      const className = isIdMatch ? classes.find((c) => c.id === classId)?.name : classId;
+      whereClause.class = { name: className };
+    }
   }
   if (status && status !== "ALL") {
     whereClause.status = status;
@@ -175,8 +186,8 @@ export default async function StudentsPage({
               className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-strokedark text-xs rounded-xl px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
             >
               <option value="ALL">All Classes</option>
-              {classes.map((cls) => (
-                <option key={cls.id} value={cls.id}>
+              {uniqueClassOptions.map((cls) => (
+                <option key={cls.id} value={campusId ? cls.id : cls.name}>
                   {cls.name}
                 </option>
               ))}

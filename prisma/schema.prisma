@@ -99,8 +99,9 @@ model AcademicYear {
   isCurrent Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  feeStructures FeeStructure[]
-  feeInvoices   FeeInvoice[]
+  feeStructures   FeeStructure[]
+  feeInvoices     FeeInvoice[]
+  sectionSessions SectionSession[]
 }
 
 model Class {
@@ -120,17 +121,35 @@ model Class {
 }
 
 model Section {
-  id          String   @id @default(cuid())
-  classId     String
-  name        String   // e.g. "A", "B", "C", "D"
-  roomNo      String?
-  maxCapacity Int      @default(40)
-  createdAt   DateTime @default(now())
+  id              String           @id @default(cuid())
+  classId         String
+  name            String           // e.g. "A", "B", "C", "D"
+  roomNo          String?
+  maxCapacity     Int              @default(40)
+  createdAt       DateTime         @default(now())
 
-  class    Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
-  students Student[]
+  class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students        Student[]
+  sectionSessions SectionSession[]
 
   @@unique([classId, name])
+}
+
+model SectionSession {
+  id             String       @id @default(cuid())
+  sectionId      String
+  academicYearId String
+  maxCapacity    Int          @default(40)
+  isActive       Boolean      @default(true)
+  roomNo         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  section        Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, academicYearId])
+  @@index([academicYearId])
 }
 
 // Note: Enums are stored as Strings for broad SQLite & PostgreSQL database compatibility

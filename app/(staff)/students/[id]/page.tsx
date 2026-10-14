@@ -61,7 +61,17 @@ export default async function StudentDetailPage({
     where: { id },
     include: {
       campus: true,
-      class: { include: { sections: true } },
+      class: {
+        include: {
+          sections: {
+            include: {
+              sectionSessions: {
+                include: { academicYear: true },
+              },
+            },
+          },
+        },
+      },
       section: true,
       guardians: true,
       documents: true,
@@ -96,7 +106,15 @@ export default async function StudentDetailPage({
 
   const classes = await prisma.class.findMany({
     where: { campusId: student.campusId },
-    include: { sections: true },
+    include: {
+      sections: {
+        include: {
+          sectionSessions: {
+            include: { academicYear: true },
+          },
+        },
+      },
+    },
     orderBy: { sequence: "asc" },
   });
 
@@ -446,11 +464,17 @@ export default async function StudentDetailPage({
                       <option value="">Unassigned</option>
                       {classes
                         .find((c) => c.id === student.classId)
-                        ?.sections.map((sec) => (
-                          <option key={sec.id} value={sec.id}>
-                            Section {sec.name} {sec.roomNo ? `(Room ${sec.roomNo})` : ""}
-                          </option>
-                        ))}
+                        ?.sections.map((sec) => {
+                          const sessionRecord = sec.sectionSessions?.find(
+                            (ss) => ss.academicYear.name === student.academicYearIn
+                          );
+                          const isInactive = sessionRecord && !sessionRecord.isActive;
+                          return (
+                            <option key={sec.id} value={sec.id} disabled={isInactive}>
+                              Section {sec.name} {sec.roomNo ? `(Room ${sec.roomNo})` : ""} {isInactive ? `(Not offered in ${student.academicYearIn})` : ""}
+                            </option>
+                          );
+                        })}
                     </select>
                   </div>
 
@@ -593,11 +617,17 @@ export default async function StudentDetailPage({
                     name="sectionId"
                     className="w-full bg-slate-900 border border-emerald-700/60 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
                   >
-                    {student.class?.sections?.map((sec) => (
-                      <option key={sec.id} value={sec.id}>
-                        Section {sec.name} {sec.roomNo ? `(${sec.roomNo.startsWith("Room") ? sec.roomNo : `Room ${sec.roomNo}`})` : ""}
-                      </option>
-                    )) || <option value="">No Section</option>}
+                    {student.class?.sections?.map((sec) => {
+                      const sessionRecord = sec.sectionSessions?.find(
+                        (ss) => ss.academicYear.name === student.academicYearIn
+                      );
+                      const isInactive = sessionRecord && !sessionRecord.isActive;
+                      return (
+                        <option key={sec.id} value={sec.id} disabled={isInactive}>
+                          Section {sec.name} {sec.roomNo ? `(${sec.roomNo.startsWith("Room") ? sec.roomNo : `Room ${sec.roomNo}`})` : ""} {isInactive ? `(Not offered in ${student.academicYearIn})` : ""}
+                        </option>
+                      );
+                    }) || <option value="">No Section</option>}
                   </select>
                 </div>
 
