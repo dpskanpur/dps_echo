@@ -29,6 +29,7 @@ import {
   updateSectionSessionAction,
   deleteSectionAction,
 } from "@/lib/academic-actions";
+import { getSessionCategory } from "@/lib/session-utils";
 
 export interface CampusItem {
   id: string;
@@ -450,6 +451,7 @@ export function AcademicStructureManager({
           <div className="flex flex-wrap items-center gap-2.5">
             {sessions.map((s) => {
               const isSelected = s.id === selectedSessionId;
+              const category = getSessionCategory(s.name);
               return (
                 <button
                   key={s.id}
@@ -462,13 +464,24 @@ export function AcademicStructureManager({
                 >
                   <Calendar className={`w-3.5 h-3.5 ${isSelected ? "text-amber-300" : "text-emerald-700"}`} />
                   <span>Session {s.name}</span>
-                  {s.isCurrent ? (
-                    <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded font-black">
+                  {category === "CURRENT" && (
+                    <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wide">
                       CURRENT
                     </span>
-                  ) : (
-                    <span className="bg-amber-400 text-amber-950 text-[9px] px-1.5 py-0.5 rounded font-black">
+                  )}
+                  {category === "UPCOMING" && (
+                    <span className="bg-amber-400 text-amber-950 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wide">
                       UPCOMING
+                    </span>
+                  )}
+                  {category === "FUTURE" && (
+                    <span className="bg-blue-100 text-blue-900 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wide">
+                      FUTURE
+                    </span>
+                  )}
+                  {category === "PAST" && (
+                    <span className="bg-slate-200 text-slate-700 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wide">
+                      PAST
                     </span>
                   )}
                 </button>
