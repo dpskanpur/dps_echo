@@ -13,6 +13,7 @@ import {
   Sparkles,
   Info,
 } from "lucide-react";
+import { getSessionCategory, getCurrentAcademicStartYear } from "@/lib/session-utils";
 
 interface SessionOption {
   id: string;
@@ -26,20 +27,10 @@ export function AcademicSessionsManager({ sessions }: { sessions: SessionOption[
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // Compute Indian CBSE academic calendar year relative to current date (April to March)
-  const now = new Date();
-  const calYear = now.getFullYear();
-  const currentAcademicStartYear = now.getMonth() >= 3 ? calYear : calYear - 1;
+  const currentAcademicStartYear = getCurrentAcademicStartYear();
 
-  const categorizeSession = (name: string): "PAST" | "CURRENT" | "NEXT" | "FAR_FUTURE" => {
-    const match = name.match(/^(\d{4})/);
-    if (!match) return "PAST";
-    const startYear = parseInt(match[1], 10);
-
-    if (startYear < currentAcademicStartYear) return "PAST";
-    if (startYear === currentAcademicStartYear) return "CURRENT";
-    if (startYear === currentAcademicStartYear + 1) return "NEXT";
-    return "FAR_FUTURE";
+  const categorizeSession = (name: string): "PAST" | "CURRENT" | "UPCOMING" | "FUTURE" => {
+    return getSessionCategory(name);
   };
 
   // Compute suggested next session
@@ -62,7 +53,7 @@ export function AcademicSessionsManager({ sessions }: { sessions: SessionOption[
       return;
     }
 
-    if (category === "FAR_FUTURE") {
+    if (category === "FUTURE") {
       showToast("Future sessions beyond next year cannot be enabled yet.", "error");
       return;
     }
@@ -157,8 +148,8 @@ export function AcademicSessionsManager({ sessions }: { sessions: SessionOption[
           {sessionList.map((session) => {
             const category = categorizeSession(session.name);
             const isPast = category === "PAST";
-            const isFarFuture = category === "FAR_FUTURE";
-            const isEligible = !isPast && !isFarFuture;
+            const isFuture = category === "FUTURE";
+            const isEligible = !isPast && !isFuture;
 
             return (
               <div
@@ -194,20 +185,20 @@ export function AcademicSessionsManager({ sessions }: { sessions: SessionOption[
                       {/* Category Tag */}
                       {category === "CURRENT" && (
                         <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">
-                          Current Year
+                          Current Session
                         </span>
                       )}
-                      {category === "NEXT" && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md border border-purple-200">
-                          Next Year (Upcoming)
+                      {category === "UPCOMING" && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-200">
+                          Upcoming Session
                         </span>
                       )}
-                      {category === "FAR_FUTURE" && (
+                      {category === "FUTURE" && (
                         <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
-                          Future (Locked)
+                          Future Session
                         </span>
                       )}
-                      {isPast && (
+                      {category === "PAST" && (
                         <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md flex items-center gap-1">
                           <Lock className="w-3 h-3" /> Past Session (Closed)
                         </span>
@@ -215,9 +206,9 @@ export function AcademicSessionsManager({ sessions }: { sessions: SessionOption[
                     </div>
 
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      {isPast
+                      {category === "PAST"
                         ? "Archived past academic year. Closed to new admissions."
-                        : isFarFuture
+                        : category === "FUTURE"
                         ? "Future session. Can be enabled when within next-year admissions window."
                         : session.isCurrent
                         ? "Currently ACTIVE for student admissions, invoices, and records."
@@ -254,7 +245,7 @@ export function AcademicSessionsManager({ sessions }: { sessions: SessionOption[
                     title={
                       isPast
                         ? "Past sessions remain permanently disabled once the year passes"
-                        : isFarFuture
+                        : isFuture
                         ? "Future sessions beyond next year cannot be enabled yet"
                         : "Click to toggle session active status"
                     }

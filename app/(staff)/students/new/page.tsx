@@ -16,6 +16,7 @@ import { DobInputWithWords } from "@/components/DobInputWithWords";
 import { ValidatedInput } from "@/components/ValidatedInput";
 import { CampusSelector } from "@/components/CampusSelector";
 import { listAdmissionSessions, getActiveSessionName } from "@/lib/academic-session";
+import { getSessionCategory } from "@/lib/session-utils";
 import { RegistrationFormWrapper } from "@/components/RegistrationFormWrapper";
 
 export const dynamic = "force-dynamic";
@@ -149,12 +150,16 @@ export default async function NewAdmissionPage({
                     {admissionSessions.length === 0 ? (
                       <option value={activeSessionName}>{activeSessionName}</option>
                     ) : (
-                      admissionSessions.map((session) => (
-                        <option key={session.id} value={session.name}>
-                          {session.name}
-                          {session.isCurrent ? " (current)" : " (upcoming)"}
-                        </option>
-                      ))
+                      admissionSessions.map((session) => {
+                        const cat = getSessionCategory(session.name);
+                        const label = cat === "CURRENT" ? " (current)" : cat === "UPCOMING" ? " (upcoming)" : ` (${cat.toLowerCase()})`;
+                        return (
+                          <option key={session.id} value={session.name}>
+                            {session.name}
+                            {label}
+                          </option>
+                        );
+                      })
                     )}
                   </select>
                   <p className="mt-1 text-[10px] text-slate-400">

@@ -20,6 +20,15 @@ export interface SessionOption {
   isCurrent: boolean;
 }
 
+import {
+  getCurrentAcademicStartYear,
+  getSessionCategory,
+  SessionTemporalCategory,
+} from "./session-utils";
+
+export { getCurrentAcademicStartYear, getSessionCategory };
+export type { SessionTemporalCategory };
+
 /** Every session, newest first. */
 export async function listAcademicSessions(): Promise<SessionOption[]> {
   const rows = await prisma.academicYear.findMany({
@@ -29,12 +38,18 @@ export async function listAcademicSessions(): Promise<SessionOption[]> {
   return rows;
 }
 
-/** Only active/enabled sessions, chronological order. */
+/**
+ * Active/operational sessions for school portal and admissions:
+ * Strictly CURRENT (ongoing) and UPCOMING (advance admissions).
+ */
 export async function listActiveAcademicSessions(): Promise<SessionOption[]> {
-  return prisma.academicYear.findMany({
-    where: { isCurrent: true },
+  const all = await prisma.academicYear.findMany({
     orderBy: { startDate: "asc" },
     select: { id: true, name: true, isCurrent: true },
+  });
+  return all.filter((s) => {
+    const cat = getSessionCategory(s.name);
+    return cat === "CURRENT" || cat === "UPCOMING";
   });
 }
 
@@ -112,21 +127,21 @@ export function resolveSessionScope(
   available: SessionOption[]
 ): SessionScope {
   // Only active sessions (Current or Upcoming) are valid view targets
-  const activeSessions = available.filter((s) => s.isCurrent);
+  const activeSessions = available.filter((s) => {
+    const cat = getSessionCategory(s.name);
+    return cat === "CURRENT" || cat === "UPCOMING";
+  });
   const pool = activeSessions.length > 0 ? activeSessions : available;
 
-  // Find ongoing calendar academic session (April to March)
-  const now = new Date();
-  const calYear = now.getFullYear();
-  const currentAcademicStartYear = now.getMonth() >= 3 ? calYear : calYear - 1;
-  const currentAcademicName = `${currentAcademicStartYear}-${currentAcademicStartYear + 1}`;
+  const currentStartYear = getCurrentAcademicStartYear();
+  const currentAcademicName = `${currentStartYear}-${currentStartYear + 1}`;
 
   const currentSession =
     pool.find((s) => s.name === currentAcademicName) ||
+    pool.find((s) => getSessionCategory(s.name) === "CURRENT") ||
     pool[0];
 
   // If a valid active session is requested (Current or Upcoming), scope to it.
-  // There is no concept of "ALL" sessions — portal views are always scoped to either Current or Upcoming.
   const match = requested && requested !== "ALL" ? pool.find((s) => s.name === requested) : null;
   const target = match || currentSession;
 
@@ -138,9 +153,9 @@ export function resolveSessionScope(
 // -------------------------------------------------------------
 // Admission rules
 //
-// A student can be admitted into the current session or a future one — a
+// A student can be admitted into the current session or the upcoming one — a
 // school takes next year's admissions months in advance — but never into a
-// session that has already closed or is disabled.
+// session that has already closed or far future.
 // -------------------------------------------------------------
 
 /** Start year of a session named like "2026-2027". */
@@ -149,12 +164,15 @@ function sessionStartYear(name: string): number {
   return match ? Number(match[1]) : 0;
 }
 
-/** Sessions an admission may be recorded in: only active/enabled sessions, oldest first. */
+/** Sessions an admission may be recorded in: Current and Upcoming only, oldest first. */
 export async function listAdmissionSessions(): Promise<SessionOption[]> {
-  const active = await prisma.academicYear.findMany({
-    where: { isCurrent: true },
+  const all = await prisma.academicYear.findMany({
     orderBy: { startDate: "asc" },
     select: { id: true, name: true, isCurrent: true },
+  });
+  const active = all.filter((s) => {
+    const cat = getSessionCategory(s.name);
+    return cat === "CURRENT" || cat === "UPCOMING";
   });
   if (active.length > 0) return active;
   return listAcademicSessions();
