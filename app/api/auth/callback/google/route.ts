@@ -30,10 +30,20 @@ export async function GET(request: Request) {
   const cookieStore = await cookies();
   const storedCsrfToken = cookieStore.get("dps_echo_oauth_csrf")?.value;
 
-  if (csrfTokenFromState && storedCsrfToken && csrfTokenFromState !== storedCsrfToken) {
-    console.error("OAuth CSRF Mismatch attack detected!");
+  if (!csrfTokenFromState || !storedCsrfToken || csrfTokenFromState !== storedCsrfToken) {
+    console.error("OAuth CSRF Mismatch or missing token!");
     return NextResponse.redirect(publicUrl("/login?error=csrf_mismatch", request));
   }
+
+  // Prevent open redirect by ensuring target is a safe relative path
+  const safeRedirectTarget =
+    redirectTarget &&
+    redirectTarget.startsWith("/") &&
+    !redirectTarget.startsWith("//") &&
+    !redirectTarget.includes("\\") &&
+    !redirectTarget.includes(":")
+      ? redirectTarget
+      : "/";
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -120,7 +130,7 @@ export async function GET(request: Request) {
       details: `Google OAuth login (${result.user.role})`,
     });
 
-    const redirectUrlObj = publicUrl(redirectTarget, request);
+    const redirectUrlObj = publicUrl(safeRedirectTarget, request);
     redirectUrlObj.searchParams.set("login_success", "true");
 
     const response = NextResponse.redirect(redirectUrlObj);

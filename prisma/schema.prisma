@@ -75,6 +75,9 @@ model User {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   lastLoginAt DateTime         @default(now())
+
+  @@index([campusId])
+  @@index([role, status])
 }
 
 model UserPermission {
@@ -253,6 +256,8 @@ model Student {
   @@index([familyId])
   @@index([campusId, status])
   @@index([academicYearIn])
+  @@index([classId, sectionId])
+  @@index([campusId, classId])
 }
 
 model StudentPromotionHistory {
@@ -368,6 +373,8 @@ model TransferCertificate {
   updatedAt            DateTime @updatedAt
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([status])
 }
 
 // -------------------------------------------------------------
@@ -421,6 +428,8 @@ model StudentDiscount {
   createdAt    DateTime @default(now())
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 model FeeInvoice {
@@ -448,6 +457,11 @@ model FeeInvoice {
   items         FeeInvoiceItem[]
   payments      FeePayment[]
   paymentOrders PaymentOrder[]
+
+  @@index([studentId])
+  @@index([campusId])
+  @@index([academicYearId])
+  @@index([dueDate, status])
 }
 
 model FeeInvoiceItem {
@@ -458,6 +472,9 @@ model FeeInvoiceItem {
 
   invoice FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   feeHead FeeHead    @relation(fields: [feeHeadId], references: [id])
+
+  @@index([invoiceId])
+  @@index([feeHeadId])
 }
 
 model FeePayment {
@@ -478,6 +495,10 @@ model FeePayment {
   invoice      FeeInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   paymentOrder PaymentOrder?
+
+  @@index([invoiceId])
+  @@index([studentId])
+  @@index([paymentDate])
 }
 
 // -------------------------------------------------------------

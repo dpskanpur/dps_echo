@@ -18,12 +18,6 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    // Security Check 0: Verify authenticated session or API token
-    const auth = await authorizeApiRequest(req, "students", "view");
-    if (!auth.ok) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
-    }
-
     const { path: pathSegments } = await params;
     if (
       !pathSegments ||
@@ -31,6 +25,16 @@ export async function GET(
       pathSegments.some((seg) => seg === "." || seg === ".." || seg.includes("\\") || seg.includes("\0"))
     ) {
       return NextResponse.json({ error: "Invalid file path." }, { status: 400 });
+    }
+
+    // Security Check 0: Verify authenticated session or API token based on document scope
+    const isEmployeeDoc = pathSegments.some(
+      (seg) => seg.startsWith("emp-") || seg === "employees"
+    );
+    const requiredModule = isEmployeeDoc ? ("employees" as const) : ("students" as const);
+    const auth = await authorizeApiRequest(req, requiredModule, "view");
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const destinationPath = pathSegments.join("/");

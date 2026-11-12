@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { uploadStudentPhoto, uploadStudentDocument } from "@/lib/gcs";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, getUserPermissions } from "@/lib/auth";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 import fs from "fs/promises";
 import path from "path";
 
@@ -47,6 +48,19 @@ function validateMagicBytes(buffer: Buffer, targetType: string): boolean {
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
+
+    // Rate-limit unauthenticated callers (e.g. public registration uploads)
+    if (!user) {
+      const ip = clientIp(req);
+      const rl = rateLimit(`upload:${ip}`, 15, 60_000);
+      if (!rl.allowed) {
+        return NextResponse.json(
+          { error: `Upload rate limit exceeded. Please wait ${rl.retryAfterSeconds} seconds before trying again.` },
+          { status: 429 }
+        );
+      }
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const rawStudentId = (formData.get("studentId") as string) || "";

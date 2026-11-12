@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { ShieldCheck, Search, CheckCircle2, AlertTriangle } from "lucide-react";
 import { PublicShell } from "@/components/PublicShell";
+import { headers } from "next/headers";
+import { rateLimit } from "@/lib/rate-limit";
 
 import type { Metadata } from "next";
 
@@ -26,31 +28,40 @@ export default async function PublicVerifyTCPage({
 
   let tcRecord: any = null;
   let searched = false;
+  let rateLimited = false;
 
   if (token || tcNo) {
     searched = true;
-    const cleanSearch = (tcNo || token || "").trim();
+    const headerList = await headers();
+    const ip = headerList.get("x-forwarded-for")?.split(",")[0].trim() || headerList.get("x-real-ip") || "unknown";
+    const rl = rateLimit(`tc-verify:${ip}`, 30, 60_000);
 
-    tcRecord = await prisma.transferCertificate.findFirst({
-      where: {
-        OR: [
-          ...(token ? [{ verificationToken: token }] : []),
-          ...(cleanSearch
-            ? [
-                { tcNumber: { equals: cleanSearch, mode: "insensitive" as const } },
-                { verificationToken: { equals: cleanSearch, mode: "insensitive" as const } },
-                { student: { scholarNo: { equals: cleanSearch, mode: "insensitive" as const } } },
-                { student: { admissionNo: { equals: cleanSearch, mode: "insensitive" as const } } },
-              ]
-            : []),
-        ],
-      },
-      include: {
-        student: {
-          include: { campus: true, class: true },
+    if (!rl.allowed) {
+      rateLimited = true;
+    } else {
+      const cleanSearch = (tcNo || token || "").trim();
+
+      tcRecord = await prisma.transferCertificate.findFirst({
+        where: {
+          OR: [
+            ...(token ? [{ verificationToken: token }] : []),
+            ...(cleanSearch
+              ? [
+                  { tcNumber: { equals: cleanSearch, mode: "insensitive" as const } },
+                  { verificationToken: { equals: cleanSearch, mode: "insensitive" as const } },
+                  { student: { scholarNo: { equals: cleanSearch, mode: "insensitive" as const } } },
+                  { student: { admissionNo: { equals: cleanSearch, mode: "insensitive" as const } } },
+                ]
+              : []),
+          ],
         },
-      },
-    });
+        include: {
+          student: {
+            include: { campus: true, class: true },
+          },
+        },
+      });
+    }
   }
 
   return (
@@ -159,6 +170,14 @@ export default async function PublicVerifyTCPage({
                   <span>Token: {tcRecord.verificationToken}</span>
                   <span className="font-semibold text-emerald-800">Status: {tcRecord.status}</span>
                 </div>
+              </div>
+            ) : rateLimited ? (
+              <div className="bg-amber-50 border border-amber-200 p-5 text-center space-y-2 text-xs text-amber-900">
+                <AlertTriangle className="w-6 h-6 text-amber-600 mx-auto" />
+                <h4 className="font-semibold text-sm">Too many verification requests</h4>
+                <p>
+                  You have made too many search requests. Please wait a minute before trying again.
+                </p>
               </div>
             ) : (
               <div className="bg-rose-50 border border-rose-200 p-5 text-center space-y-2 text-xs text-rose-900">
