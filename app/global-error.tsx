@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { portalConfig } from "@/lib/portal-config";
 
 /**
  * Last-resort boundary for failures in the root layout itself.
@@ -47,7 +48,7 @@ export default function GlobalError({
           }}
         >
           <h1 style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", margin: 0 }}>
-            DPS Echo could not start
+            {portalConfig.institution.portalName} could not start
           </h1>
           <p style={{ fontSize: 12, color: "#64748b", marginTop: 6, lineHeight: 1.6 }}>
             The application failed before the page could be rendered. This usually means a required

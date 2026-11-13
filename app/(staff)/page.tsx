@@ -7,6 +7,7 @@ import { SessionTimeoutCountdown } from "@/components/SessionTimeoutCountdown";
 import { getPublicSystemSettings } from "@/lib/public-data";
 import { getActiveSessionName } from "@/lib/academic-session";
 import { OnlineRegistrationToggle } from "@/components/OnlineRegistrationToggle";
+import { portalConfig } from "@/lib/portal-config";
 import {
   Users,
   FileCheck,
@@ -48,7 +49,7 @@ export default async function DashboardPage({
               DE
             </div>
             <div>
-              <h1 className="font-bold text-white text-base">DPS Echo</h1>
+              <h1 className="font-bold text-white text-base">{portalConfig.institution.portalName}</h1>
               <p className="text-xs text-slate-400">Institutional Access Gateway</p>
             </div>
           </div>
@@ -63,7 +64,7 @@ export default async function DashboardPage({
         </div>
 
         <div className="max-w-5xl mx-auto w-full text-center text-xs text-slate-500 pb-4">
-          © 2026 Delhi Public School Kanpur Group • Automated RBAC Enforcement
+          © {new Date().getFullYear()} {portalConfig.institution.name} • Automated RBAC Enforcement
         </div>
       </div>
     );
@@ -184,7 +185,7 @@ export default async function DashboardPage({
             Welcome back, {user?.name || user?.email.split("@")[0]}
           </h1>
           <p className="text-xs text-slate-500 dark:text-bodydark2">
-            DPS Echo multi-campus administration desk for Azad Nagar, Barra, Kidwai Nagar, and Servodaya Nagar.
+            {portalConfig.institution.portalName} multi-campus administration desk for {portalConfig.institution.name}.
           </p>
         </div>
 

@@ -1,4 +1,6 @@
-export const ALLOWED_DOMAIN = "dpskanpur.com";
+import { portalConfig } from "@/lib/portal-config";
+
+export const ALLOWED_DOMAIN = portalConfig.auth.allowedDomain;
 export const SESSION_COOKIE_NAME = "dps_echo_session";
 // TEMPORARY: raised from 10 minutes to 2 days so a dropped session does not
 // strand anyone while Google sign-in is unreliable on this network.
@@ -84,7 +86,9 @@ export function isSuperAdminEmail(email: string): boolean {
 export function isAllowedDomain(email: string): boolean {
   if (!email) return false;
   const parts = email.trim().toLowerCase().split("@");
-  return parts.length === 2 && parts[1] === ALLOWED_DOMAIN;
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  return domain === ALLOWED_DOMAIN || portalConfig.auth.allowedDomains.includes(domain);
 }
 
 export function deriveRoleFromEmail(email: string, defaultRole = "STAFF"): string {

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { SidebarLink } from "./SidebarLink";
 import { UserPermissions } from "@/lib/permissions";
+import { portalConfig } from "@/lib/portal-config";
 
 export function Sidebar({
   userEmail,
@@ -56,8 +57,8 @@ export function Sidebar({
       <div className="flex items-center justify-between gap-2 px-6 py-5 border-b border-slate-800/80 dark:border-slate-800 relative">
         <div className="space-y-1">
           <img
-            src="/echo-logo-white.png"
-            alt="ECHO — DPS Kanpur Portal"
+            src={portalConfig.branding.emblem}
+            alt={`${portalConfig.institution.portalName} — ${portalConfig.institution.shortName}`}
             className="h-8 w-auto object-contain"
           />
           <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/90 truncate">

@@ -523,6 +523,18 @@ model SystemSettings {
   registrationOpenDateNotice  String?  @default("Admissions for the upcoming academic session will reopen soon. Please contact the admission office for details.")
   registrationContactPhone    String?  @default("+91 512 2580000, +91 512 2580001")
   registrationContactEmail    String?  @default("admissions@dpskanpur.com")
+
+  // Institution & Portal Customization (White-Label Settings)
+  institutionName             String?  @default("Delhi Public School Kanpur")
+  shortName                   String?  @default("DPS Kanpur")
+  portalName                  String?  @default("DPS Echo")
+  tagline                     String?  @default("Official School ERP & Campus Administration Portal")
+  logoUrl                     String?  @default("/official_dps_echo_logo.jpg")
+  themePrimaryColor           String?  @default("#003d2b")
+  themeAccentColor            String?  @default("#10b981")
+  affiliationBoard            String?  @default("CBSE")
+  affiliationNumber           String?  @default("2130000")
+
   updatedAt               DateTime @updatedAt
 }
 
