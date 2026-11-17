@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowRight, Quote } from "lucide-react";
 import { DesktopOnlyNotice } from "@/components/DesktopOnlyNotice";
 import Link from "next/link";
+import { portalConfig } from "@/lib/portal-config";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -29,7 +30,7 @@ function LoginForm() {
     },
     domain_not_allowed: {
       title: "Account Not Permitted",
-      message: `Account "${attemptedEmail || ""}" is unauthorized. Only @dpskanpur.com accounts can sign in.`,
+      message: `Account "${attemptedEmail || ""}" is unauthorized. Only @${portalConfig.auth.allowedDomain} accounts can sign in.`,
     },
     google_oauth_missing: {
       title: "Sign-in Not Configured",
@@ -94,8 +95,8 @@ function LoginForm() {
         <div className="relative z-10">
           <div className="inline-block bg-slate-950/75 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/15 shadow-2xl">
             <img
-              src="/dps-logo-white.png"
-              alt="Delhi Public School - Azaad Nagar | Barra | Servodaya Nagar | Kidwai Nagar"
+              src={portalConfig.branding.logoLight}
+              alt={portalConfig.institution.name}
               className="h-12 xl:h-14 w-auto object-contain"
             />
           </div>
@@ -123,8 +124,8 @@ function LoginForm() {
         {/* Mobile Header Logo */}
         <div className="flex lg:hidden items-center justify-between pb-6 border-b border-slate-100">
           <img
-            src="/dps-logo-white.png"
-            alt="DPS Logo"
+            src={portalConfig.branding.logoLight}
+            alt={portalConfig.institution.shortName}
             className="h-9 w-auto object-contain invert brightness-0"
           />
         </div>
@@ -133,11 +134,11 @@ function LoginForm() {
 
         {/* Login Card */}
         <div className="max-w-sm w-full mx-auto my-auto py-8 space-y-6">
-          {/* ECHO Portal Brand Logo (Emblem + Text Side-by-Side) */}
+          {/* Portal Brand Logo */}
           <div className="pb-2 flex justify-start">
             <img
-              src="/echo-logo.png"
-              alt="ECHO — DPS Kanpur Portal Logo"
+              src={portalConfig.branding.logoDark}
+              alt={`${portalConfig.institution.portalName} Logo`}
               className="h-20 sm:h-24 w-auto object-contain transition-all"
             />
           </div>
@@ -204,7 +205,7 @@ function LoginForm() {
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
               <span>Allowed Domain</span>
               <span className="font-mono font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
-                @dpskanpur.com
+                @{portalConfig.auth.allowedDomain}
               </span>
             </div>
           </div>
@@ -212,7 +213,7 @@ function LoginForm() {
 
         {/* Footer */}
         <div className="pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-          <span>© 2026 DPS Kanpur</span>
+          <span>© {new Date().getFullYear()} {portalConfig.institution.shortName}</span>
           <div className="flex items-center gap-3">
             <a
               href="/pay"
@@ -244,7 +245,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400 text-xs font-mono">
-          Loading DPS Echo...
+          Loading {portalConfig.institution.portalName}...
         </div>
       }
     >

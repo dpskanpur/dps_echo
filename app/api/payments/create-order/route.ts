@@ -118,7 +118,7 @@ export async function POST(request: Request) {
         gatewayOrderId: order.id,
         invoiceId: invoice.id,
         studentId: invoice.studentId,
-        amount: invoice.balanceAmount,
+        amount: payableAmount,
         currency: "INR",
         status: "CREATED",
         payerEmail: guardian?.email || invoice.student.studentEmail || null,

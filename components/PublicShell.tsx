@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { portalConfig } from "@/lib/portal-config";
 
 /**
  * Shared chrome for the three public pages.
@@ -46,15 +47,15 @@ export function PublicShell({
         {/* Header bar — inside the box, not spanning the viewport */}
         <header className="bg-emerald-900 border-b-2 border-amber-400 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <img
-            src="/dps-logo-white.png"
-            alt="Delhi Public School Kanpur"
+            src={portalConfig.branding.logoLight}
+            alt={portalConfig.institution.name}
             width={504}
             height={96}
             className="hidden sm:block h-10 w-auto"
           />
           <img
             src="/dps-crest-white.png"
-            alt="Delhi Public School Kanpur"
+            alt={portalConfig.institution.name}
             width={77}
             height={96}
             className="sm:hidden h-9 w-auto"
@@ -84,7 +85,7 @@ export function PublicShell({
         {/* Footer bar — closes the box */}
         <footer className="border-t border-slate-300 bg-white px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[11px] text-slate-500">
-            © {new Date().getFullYear()} Delhi Public School Kanpur
+            © {new Date().getFullYear()} {portalConfig.institution.name}
           </p>
           <nav className="flex items-center gap-4 text-[11px] font-medium text-slate-600">
             <a

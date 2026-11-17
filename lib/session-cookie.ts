@@ -92,6 +92,18 @@ export async function encodeSessionCookie(
   return `${base64Url}.${signature}`;
 }
 
+/**
+ * Constant-time string comparison to prevent timing attacks on HMAC signatures.
+ */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 export async function decodeSessionCookie(
   value: string | undefined | null
 ): Promise<SessionPayload | null> {
@@ -105,9 +117,9 @@ export async function decodeSessionCookie(
 
     if (!base64UrlPayload || !signature) return null;
 
-    // Verify HMAC signature using Web Crypto API
+    // Verify HMAC signature using Web Crypto API in constant time
     const expectedSig = await signPayload(base64UrlPayload);
-    if (signature !== expectedSig) {
+    if (!constantTimeEqual(signature, expectedSig)) {
       console.warn("decodeSessionCookie: HMAC signature mismatch");
       return null;
     }

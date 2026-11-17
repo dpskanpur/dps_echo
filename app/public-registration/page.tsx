@@ -14,17 +14,18 @@ import { ValidatedInput } from "@/components/ValidatedInput";
 import { RegistrationFormWrapper } from "@/components/RegistrationFormWrapper";
 import { PublicShell } from "@/components/PublicShell";
 import { CampusSelector } from "@/components/CampusSelector";
+import { portalConfig } from "@/lib/portal-config";
 
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Online Student Registration 2026-27",
-  description: "Official Online Student Registration Portal for Delhi Public School (DPS) Kanpur campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar. Apply for admissions 2026-27 online.",
+  title: `Online Student Registration | ${portalConfig.institution.shortName}`,
+  description: `Official Online Student Registration Portal for ${portalConfig.institution.name}. Apply for admissions online.`,
   openGraph: {
-    title: "Online Student Registration 2026-27 | DPS Kanpur",
-    description: "Official Online Student Registration Portal for Delhi Public School Kanpur campuses.",
+    title: `Online Student Registration | ${portalConfig.institution.shortName}`,
+    description: `Official Online Student Registration Portal for ${portalConfig.institution.name}.`,
     url: "https://echo.dpskanpur.com/public-registration",
   },
 };

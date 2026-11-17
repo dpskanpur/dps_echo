@@ -81,13 +81,18 @@ export async function createRazorpayOrder(params: {
   const json: any = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // If gateway returns error in dev/mock environment, generate a valid order response for seamless checkout
-    return {
-      id: `order_${Math.random().toString(36).slice(2, 14)}`,
-      amount: toPaise(params.amountInRupees),
-      currency: "INR",
-      status: "created",
-    };
+    if (process.env.NODE_ENV !== "production") {
+      // In local dev/mock environment, generate a valid mock order response for seamless checkout testing
+      return {
+        id: `order_${Math.random().toString(36).slice(2, 14)}`,
+        amount: toPaise(params.amountInRupees),
+        currency: "INR",
+        status: "created",
+      };
+    }
+    const errDesc = json?.error?.description || json?.error?.message || `HTTP ${res.status}` || "Razorpay API error";
+    console.error("Razorpay order creation failed:", res.status, errDesc);
+    throw new Error(`Razorpay order creation failed (${res.status}): ${errDesc}`);
   }
 
   return { id: json.id, amount: json.amount, currency: json.currency, status: json.status };

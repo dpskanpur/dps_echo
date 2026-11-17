@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { IdleSessionGuard } from "@/components/IdleSessionGuard";
+import { portalConfig } from "@/lib/portal-config";
 
 export const viewport: Viewport = {
-  themeColor: "#064e3b",
+  themeColor: portalConfig.theme.primaryDarkColor,
   width: "device-width",
   initialScale: 1,
 };
@@ -11,14 +12,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://echo.dpskanpur.com"),
   title: {
-    default: "DPS Echo — Official Portal (Delhi Public School Kanpur)",
-    template: "%s | DPS Echo — Delhi Public School Kanpur",
+    default: `${portalConfig.institution.portalName} — Official Portal (${portalConfig.institution.name})`,
+    template: `%s | ${portalConfig.institution.portalName} — ${portalConfig.institution.shortName}`,
   },
   description:
-    "Official Student Lifecycle & Fee Management Platform for Delhi Public School (DPS) Kanpur campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar. Online Admissions 2026-27, Quick Fee Payment, and Transfer Certificate Verification.",
+    `Official Student Lifecycle & Fee Management Platform for ${portalConfig.institution.name} campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar. Online Admissions, Quick Fee Payment, and Transfer Certificate Verification.`,
   keywords: [
-    "DPS Kanpur",
-    "Delhi Public School Kanpur",
+    portalConfig.institution.shortName,
+    portalConfig.institution.name,
     "DPS Azad Nagar",
     "DPS Barra",
     "DPS Kidwai Nagar",
@@ -26,11 +27,11 @@ export const metadata: Metadata = {
     "Online Student Registration 2026-27",
     "Quick Pay School Fees Kanpur",
     "Verify Transfer Certificate",
-    "DPS Echo Portal",
+    `${portalConfig.institution.portalName} Portal`,
   ],
-  authors: [{ name: "DPS Kanpur IT Cell", url: "https://dpskanpur.com" }],
-  creator: "Delhi Public School Kanpur",
-  publisher: "Delhi Public School Kanpur",
+  authors: [{ name: `${portalConfig.institution.shortName} IT Cell`, url: portalConfig.institution.websiteUrl }],
+  creator: portalConfig.institution.name,
+  publisher: portalConfig.institution.name,
   robots: {
     index: true,
     follow: true,
@@ -46,30 +47,30 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: "https://echo.dpskanpur.com",
-    siteName: "DPS Echo Portal — DPS Kanpur",
-    title: "DPS Echo — Official School Portal (Delhi Public School Kanpur)",
+    siteName: `${portalConfig.institution.portalName} Portal — ${portalConfig.institution.shortName}`,
+    title: `${portalConfig.institution.portalName} — Official School Portal (${portalConfig.institution.name})`,
     description:
-      "Official Student Lifecycle & Fee Management Platform for Delhi Public School (DPS) Kanpur campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar.",
+      `Official Student Lifecycle & Fee Management Platform for ${portalConfig.institution.name} campuses: Azad Nagar, Barra, Kidwai Nagar, Servodaya Nagar.`,
     images: [
       {
         url: "/dps_crest.png",
         width: 1200,
         height: 630,
-        alt: "DPS Kanpur Crest & Echo Portal",
+        alt: `${portalConfig.institution.shortName} Crest & ${portalConfig.institution.portalName} Portal`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DPS Echo — Official School Portal (Delhi Public School Kanpur)",
+    title: `${portalConfig.institution.portalName} — Official School Portal (${portalConfig.institution.name})`,
     description:
-      "Official Student Lifecycle & Fee Management Platform for Delhi Public School (DPS) Kanpur campuses.",
+      `Official Student Lifecycle & Fee Management Platform for ${portalConfig.institution.name} campuses.`,
     images: ["/dps_crest.png"],
   },
   icons: {
-    icon: "/icon.png",
+    icon: portalConfig.branding.favicon,
     shortcut: "/favicon.ico",
-    apple: "/icon.png",
+    apple: portalConfig.branding.favicon,
   },
 };
 

@@ -8,7 +8,7 @@ export const maxDuration = 300;
 
 function authorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // Allowed in dev / internal calls if secret unconfigured
+  if (!secret) return process.env.NODE_ENV !== "production";
 
   const provided = request.headers.get("x-cron-secret") || "";
   const a = Buffer.from(provided);
